@@ -1,0 +1,372 @@
+%head
+  %meta{http-equiv:"content-type", content:"text/html; charset=UTF8"}
+  :sass
+    body, pre, code, table
+      font-family: 'Source Code Pro', monotype
+      font-size: 10px
+    body
+      margin: 0
+    th, td
+      border: 1px dotted #EEE
+    th, td
+      padding: 2px
+    th
+      font-size: 8px
+      text-align: left
+      font-weight: normal
+      text-transform: uppercase
+    table
+      border-spacing: 0
+    .highlight
+      background-color: #DDF
+    a.highlight
+      text-decoration: none
+    a.highlight:link, a.highlight:visited
+      color: black
+    #header
+      width: 100%
+      margin-top: 1em
+      background-color: #DDE
+      color: #336
+      border-bottom: 1px solid #AAA
+      font-weight: bold
+      font-size: 35px
+      text-align: center
+      margin-top: 1.2em
+      text-transform: lowercase
+      padding-top: 0.2em
+      padding-bottom: 0.1em
+    #proteins_header,
+    #sequences_header,
+    #peptides_header,
+    #spectrum_id
+      position: absolute
+      height: 1em
+      font-size: 12px
+      font-weight: normal
+      border-bottom: 1px solid #AAA
+      background-color: #DDE
+      padding: 7px
+      margin-top: 10px
+      margin-bottom: 10px
+      width: 100%
+      text-transform: lowercase
+    #proteins_header
+      margin-right: 40px
+    #proteins
+      position: absolute
+      overflow: auto
+      float: left
+      height: 90%
+      margin-right: 40px
+    #sequence
+      position: absolute
+      width: 38em
+      overflow: auto
+      float: left
+      height: 100%
+    h2
+      font-size: 10px
+    #right_panel 
+      position: absolute
+      margin-left: 40px
+      padding: 0
+    #spectrum_container
+      position: absolute
+      margin-bottom: 10px;
+      box-sizing: border-box
+      width: 100%
+      height: 150px
+    #spectrum
+      position: absolute
+      width: 100%
+      height: 100%
+      height: 150px
+    #peptides
+      position: absolute
+      overflow: auto
+      height: 70%
+    .peptides_in_protein
+      padding-bottom: 0.5em
+    .scrolling_padding
+      height: 100%
+%body
+  #header
+    {{ title }}
+  #proteins_header
+    Proteins
+  #proteins
+    %table
+      - for entry in entries:
+        %tr
+          %td
+            {{ entry.i_seqid }}
+          %td
+            %a{href:"{{ entry.seqid_link }}","class":"protein_link"} 
+              {{ entry.seqid }}
+          %td
+            %a{href:"{{ entry.seqid_link }}-peptides","class":"peptides_link"} 
+              peptides
+          %td
+            %div
+              {{ entry.probability }}
+  #sequences_header
+    Sequences
+  #sequence
+    - for entry in entries:
+      %div{id:"{{ entry.seqid }}"}
+        %h2 {{ entry.description }}
+        %pre {{ entry.sequence_html }}
+        %br
+        %br
+    .scrolling_padding
+  #right_panel
+    #spectrum_id
+    #spectrum_container
+      #spectrum
+    #peptides_header
+      Peptide Matches
+    #peptides
+      - for entry in entries:
+        .peptides_in_protein{id:"{{ entry.seqid }}-peptides",}
+          %a{href:"{{ entry.seqid_link }}",class:"protein_link"}
+            %h2 {{ entry.seqid }}
+          %table
+            %tr
+              - for key in attr_keys:
+                %th 
+                  {{ key.upper().replace('_', ' ') }}
+            - for peptide in entry.peptides:
+              %tr
+                - for key in attr_keys:
+                  %td
+                    - if key == 'sequence':
+                      %a{href:'',id:'{{ peptide.id }}'} 
+                        {{ peptide[key] }}
+                    - else
+                      {{ peptide[key] }}
+      .scrolling_padding
+
+
+  %script{type:'text/javascript', src:'jquery.js'}
+  %script{type:'text/javascript', src:'jquery.scrollTo.js'}
+  %script{type:'text/javascript', src:'d3.v3.js'}
+
+  %script
+    data = {{ data }};
+
+  :coffeescript
+    min = (list) ->
+      result = null
+      for val in list
+        if result == null or val < result
+          result = val
+      return result
+
+    max = (list) ->
+      result = null
+      for val in list
+        if result == null or val > result
+          result = val
+      return result
+
+    convert_peaks_to_data = (peaks) ->
+      masses = (x[0] for x in peaks)
+      intensities = (x[1] for x in peaks)
+      min_mass = min(masses)
+      max_mass = max(masses)
+      max_intensity = max(intensities)
+      data = []
+      for i in [0..peaks.length-1]
+        x = (peaks[i][0]-min_mass)/(max_mass-min_mass)
+        y = peaks[i][1]/max_intensity
+        if peaks[i][2] == ''
+          color = '#CCC'
+        else if peaks[i][2][0] == 'y'
+          color = 'red'
+        else
+          color = 'blue'
+        data.push([x, y, color])
+      return [data, min_mass, max_mass, max_intensity]
+
+    spectrum =
+      div: null
+      width: -> @div.width()
+      height: -> @div.height()
+      svg: null
+      background: null
+      peaks: null
+
+      init: ->
+        @div = $('#spectrum')
+        @svg = d3.select('#spectrum').append('svg')
+          .attr('width', @width())
+          .attr('height', @height())
+        @background = @svg.append('rect')
+          .style('fill', '#FAFAFF')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', @width())
+          .attr('height', @height())
+        @svg.append('text')    
+        @svg.append('text')    
+        @svg.append('text')    
+
+      redraw: ->
+        $('#spectrum_id').text('Click on peptide for spectrum')
+        @svg.attr('width', @width())
+        @background.attr('width', @width())
+        if @peaks == null
+          return
+        $('#spectrum_id').text('Spectrum from ' + @peptide_id)
+        [data, min_mass, max_mass, max_intensity] = convert_peaks_to_data(@peaks)
+        lines = @svg.selectAll('line').data(data)
+        x_offset = 5
+        y_offset = 15
+        spectrum_w = @width() - 2*x_offset
+        spectrum_h = @height() - y_offset
+        line_attrs = 
+            x1: (d) -> x_offset + d[0]*spectrum_w
+            y1: (d) -> spectrum_h - d[1]*spectrum_h
+            x2: (d) -> x_offset + d[0]*spectrum_w
+            y2: spectrum_h
+        lines.transition().attr(line_attrs)
+        lines.enter().append('line')
+            .transition()
+            .style('stroke', (d) -> d[2])
+            .style('stroke-width', '3')
+            .attr(line_attrs)
+        lines.exit().remove()
+        labeldata = [
+            [x_offset, 12, max_intensity],
+            [x_offset, @height()-5, min_mass],
+            [@width()-x_offset-45, @height()-5, max_mass]]
+        labels = @svg.selectAll('text').data(labeldata)
+            .transition()
+            .attr('x', (d) -> d[0])
+            .attr('y', (d) -> d[1])
+            .attr('font-family', 'Helvetica')
+            .attr('font-size', '10px')
+            .attr('fill', '#AAA')
+            .attr('text-anchor', 'bottom')
+            .tween('text', 
+              (d) -> 
+                i = d3.interpolate(this.textContent, d[2])
+                return (t) -> this.textContent = Math.round(i(t)*100)/100
+            )
+
+    set_outer_height = (div, height) ->
+      margin = div.outerHeight(true) - div.innerHeight()
+      margin += parseInt(div.css('padding-top'))
+      margin += parseInt(div.css('padding-bottom'))
+      div.height(height - margin)
+
+    set_outer_width = (div, width) ->
+      margin = div.outerWidth(true) - div.innerWidth()
+      margin += parseInt(div.css('padding-left'))
+      margin += parseInt(div.css('padding-right'))
+      div.width(width - margin)
+
+    resize_display = ->
+      window_width = $(window).width()
+      window_height = $(window).height()
+
+      # set heights of main columns
+      header_height = $('#header').outerHeight(true)
+      main_height = window_height - header_height;
+
+      left_width = $('#proteins').outerWidth(true)
+      centre_width = $('#sequence').outerWidth(true)
+
+      $('#proteins_header').css('left', 0)
+      set_outer_width($('#proteins_header'), left_width)
+      $('#proteins').css('left', 0)
+
+      $('#sequences_header').css('left', left_width)
+      set_outer_width($('#sequences_header'), centre_width)
+      $('#sequence').css('left', left_width)
+
+      left_header_height = $('#proteins_header').outerHeight(true)
+      $('#proteins').css('top', header_height+left_header_height)
+      set_outer_height($('#proteins'), main_height - left_header_height)
+      
+      centre_header_height = $('#sequences_header').outerHeight(true)
+      $('#sequence').css('top', header_height+centre_header_height)
+      set_outer_height($('#sequence'), main_height - centre_header_height)
+
+      # figure out right panel width
+      right_width = window_width - left_width - centre_width
+      $('#right_panel').css('left', left_width+centre_width)
+      set_outer_width($('#right_panel'), right_width)
+      right_width -= 40
+      set_outer_width($('#spectrum_id'), right_width)
+      set_outer_width($('#spectrum_container'), right_width)
+      set_outer_width($('#spectrum'), right_width)
+      set_outer_width($('#peptides_header'), right_width)
+      set_outer_width($('#peptides'), right_width)
+
+      # makes sure peptides leaves room for spectrum
+      top = $('#spectrum_id').position().top
+      top += $('#spectrum_id').outerHeight(true)
+      $('#spectrum_container').css('top', top)
+      top += $('#spectrum').outerHeight(true)
+      $('#peptides_header').css('top', top)
+      top += $('#peptides_header').outerHeight(true)
+      $('#peptides').css('top', top)
+      set_outer_height($('#peptides'), main_height - top)
+      set_outer_height($('#right_panel'), main_height)
+
+
+    bind_peaks_to_callback = (peptide_id, spectrum, peaks) ->
+      callback = (event) ->
+        spectrum.peaks = peaks
+        spectrum.peptide_id = peptide_id
+        spectrum.redraw()
+        return false
+
+
+    find_links = ->
+      for link in $('a.protein_link')
+        elem = $(link)
+        target = elem.attr('href')
+        make_callback = (target) ->
+          () ->
+            $('#sequence').scrollTo(target, 1000)
+            return false
+        elem.click(make_callback(target))
+      for link in $('a.highlight')
+        elem = $(link)
+        target = elem.attr('href')
+        make_callback = (target) ->
+          () ->
+            $('#peptides').scrollTo(target, 1000)
+            return false
+        elem.click(make_callback(target))
+      for link in $('a.peptides_link')
+        elem = $(link)
+        target = elem.attr('href')
+        make_callback = (target) ->
+          () ->
+            $('#peptides').scrollTo(target, 1000)
+            return false
+        elem.click(make_callback(target))
+
+
+    init_on_load = ->
+      spectrum.init()
+      for peptide_id, peaks of data
+        $(peptide_id).click(bind_peaks_to_callback(peptide_id, spectrum, peaks))
+      resize = ->
+        resize_display()
+        spectrum.redraw()
+      $(window).resize(resize)
+      find_links()
+      resize()
+
+    $(init_on_load)
+
+
+
+
+
+
