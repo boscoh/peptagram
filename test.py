@@ -33,13 +33,12 @@ def test_xtandem():
   def get_protein():
     proteins, source_names = peptagram.tpp.get_proteins_and_sources(
         'example/xtandem/interact.prot.xml', 
-        'example/xtandem/interact.pep.xml', 
-        n_peptide_cutoff=1, 
-        is_skip_no_unique=True, errors=errors)
+        ['example/xtandem/interact.pep.xml'], 
+        peptide_error=max(errors))
     for i in ['2', '3', '4']:
       fname = 'example/xtandem/Seq2328{}_E1O1.tandem'.format(i)
+      basename = os.path.splitext(os.path.basename(fname))[0]
       for i, source_name in enumerate(source_names):
-        basename = os.path.splitext(os.path.basename(fname))[0]
         if basename in source_name:
           i_source = i
           logging.debug('Matching pepxml source {} to xtandem {}'.format(basename, fname))
@@ -55,19 +54,20 @@ def test_xtandem():
   data = {
     'title': 'X!Tandem example',
     'proteins': proteins,
-    'source_labels': ['yeast'],
+    'source_labels': ['Seq23282', 'Seq23283', 'Seq23284'],
     'color_names': ['P=1', 'P=0', ''],
-    'mask_labels': map(str, errors),
+    'mask_labels': errors,
   }
-  peptagram.proteins.make_webapp_directory(data, 'out/xtandem')
+  peptagram.proteins.make_peptograph_directory(data, 'out/xtandem')
 
 
 def test_tpp():
   errors = [0.05, 0.025, 0.01]
+  errors = [0.05]
   proteins, source_names = peptagram.tpp.get_proteins_and_sources(
       'example/tpp/hca-lysate-16.prot.xml', 
       'example/tpp/hca-lysate-16.pep.xml',
-      errors=errors)
+      peptide_error=max(errors))
   peptagram.proteins.load_fasta_db_into_proteins(
       proteins, '../db/HUMAN.fasta')
   data = {
@@ -77,7 +77,7 @@ def test_tpp():
     'color_names': ['P=1', 'P=0', ''],
     'mask_labels': map(str, errors),
   }
-  peptagram.proteins.make_webapp_directory(data, 'out/tpp')
+  peptagram.proteins.make_proteins_directory(data, 'out/tpp-pr')
 
 
 def test_maxquant():
@@ -99,7 +99,7 @@ def test_maxquant():
     'color_names': ['1.5', '1', '0.66'],
     'mask_labels': [],
   }
-  peptagram.proteins.make_webapp_directory(data, out_dir)
+  peptagram.proteins.make_peptograph_directory(data, out_dir)
 
 
 def test_morpheus():
@@ -110,10 +110,7 @@ def test_morpheus():
       )
   peptagram.mzml.load_mzml(
       proteins, 0, 'example/morpheus/OK20130822_MPProtomap_KO1.mzML')
-  peptagram.proteins.determine_unique_peptides(proteins)
-  peptagram.proteins.count_peptides(proteins)
-  peptagram.proteins.check_modifications(proteins)
-  out_dir = 'out/morpheus'
+  out_dir = 'out/morpheus-pr'
   data = {
     'title': 'Morpheus Example', 
     'proteins': proteins,
@@ -121,14 +118,14 @@ def test_morpheus():
     'color_names': ['1.0', 'score/n', ''],
     'mask_labels': [],
   }
-  peptagram.proteins.make_webapp_directory(data, out_dir)
+  peptagram.proteins.make_proteins_directory(data, out_dir)
 
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.DEBUG)
   # test_tpp()
-  # test_xtandem()
+  test_xtandem()
   # test_maxquant()
-  test_morpheus()
+  # test_morpheus()
   # todo: mascot and x!tandem get_proteins function
   

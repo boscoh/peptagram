@@ -56,7 +56,7 @@ def morpheus():
     'color_names': ['1.0', 'score/n', ''],
     'mask_labels': [],
   }
-  peptagram.proteins.make_webapp_directory(data, out_dir)
+  peptagram.proteins.make_peptograph_directory(data, out_dir)
 
 
 def tpp():
@@ -105,7 +105,7 @@ def tpp():
     'color_names': ['1.0', 'prob', ''],
     'mask_labels': [],
   }
-  peptagram.proteins.make_webapp_directory(data, out_dir)
+  peptagram.proteins.make_peptograph_directory(data, out_dir)
 
 
 def match_seqids(protein1, protein2):
@@ -204,7 +204,7 @@ def compare_proteins():
     'color_names': ['1.0', 'prob', ''],
     'mask_labels': [],
   }
-  peptagram.proteins.make_webapp_directory(data, out_dir)
+  peptagram.proteins.make_peptograph_directory(data, out_dir)
 
 
 def check_groups():

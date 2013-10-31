@@ -93,7 +93,7 @@ ion_type_props = {
 }
 
 
-def parse_aa_masses(sequence, aa_mass, modified_masses=None):
+def parse_aa_masses(sequence, aa_mass, modified_masses=[]):
   masses = [aa_mass[aa] for aa in sequence]
   for modified in modified_masses:
     masses[modified['i']] = modified['mass']

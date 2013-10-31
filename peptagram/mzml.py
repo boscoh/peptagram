@@ -30,9 +30,9 @@ def load_mzml(proteins, i_source, mzml, n_peak=50):
       peaks = make_peaks(
           spectrum['m/z array'], spectrum['intensity array'], n_peak)
       peptide['spectrum'] = peaks
-      if 'precursorList' in spectrum:
-        mz = spectrum['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z']
-        mz = float('%.5f' % mz)
-        peptide['attr']['m/z mzml'] = parse.round_decimal(mz, 4)
+      # if 'precursorList' in spectrum:
+      #   mz = spectrum['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z']
+      #   mz = float('%.5f' % mz)
+      #   peptide['attr']['m/z mzml'] = parse.round_decimal(mz, 4)
 
 

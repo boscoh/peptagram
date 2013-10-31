@@ -26,7 +26,7 @@ def pepto_morpheus():
     'color_names': ['1.0', 'score/n', ''],
     'mask_labels': [],
   }
-  peptagram.proteins.make_webapp_directory(data, out_dir)
+  peptagram.proteins.make_peptograph_directory(data, out_dir)
 
 
 if __name__ == '__main__':

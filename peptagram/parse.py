@@ -130,7 +130,7 @@ def memoize(fn, fname, force=False):
   else:
     result = fn()
     dirname = os.path.dirname(fname)
-    if not os.path.isdir(dirname):
+    if dirname is not '' and not os.path.isdir(dirname):
       os.makedirs(dirname)
     pprint(result, stream=open(fname, 'w'), width=80)
     return result

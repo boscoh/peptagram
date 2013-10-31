@@ -23,20 +23,31 @@ def parse_scan(scan_elem, nsmap):
   for search_elem in scan_elem.findall(parse.fixtag('', "search_result", nsmap)):
     search_hit_elem = search_elem[0] 
     match = parse.parse_attrib(search_hit_elem)
+    match['modified_sequence'] = match['peptide']
+
+    match['other_seqids'] = []
+    for alt_protein in search_hit_elem.findall(parse.fixtag('', 'alternative_protein', nsmap)):
+      match['other_seqids'].append(alt_protein.attrib['protein'])
+
     match['modifications'] = []
-    mod_tag = tag('modification_info')+'/'+tag('mod_aminoacid_mass')
-    for mod_elem in search_hit_elem.findall(mod_tag):
-      modification = parse.parse_attrib(mod_elem)
-      modification['i'] = modification['position'] - 1
-      del modification['position']
-      match['modifications'].append(modification)
+    for modified_elem in search_hit_elem.findall(parse.fixtag('', 'modification_info', nsmap)):
+      attr = parse.parse_attrib(modified_elem)
+      match['modified_sequence'] = attr['modified_peptide']
+      for modification_elem in modified_elem.findall(parse.fixtag('', 'mod_aminoacid_mass', nsmap)):
+        attr = parse.parse_attrib(modification_elem)
+        attr['i'] = attr['position'] - 1
+        del attr['position']
+        match['modifications'].append(attr)
+
     for score_elem in search_hit_elem.findall(tag('search_score')):
       match.update(parse.parse_name_value(score_elem))
+
     for analysis_elem in search_hit_elem.find(parse.fixtag('', 'analysis_result', nsmap)):
       if analysis_elem.tag == parse.fixtag('', 'peptideprophet_result', nsmap):
         match.update(parse.parse_attrib(analysis_elem))
         for param_elem in analysis_elem[0]:
           match.update(parse.parse_name_value(param_elem))
+
     scan['matches'].append(match)
   return scan
 
@@ -61,42 +72,21 @@ def parse_peptide_probabilities(elem, nsmap):
   return probs
 
 
-def read_pepxml(pepxml):
-  nsmap = {}
-  probs = []
-  scan_sources = []
-  for event, elem in etree.iterparse(pepxml, events=('start', 'end', 'start-ns')):
-    if event == 'start-ns':
-      nsmap.update({elem})
-    elif event == 'start':
-      if elem.tag == parse.fixtag('', 'msms_run_summary', nsmap):
-        scan_source = {
-          'scans': [],
-          'filename': elem.attrib['base_name'],
-        }
-        scan_sources.append(scan_source)
-    elif event == 'end':
-      if elem.tag == parse.fixtag('', 'spectrum_query', nsmap):
-        scan = parse_scan(elem, nsmap)
-        scan_source['scans'].append(scan)
-        elem.clear()
-      elif elem.tag == parse.fixtag('', 'peptideprophet_summary', nsmap):
-        probs = parse_peptide_probabilities(elem, nsmap)
-        elem.clear()
-  return scan_sources, probs
-
-
 class PepxmlReader(object):
   def __init__(self, pepxml, prob_cutoff=None, error_cutoff=None):
     self.pepxml = pepxml
-    self.probs = None
+    self.distribution = None
     self.source_names = []
     self.i_source = None
-    self.prob_cutoff = None
-    self.error_cutoff = None
     self.nsmap = {}
+    self.is_debug = logger.root.level <= logging.DEBUG
 
   def iter(self):
+    if self.is_debug:
+      fname = self.pepxml + '.dump'
+      logging.debug('Dumping pepxml reads into ' + fname)
+      self.debug_file = open(fname, 'w')
+      self.debug_file.write('{\n')
     for event, elem in etree.iterparse(self.pepxml, events=('start', 'end', 'start-ns')):
       if event == 'start-ns':
         self.nsmap.update({elem})
@@ -108,16 +98,66 @@ class PepxmlReader(object):
       elif event == 'end':
         if elem.tag == parse.fixtag('', 'spectrum_query', self.nsmap):
           scan = parse_scan(elem, self.nsmap)
+          for match in scan['matches']:
+            fpe = probability_to_error(self.distribution, match['probability'])
+            if fpe is None:
+              print("WTF", match['probability'], self.distribution)
+            else:
+              match['fpe'] = parse.round_decimal(fpe, 4)
           if self.i_source is not None:
             scan['source'] = self.source_names[self.i_source]
-          if self.prob_cutoff is None or scan['probability'] >= self.prob_cutoff:
+          if self.is_debug:
+            pprint(scan, stream=self.debug_file)
+            self.debug_file.write(',\n')
             yield scan
           elem.clear()
         elif elem.tag == parse.fixtag('', 'peptideprophet_summary', self.nsmap):
-          self.probs = parse_peptide_probabilities(elem, self.nsmap)
-          if self.prob_cutoff is None and self.error_cutoff is not None:
-            self.prob_cutoff = error_to_probability(self.probs, self.prob_cutoff)
+          self.distribution = parse_peptide_probabilities(elem, self.nsmap)
+          if self.distribution[0]['prob'] < 1.0:
+            self.distribution.insert(0, {'prob':1.0, 'error':0.0})
+          if self.distribution[-1]['prob'] > 0.0:
+            self.distribution.append({'prob':0.0, 'error':1.0})
+          if self.is_debug:
+            fname = self.pepxml + '.distribution.dump'
+            pprint(self.distribution, open(fname, 'w'))
           elem.clear()
+    if self.is_debug:
+      self.debug_file.write('}\n')
+      self.debug_file.close()
+
+
+def make_peptide(pepxml_match, pepxml_scan, source):
+  peptide = {
+    'sequence': pepxml_match['peptide'],
+    'modified_sequence': pepxml_match['modified_sequence'],
+    'intensity': pepxml_match['probability'],
+    'attr': {
+      'pepxml_id': pepxml_scan['index'],
+      'scan_id': pepxml_scan['start_scan'],
+      'charge': pepxml_scan['assumed_charge'],
+      'expect': pepxml_match['expect'],
+      'retention_time': pepxml_scan['retention_time_sec'],
+      'modifications': pepxml_match['modifications'],
+      'probability': pepxml_match['probability'],
+      'missed_cleavages': pepxml_match['num_missed_cleavages'],
+      'fpe': pepxml_match['fpe'],
+      'mass': pepxml_scan['precursor_neutral_mass'],
+      'mass_diff': pepxml_match['massdiff'],
+      'source': parse.basename(source),
+    }
+  }
+  peptide['attr']['matched_ions'] = str(pepxml_match['num_matched_ions'])
+  peptide['attr']['matched_ions'] += '/'
+  peptide['attr']['matched_ions'] += str(pepxml_match['tot_num_ions'])
+  return peptide
+
+
+def not_in_peptides(new_peptide, peptides):
+  for peptide in peptides:
+    if peptide['sequence'] == new_peptide['sequence']:
+      if peptide['attr']['scan_id'] == new_peptide['attr']['scan_id']:
+        return False
+  return True
 
 
 def parse_protein_probabilities(elem, nsmap):
@@ -139,6 +179,11 @@ def parse_protein_group(elem, nsmap):
     protein = parse.parse_attrib(protein_elem)
     protein['group_number'] = group['group_number']
 
+    for parameter_elem in protein_elem.findall(parse.fixtag('', 'parameter', nsmap)):
+      key = parameter_elem.attrib['name']
+      val = parameter_elem.attrib['value']
+      protein[key] = val
+
     annotation_elem = protein_elem.find(parse.fixtag('', 'annotation', nsmap))
     if annotation_elem is not None:
       protein['description'] = annotation_elem.attrib['protein_description']
@@ -155,7 +200,14 @@ def parse_protein_group(elem, nsmap):
     for peptide_elem in protein_elem.findall(parse.fixtag('', 'peptide', nsmap)):
       peptide = parse.parse_attrib(peptide_elem)
       protein['peptides'].append(peptide)
-      # if peptide['is_nondegenerate_evidence'] == 'Y':
+      peptide['modifications'] = []
+      peptide['modified_sequence'] = peptide['peptide_sequence']
+      for modified_elem in peptide_elem.findall(parse.fixtag('', 'modification_info', nsmap)):
+        attr = parse.parse_attrib(modified_elem)
+        peptide['modified_sequence'] = attr['modified_peptide']
+        for modification_elem in modified_elem.findall(parse.fixtag('', 'mod_aminoacid_mass', nsmap)):
+          attr = parse.parse_attrib(modification_elem)
+          peptide['modifications'].append(attr)
 
     group['proteins'].append(protein)
   return group
@@ -179,65 +231,24 @@ def read_protxml(protxml):
   return protein_groups, distribution
 
 
-def resort_matches_by_seq(scans_by_sources):
-  for source in scans_by_sources:
-    matches_by_seq = {}
-    for scan in source['scans']:
-      for peptide in scan['matches']:
-        seq = peptide['peptide']
-        match = { 'peptide': peptide, 'scan': scan }
-        if seq not in matches_by_seq:
-          matches_by_seq[seq] = []
-        matches_by_seq[seq].append(match)
-    source['matches_by_seq'] = matches_by_seq
-
-
 def make_protein(protxml_protein):
   protein = {
     'description': protxml_protein['description'],
     'attr': { 
       'group_id': protxml_protein['group_number'],
+      'length': protxml_protein['prot_length'],
       'seqid': protxml_protein['protein_name'],
       'sibling': protxml_protein['group_sibling_id'],
       'other_seqids': protxml_protein['other_seqids'],
       'probability': protxml_protein['probability'],
-    }
+      'percent_coverage': '-',
+    },
+    'sources': [],
   }
-  protein['percent_coverage'] = None
   if 'percent_coverage' in protxml_protein:
-    protein['percent_coverage'] = protxml_protein['percent_coverage']
+    protein['attr']['percent_coverage'] = protxml_protein['percent_coverage']
+  protein['protxml_peptides'] = protxml_protein['peptides']
   return protein
-
-
-def make_peptide(pepxml_peptide, pepxml_scan, source):
-  peptide = {
-    'sequence': pepxml_peptide['peptide'],
-    'attr': {
-      'pepxml_id': pepxml_scan['index'],
-      'scan_id': pepxml_scan['start_scan'],
-      'expect': pepxml_peptide['expect'],
-      'retention_time': pepxml_scan['retention_time_sec'],
-      'modifications': pepxml_peptide['modifications'],
-      'source': parse.basename(source),
-    }
-  }
-  peptide['attr']['matched_ions'] = str(pepxml_peptide['num_matched_ions'])
-  peptide['attr']['matched_ions'] += '/'
-  peptide['attr']['matched_ions'] += str(pepxml_peptide['tot_num_ions'])
-  peptide['attr']['probability'] = pepxml_peptide['probability']
-  peptide['attr']['missed_cleavages'] = pepxml_peptide['num_missed_cleavages']
-  peptide['attr']['mass'] = pepxml_scan['precursor_neutral_mass']
-  peptide['attr']['mass_diff'] = pepxml_peptide['massdiff']
-  peptide['intensity'] = pepxml_peptide['probability']
-  return peptide
-
-
-def not_in_peptides(new_peptide, peptides):
-  for peptide in peptides:
-    if peptide['sequence'] == new_peptide['sequence']:
-      if peptide['attr']['scan_id'] == new_peptide['attr']['scan_id']:
-        return False
-  return True
 
 
 def make_proteins_from_protxml(protein_groups):
@@ -249,14 +260,15 @@ def make_proteins_from_protxml(protein_groups):
         logger.warning("%s found in multiple protein groups" % seqid)
       protein = make_protein(protxml_protein)
       proteins[seqid] = protein
-      protein['sources'] = []
   return proteins
 
 
 def filter_proteins(proteins, prob_cutoff):
   for seqid in proteins.keys():
-    if proteins[seqid]['attr']['probability'] < prob_cutoff:
+    protein = proteins[seqid]
+    if protein['attr']['probability'] < prob_cutoff:
       del proteins[seqid]
+      continue
 
 
 def get_protein_by_seqid(proteins):
@@ -270,32 +282,46 @@ def get_protein_by_seqid(proteins):
   return protein_by_seqid
 
 
-def load_pepxml(proteins, scans_by_sources):
-  n_source = len(scans_by_sources)
-  i_source_offset = None
-  protein_by_seqid = {}
-  for seqid in proteins:
-    protein = proteins[seqid]
-    protein_by_seqid[seqid] = protein
-    protein = proteins[seqid]
-    if i_source_offset is None:
-      i_source_offset = len(protein['sources'])
-    for i in range(n_source):
-      protein['sources'].append({ 'peptides': [] })
-    for alt_seqid in protein['attr']['other_seqids']:
-      protein_by_seqid[alt_seqid] = protein
-  for i_source, source in enumerate(scans_by_sources):
-    for scan in source['scans']:
-      for peptide in scan['matches']:
-        seqid = peptide['protein']
+def add_source(proteins):
+  for protein in proteins.values():
+    protein['sources'].append({'peptides': []})
+
+
+def load_pepxml(proteins, pepxml, prob_cutoff=None, error_cutoff=None, source_names=[]):
+  logging.debug('Peptide error cutoff: {}'.format(error_cutoff))
+  protein_by_seqid = get_protein_by_seqid(proteins)
+  n_source = len(proteins.values()[0]['sources'])
+  pepxml_reader = PepxmlReader(pepxml)
+  source_name_indices = {}
+  for scan in pepxml_reader.iter():
+    for match in scan['matches']:
+      if error_cutoff is not None and float(match['fpe']) > error_cutoff:
+        continue
+      seqids = [match['protein']] + match['other_seqids']
+      for seqid in seqids:
         if seqid not in protein_by_seqid:
           logger.warning('{} from scan {} not found in protxml'.format(seqid, scan['index']))
           continue
         protein = protein_by_seqid[seqid]
-        peptide = make_peptide(peptide, scan, source['filename'])
-        i = i_source + i_source_offset
-        peptides = protein['sources'][i]['peptides']
-        peptides.append(peptide)
+        if scan['source'] in source_name_indices:
+          i_source = source_name_indices[scan['source']]
+        else:
+          add_source(proteins)
+          n_source += 1
+          i_source = n_source-1
+          source_name_indices[scan['source']] = i_source
+        peptides = protein['sources'][i_source]['peptides']
+        scan_id = scan['start_scan']
+        scan_ids = [p['attr']['scan_id'] for p in peptides]
+        if scan_id not in scan_ids:
+          peptide = make_peptide(match, scan, scan['source'])
+          for protxml_peptide in protein['protxml_peptides']:
+            if protxml_peptide['charge'] == scan['assumed_charge'] and \
+                protxml_peptide['modified_sequence'] == match['modified_sequence']:  
+              peptide['attr']['protxml_probability'] = protxml_peptide['nsp_adjusted_probability']
+              peptide['attr']['protxml_weight'] = protxml_peptide['weight']
+          peptides.append(peptide)
+  source_names.extend(pepxml_reader.source_names)
 
 
 def error_to_probability(distribution, error):
@@ -317,6 +343,25 @@ def error_to_probability(distribution, error):
   return None
 
 
+def probability_to_error(distribution, prob):
+  """
+  Given a False-Positive-Error vs. Probability distribution,
+  Cacluates the probability for an acceptable FPE.
+  """
+  fractionate = lambda a0, a1, a: (a-a0)/(a1-a0)
+  interpolate = lambda a0, a1, f: a0 + f*(a1-a0)
+  n = len(distribution)
+  for i in range(1, n):
+    prob0 = distribution[i-1]['prob']
+    prob1 = distribution[i]['prob']
+    if prob0 >= prob >= prob1:
+      error0 = distribution[i-1]['error']
+      error1 = distribution[i]['error']
+      f = fractionate(prob0, prob1, prob)
+      return interpolate(error0, error1, f)
+  return None
+
+
 def filter_peptides(proteins, probability):
   seqids = proteins.keys()
   for seqid in seqids:
@@ -332,75 +377,92 @@ def filter_peptides(proteins, probability):
       del proteins[seqid]
 
 
-def make_mask(proteins, probabilities):
-  "The probabilities are used to assign an 'i_mask' to each peptide."
-  for i_mask, probability in enumerate(sorted(probabilities)):
-    for seqid in proteins:
-      for source in proteins[seqid]['sources']:
-        for peptide in source['peptides']:
-          if probability < peptide['attr']['probability']:
-            peptide['mask'] = i_mask
+def count_peptides_tpp_way(proteins):
+  for seqid in proteins:
+    protein = proteins[seqid]
+    n_slice_populated = 0
+    n_peptide = 0
+    n_unique_peptide = 0
+    n_spectrum = 0
+    n_unique_spectrum = 0
+    sequence_set = set()
+    unique_sequence_set = set()
+    for source in protein['sources']:
+      if len(source['peptides']) > 0:
+        n_slice_populated += 1
+        n_spectrum += len(source['peptides'])
+      for peptide in source['peptides']:
+        sequence = str(peptide['attr']['charge']) + peptide['modified_sequence']
+        sequence_set.add(sequence)
+        if 'protxml_weight' not in peptide['attr']:
+          logging.warning('Missing protxml_weight for ' + sequence)
+          continue
+        if float(peptide['attr']['protxml_weight']) > 0.50 \
+          and not peptide['attr']['protxml_probability'] < 0.20:
+          n_unique_spectrum += 1
+          unique_sequence_set.add(sequence)
+    n_peptide = len(sequence_set)
+    n_unique_peptide = len(unique_sequence_set)
+    protein['attr']['n_peptide'] = n_peptide 
+    protein['attr']['n_unique_peptide'] = n_unique_peptide 
+    protein['attr']['n_spectrum'] = n_spectrum 
+    protein['attr']['n_unique_spectrum'] = n_unique_spectrum 
+
+  # calculate percentages of scans
+  n_unique_spectrum_total = 0
+  n_spectrum_total = 0
+  for seqid in proteins:
+    protein = proteins[seqid]
+    n_unique_spectrum_total += protein['attr']['n_unique_spectrum']
+    n_spectrum_total += protein['attr']['n_spectrum']
+  for seqid in proteins:
+    protein = proteins[seqid]
+    if n_unique_spectrum_total == 0:
+      percent = 0
+    else:
+      percent = 100.0*protein['attr']['n_unique_spectrum']/n_unique_spectrum_total
+    protein['attr']['percent_unique_spectra'] = float('%.2f' % percent)
+    if n_spectrum_total == 0:
+      percent = 0
+    else:
+      percent = 100.0*protein['attr']['n_spectrum']/n_spectrum_total
+    protein['attr']['percent_spectra'] = float('%.2f' % percent)
 
 
 def get_proteins_and_sources(
-    protxml, pepxml, 
-    n_peptide_cutoff=1, 
-    is_skip_no_unique=True,
-    errors = [0.01]):
+    protxml, pepxmls, peptide_error=0.01, protein_error=0.01):
   """
-  Basic structure proteins in YAML formt.
-    "sample_seqid": 
-      sequence: "AAAAAAAAAA"
-      description: "sample protein"
-      attr:
-        param: value
-      sources:
-        -
-          peptides
-            -
-              sequence: "AAA"
-              i: 0
-              j: 3
-              attr:
-                is_unique: True
-                param: value
+  Returns a proteins dictionary and list of source names.
   """
-  max_error = max(errors)
+  logger.info('Loading protxml ' + protxml)
   protein_groups, protein_probs = read_protxml(protxml)
   proteins = make_proteins_from_protxml(protein_groups)
 
-  dump_dir = os.path.dirname(protxml)
-  if logger.root.level <= logging.DEBUG:
-    dump = os.path.join(dump_dir, 'protxml.dump')
+  is_debug = logger.root.level <= logging.DEBUG
+  if is_debug:
+    dump = protxml + '.dump'
     logger.debug('Dumping protxml data structure to ' + dump)
     parse.save_data_dict(protein_groups, dump)
-    dump = os.path.join(dump_dir, 'proterror.dump')
+    dump = protxml + 'dist.dump'
     logger.debug('Dumping protein error distribution to ' + dump)
     parse.save_data_dict(protein_probs, dump)
 
-  scans_by_sources, peptide_probs = read_pepxml(pepxml)
+  prob_cutoff = None
+  source_names = []
+  for pepxml in pepxmls:
+    logger.info('Loading pepxml ' + pepxml)
+    load_pepxml(proteins, pepxml, prob_cutoff, peptide_error, source_names)
+    
 
-  if logger.root.level <= logging.DEBUG:
-    dump = os.path.join(dump_dir, 'pepxml.dump')
-    logger.debug('Dumping pepxml data structure to ' + dump)
-    parse.save_data_dict(scans_by_sources, dump)
-    dump = os.path.join(dump_dir, 'peperror.dump')
-    logger.debug('Dumping peptide error distribution to ' + dump)
-    parse.save_data_dict(peptide_probs, dump)
+  # parse_proteins.determine_unique_peptides(proteins)
+  # parse_proteins.count_peptides(proteins)
+  count_peptides_tpp_way(proteins)
 
-  source_names = [scans['filename'] for scans in scans_by_sources]
-  load_pepxml(proteins, scans_by_sources)
-  probability = error_to_probability(peptide_probs, max_error)
-  filter_peptides(proteins, probability)
-  probabilities = [error_to_probability(peptide_probs, e) for e in errors]
-  make_mask(proteins, probabilities)
-  probability = error_to_probability(protein_probs, max_error)
+  probability = error_to_probability(protein_probs, protein_error)
   filter_proteins(proteins, probability)
-  parse_proteins.determine_unique_peptides(proteins)
-  parse_proteins.count_peptides(proteins, n_peptide_cutoff, is_skip_no_unique)
 
   if logger.root.level <= logging.DEBUG:
-    dump = os.path.join(dump_dir, 'proteins.dump')
+    dump = protxml.replace('prot.xml', 'proteins.dump')
     logger.debug('Dumping protein data structure to ' + dump)
     parse.save_data_dict(proteins, dump)
 
@@ -411,5 +473,5 @@ if __name__ == '__main__':
   logging.basicConfig(level=logging.DEBUG)
   proteins, sources = get_proteins_and_sources(
     '../example/tpp/hca-lysate-16.prot.xml', 
-    '../example/tpp/hca-lysate-16.pep.xml')
+    ['../example/tpp/hca-lysate-16.pep.xml'])
   

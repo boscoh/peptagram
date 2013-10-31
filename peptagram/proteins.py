@@ -14,12 +14,25 @@ import logging
 
 import fasta
 
-
 logger = logging.getLogger('proteins')
 
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
 
+
+def new_protein(seqid):
+  return {
+    'attr': { 'seqid': seqid },
+    'sources': [{'peptides': [], }],
+  }
+
+
+def new_peptide(peptide_sequence):
+  return {
+    'sequence': peptide_sequence,
+    'intensity': 1,
+    'attr': {}
+  }
 
 
 def peptide_iter(proteins):
@@ -43,15 +56,17 @@ def determine_unique_peptides(proteins):
     peptide['attr']['is_unique'] = (n_seqid == 1)
 
 
-def check_modifications(proteins):
+def check_missing_fields(proteins):
   for seqid, peptide in peptide_iter(proteins):
     if 'modifications' not in peptide['attr']:
       peptide['attr']['modifications'] = []
     if 'intensity' not in peptide:
-      peptide['intensity'] = 0
+      peptide['intensity'] = 1
+    if 'mask' not in peptide:
+      peptide['mask'] = 0
 
 
-def count_peptides(proteins, n_peptide_cutoff=1, is_skip_no_unique=False):
+def count_peptides(proteins):
   for seqid in proteins.keys():
     protein = proteins[seqid]
     n_peptide = 0
@@ -67,24 +82,54 @@ def count_peptides(proteins, n_peptide_cutoff=1, is_skip_no_unique=False):
     protein['attr']['n_slice_populated'] = n_slice_populated
     protein['attr']['n_unique_peptide'] = n_unique_peptide
     protein['attr']['n_peptide'] = n_peptide
-    if n_peptide < n_peptide_cutoff:
+    if n_peptide == 0:
       del proteins[seqid]
       continue
-    if is_skip_no_unique:
-      if protein['attr']['n_unique_peptide'] == 0:
-        del proteins[seqid]
+
+
+def find_peptide_proteins(proteins):
+  n_source = len(proteins.values()[0]['sources'])
+  seqids_by_sequence = {}
+  for seqid in proteins:
+    protein = proteins[seqid]
+    for i_source in range(n_source):
+      source = protein['sources'][i_source]
+      peptides = source['peptides']
+      for peptide in peptides:
+        sequence = peptide['sequence']
+        if sequence not in seqids_by_sequence:
+          seqids_by_sequence[sequence] = set()
+        seqids_by_sequence[sequence].add(seqid)
+  for seqid in proteins:
+    protein = proteins[seqid]
+    for i_source in range(n_source):
+      protein = proteins[seqid]
+      source = protein['sources'][i_source]
+      peptides = source['peptides']
+      for peptide in peptides:
+        sequence = peptide['sequence']
+        for test_seqid in seqids_by_sequence[sequence]:
+          if seqid != test_seqid:
+            if 'other_seqids' not in peptide['attr']:
+              peptide['attr']['other_seqids'] = []
+            peptide['attr']['other_seqids'].append(test_seqid)
+            logger.debug('{} in {} also found in {}'.format(sequence, seqid, test_seqid))
 
 
 def change_seqids_in_proteins(proteins, clean_seqid):
   seqids = proteins.keys()
   for seqid in seqids:
     new_seqid = clean_seqid(seqid)
+    if 'attr' in proteins[seqid]:
+      if 'other_seqids' in proteins[seqid]['attr']:
+        other_seqids = proteins[seqid]['attr']['other_seqids']
+        other_seqids = map(clean_seqid, other_seqids)
+        proteins[seqid]['attr']['other_seqids'] = other_seqids
     if seqid != new_seqid:
       proteins[new_seqid] = proteins[seqid]
       del proteins[seqid]
       if 'attr' in proteins[new_seqid]:
-        if 'seqid' in proteins[new_seqid]['attr']:
-          proteins[new_seqid]['attr']['seqid'] = new_seqid
+        proteins[new_seqid]['attr']['seqid'] = new_seqid
 
 
 def load_fastas_into_proteins(
@@ -95,12 +140,13 @@ def load_fastas_into_proteins(
   for seqid in proteins.keys():
     protein = proteins[seqid]
     if seqid not in fastas:
-      logger.warning("%s not found in fasta database" % seqid)
+      logger.debug("%s not found in fasta database" % seqid)
       del proteins[seqid]
       continue
     protein_sequence = fastas[seqid]['sequence']
     protein['description'] = fastas[seqid]['description']
     protein['sequence'] = protein_sequence
+    protein['attr']['length'] = len(protein_sequence)
     if iso_leu_isomerism:
       protein_sequence = protein_sequence.replace("L", "I")
     n_peptide = 0
@@ -113,7 +159,7 @@ def load_fastas_into_proteins(
           peptide_sequence = peptide_sequence.replace("L", "I")
         i = protein_sequence.find(peptide_sequence)
         if i < 0:
-          logger.warning("'{}' not found in %s".format(peptide_sequence, seqid))
+          logger.debug("'{}' not found in {}".format(peptide_sequence, seqid))
           del peptides[i_peptide]
           continue
         peptide['i'] = i 
@@ -167,35 +213,70 @@ def save_data_js(data, js_fname):
 
 
 def transfer_newer_files(in_dir, out_dir):
+  if not os.path.isdir(out_dir):
+    os.makedirs(out_dir)
   for src in glob.glob(os.path.join(in_dir, '*')):
     dst = os.path.join(out_dir, os.path.basename(src))
     if not os.path.isfile(dst) or os.path.getmtime(dst) < os.path.getmtime(src):
       shutil.copy(src, dst)
 
 
-def make_webapp_directory(data, out_dir):
+def make_peptograph_directory(data, out_dir):
   # sanity checks
   proteins = data['proteins']
+  determine_unique_peptides(proteins)
+  count_peptides(proteins)
+  check_missing_fields(proteins)
+  find_peptide_proteins(proteins)
   for seqid, protein in proteins.items():
     for source in protein['sources']:
       peptides = source['peptides']
-      for peptide in peptides:
-        if 'mask' not in peptide:
-          peptide['mask'] = 0
       peptides.sort(key=lambda peptide: len(peptide['sequence']))
       peptides.sort(key=lambda peptide: peptide['i'])
-
   if 'source_labels' not in data:
     data['source_labels'] = []
+  if 'color_names' not in data:
+    data['color_names'] = ['', '', '']
+  if 'mask_labels' not in data:
+    data['mask_labels'] = []
 
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 
   save_data_js(data, os.path.join(out_dir, 'data.js'))
   transfer_newer_files(os.path.join(this_dir, 'templates/peptograph'), out_dir)
+  transfer_newer_files(os.path.join(this_dir, 'templates/js'), os.path.join(out_dir, 'js'))
   index_html = os.path.abspath(os.path.join(out_dir, 'index.html'))
   logger.info("Made peptograph in " + index_html)
 
+
+def make_proteins_directory(data, out_dir):
+  # sanity checks
+  proteins = data['proteins']
+  determine_unique_peptides(proteins)
+  count_peptides(proteins)
+  check_missing_fields(proteins)
+  find_peptide_proteins(proteins)
+  for seqid, protein in proteins.items():
+    for source in protein['sources']:
+      peptides = source['peptides']
+      peptides.sort(key=lambda peptide: len(peptide['sequence']))
+      peptides.sort(key=lambda peptide: peptide['i'])
+  if 'source_labels' not in data:
+    data['source_labels'] = []
+  if 'color_names' not in data:
+    data['color_names'] = ['', '', '']
+  if 'mask_labels' not in data:
+    data['mask_labels'] = []
+
+  if not os.path.isdir(out_dir):
+    os.makedirs(out_dir)
+
+  save_data_js(data, os.path.join(out_dir, 'data.js'))
+  transfer_newer_files(os.path.join(this_dir, 'templates/proteins'), out_dir)
+  transfer_newer_files(os.path.join(this_dir, 'templates/js'), os.path.join(out_dir, 'js'))
+  index_html = os.path.abspath(os.path.join(out_dir, 'index.html'))
+  logger.info("Made peptograph in " + index_html)
 
 
 

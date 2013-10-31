@@ -87,15 +87,18 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
   proteins = {}
   for i_group, protein_group in enumerate(protein_groups):
     descriptions = protein_group['protein description'].split(' / ')
+    coverage =  float(str(protein_group['protein sequence coverage (%)']).split('/')[0])
+    seqs = protein_group['protein sequence'].split('/')
     seqids = [desc.split()[0] for desc in descriptions]
     for seqid in seqids:
       if seqid in proteins:
         logger.warning("Different protein groups claim same first seqid", seqid)
     protein = {
       'description': descriptions[0],
-      'sequence': protein_group['protein sequence'],
+      'sequence': seqs[0],
+      'other_sequences': seqs[1:],
       'attr': {
-        'coverage': protein_group['protein sequence coverage (%)'],
+        'coverage': parse.round_decimal(coverage, 4),
         'morpheus-score': parse.round_decimal(protein_group['summed morpheus score'], 4),
         'i_group': i_group,
         'other_seqids': seqids[1:],
@@ -120,6 +123,8 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
     for peptide_seqid in peptide_seqids:
       if peptide_seqid in protein_by_seqid:
         protein = protein_by_seqid[peptide_seqid]
+        # if peptide_seqid != protein['attr']['seqid']:
+        #   print('secondary seqid', protein['attr']['seqid'], peptide_seqid)
         break
     if protein is None:
       unmatched_peptides.append(src_peptide)
@@ -130,7 +135,11 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
         src_peptide['peptide sequence'],
         modification_table)
     peptide_sequence = src_peptide['base peptide sequence']
-    i = sequence.index(peptide_sequence)
+    i = sequence.find(peptide_sequence)
+    if i < 0:
+      print('Warning:', peptide_sequence, 'not found in', protein['attr']['seqid'])
+      continue
+    q_value = float(src_peptide['q-value (%)'])
     peptide = {
       'sequence': peptide_sequence,
       'attr': {
@@ -141,12 +150,16 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
         'mass_diff': parse.round_decimal(src_peptide['precursor mass error (da)'], 4),
         'm/z': parse.round_decimal(src_peptide['precursor m/z'], 4),
         'source': parse.basename(src_peptide['filename']),
+        'q_value': q_value,
       },
-      'intensity': src_peptide['morpheus score']/len(peptide_sequence),
+      'intensity': 1.0 - q_value/100.0,
       'i': i,
     }
     if modifications:
+      for modification in modifications:
+        modification['mass'] = parse.round_decimal(modification['mass'], 4)
       peptide['attr']['modifications'] = modifications
+
     protein['sources'][0]['peptides'].append(peptide)
 
   dump = os.path.join(dump_dir, 'proteins.dump')
