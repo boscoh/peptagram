@@ -103,13 +103,13 @@ class PepxmlReader(object):
             if fpe is None:
               print("WTF", match['probability'], self.distribution)
             else:
-              match['fpe'] = parse.round_decimal(fpe, 4)
+              match['fpe'] = fpe
           if self.i_source is not None:
             scan['source'] = self.source_names[self.i_source]
           if self.is_debug:
             pprint(scan, stream=self.debug_file)
             self.debug_file.write(',\n')
-            yield scan
+          yield scan
           elem.clear()
         elif elem.tag == parse.fixtag('', 'peptideprophet_summary', self.nsmap):
           self.distribution = parse_peptide_probabilities(elem, self.nsmap)
@@ -295,7 +295,7 @@ def load_pepxml(proteins, pepxml, prob_cutoff=None, error_cutoff=None, source_na
   source_name_indices = {}
   for scan in pepxml_reader.iter():
     for match in scan['matches']:
-      if error_cutoff is not None and float(match['fpe']) > error_cutoff:
+      if error_cutoff is not None and match['fpe'] > error_cutoff:
         continue
       seqids = [match['protein']] + match['other_seqids']
       for seqid in seqids:
