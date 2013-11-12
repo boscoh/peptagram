@@ -22,7 +22,9 @@ this_dir = os.path.abspath(os.path.dirname(__file__))
 
 def new_protein(seqid):
   return {
-    'attr': { 'seqid': seqid },
+    'attr': { 'seqid':seqid, 'other_seqids':[] },
+    'description': '',
+    'sequence': '',
     'sources': [{'peptides': [], }],
   }
 
@@ -30,7 +32,8 @@ def new_protein(seqid):
 def new_peptide(peptide_sequence):
   return {
     'sequence': peptide_sequence,
-    'intensity': 1,
+    'intensity': 1.0,
+    'mask': 0.0,
     'attr': {}
   }
 
@@ -63,7 +66,7 @@ def check_missing_fields(proteins):
     if 'intensity' not in peptide:
       peptide['intensity'] = 1
     if 'mask' not in peptide:
-      peptide['mask'] = 0
+      peptide['mask'] = 0.0
 
 
 def count_peptides(proteins):

@@ -30,7 +30,7 @@ function ProteinBarWidget(canvas, data, seqid) {
       var peptides = this.protein.sources[j].peptides;
       for (var i=0; i<peptides.length; i++) {
         var peptide = peptides[i];
-        if (this.data.mask >= peptide.attr.fpe) {
+        if (this.data.mask >= peptide.mask) {
           var x = this.x_from_i(peptide.i);
           var w = this.x_from_i(peptide.j) - x;
           this.canvas.solid_box(x, this.y, w, this.height, this.color);

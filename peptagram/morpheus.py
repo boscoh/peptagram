@@ -24,14 +24,15 @@ def read_modification_dict(modifications_tsv):
   for entry in parse.read_tsv(modifications_tsv):
     # pprint(entry)
     key = entry['description']
+    mass = float(entry['monoisotopic mass shift (da)'])
     if 'residue' in entry:
       aa = entry['residue']
     elif 'amino acid residue' in entry:
       aa = entry['amino acid residue']
-    delta_mass = entry['monoisotopic mass shift (da)']
-    if aa == 'n/a':
-      continue
-    mass = peptidemass.aa_monoisotopic_mass[aa] + float(delta_mass)
+    else:
+      aa = 'n/a'
+    if aa != 'n/a':
+      mass += peptidemass.aa_monoisotopic_mass[aa]
     result[key] = mass
   return result
 
@@ -50,7 +51,6 @@ def parse_peptide(text, modification_dict):
         if mod_str not in modification_dict:
           print('Warning: modification {} unknown'.format(mod_str))
           continue
-        mod_type, dummpy, aa = mod_str.split()
         modification = {
             'i':i, 
             'mass': modification_dict[mod_str],
@@ -65,6 +65,14 @@ def parse_peptide(text, modification_dict):
       else:
         chars.append(c)
   return ''.join(chars), modifications
+
+
+def get_first(s, delimiter='/'):
+  if not isinstance(s, str):
+    return s
+  elif delimiter not in s:
+    return s
+  return s.split(delimiter)[0].strip()
 
 
 def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
@@ -87,7 +95,7 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
   proteins = {}
   for i_group, protein_group in enumerate(protein_groups):
     descriptions = protein_group['protein description'].split(' / ')
-    coverage =  float(str(protein_group['protein sequence coverage (%)']).split('/')[0])
+    coverage =  float(get_first(protein_group['protein sequence coverage (%)'], ';'))
     seqs = protein_group['protein sequence'].split('/')
     seqids = [desc.split()[0] for desc in descriptions]
     for seqid in seqids:
@@ -140,11 +148,24 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
       print('Warning:', peptide_sequence, 'not found in', protein['attr']['seqid'])
       continue
     q_value = float(src_peptide['q-value (%)'])
+    if 'scan number' in src_peptide:
+      scan_id = src_peptide['scan number']
+    elif 'spectrum index' in src_peptide:
+      scan_id = src_peptide['spectrum index']
+    else:
+      scan_id = ''
+    if 'retention time (min)' in src_peptide:
+      time = parse.round_decimal(src_peptide['retention time (min)'], 4)
+    elif 'retention time (minutes)' in src_peptide:
+      time = parse.round_decimal(src_peptide['retention time (minutes)'], 4)
+    else:
+      time = ''
+
     peptide = {
       'sequence': peptide_sequence,
       'attr': {
-        'scan_id': src_peptide['scan number'],
-        'retention_time': parse.round_decimal(src_peptide['retention time (min)'], 4),
+        'scan_id': scan_id, 
+        'retention_time': time,
         'morpheus_score': parse.round_decimal(src_peptide['morpheus score'], 4),
         'mass': parse.round_decimal(src_peptide['precursor mass (da)'], 4),
         'mass_diff': parse.round_decimal(src_peptide['precursor mass error (da)'], 4),

@@ -6,7 +6,11 @@ function DataController(data) {
   this.data = data;
   
   this.init = function() {
-    this.data.mask = parseFloat(this.data.mask_labels[0]);
+    if (this.data.mask_labels.length > 0) {
+      this.data.mask = parseFloat(this.data.mask_labels[0]);
+    } else {
+      this.data.mask = 0.0;
+    }
     console.log('this.data.mask ' + this.data.mask);
     this.data.canvas_font = "10px 'Andale Mono'";
     this.data.select_bg_color = '#CFC';
@@ -39,7 +43,7 @@ function DataController(data) {
         var n_peptide_in_slice = 0;
         for (var i=0; i<peptides.length; i++) {
           var peptide = peptides[i];
-          if (this.data.mask >= peptide.attr.fpe) {
+          if (this.data.mask >= peptide.mask) {
             if (peptides[i].attr.is_unique) {
               protein.attr.n_unique_peptide += 1;
             }

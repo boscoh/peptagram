@@ -69,88 +69,83 @@ def add_uniprot_data(proteins, cache_basename=None):
     uniprot_dict = {}
   for seqid in proteins:
     protein = proteins[seqid]
-    group_id = protein['attr']['group_id']
-    sibling = protein['attr']['sibling']
-    protein['attr']['id'] = ''
-    protein['attr']['acc'] = seqid
-    names = [seqid] + protein['attr']['other_seqids']
-    new_seqid = uniprot.sort_seqids_by_uniprot(names, uniprot_dict)[0]
-    if new_seqid != seqid:
-      print "Protein group %s%s is better represented with %s than %s" % \
-          (group_id, 
-           sibling,
-           uniprot.get_naked_seqid(new_seqid), 
-           uniprot.get_naked_seqid(seqid))
-      protein['attr']['seqid'] = new_seqid
-      protein['attr']['other_seqids'] = names[1:]
-      protein['attr']['acc'] = new_seqid
-      proteins[new_seqid] = protein
-      del proteins[seqid]
+    if 'other_seqids' not in protein['attr']:
+      new_seqid = seqid
+    else:
+      names = [seqid] + protein['attr']['other_seqids']
+      new_seqid = uniprot.sort_seqids_by_uniprot(names, uniprot_dict)[0]
+      if new_seqid != seqid:
+        print "Protein is better represented with %s than %s" % \
+            (uniprot.get_naked_seqid(new_seqid), 
+             uniprot.get_naked_seqid(seqid))
+        protein['attr']['seqid'] = new_seqid
+        protein['attr']['other_seqids'] = names[1:]
+        proteins[new_seqid] = protein
+        del proteins[seqid]
     if new_seqid not in uniprot_dict:
-      print "No uniprot metadata for protein group %s%s seqid %s" % \
-          (group_id, 
-           sibling,
-           uniprot.get_naked_seqid(new_seqid))
+      print "No uniprot metadata for seqid %s" % \
+          (uniprot.get_naked_seqid(new_seqid))
       continue
     uniprot_entry = uniprot_dict[new_seqid]
-    protein['attr']['id'] = uniprot_entry['id']
-    protein['attr']['acc'] = uniprot_entry['accs'][0]
+    protein['attr']['uniprot_id'] = uniprot_entry['id']
+    protein['attr']['seqid'] = new_seqid
     protein['attr']['link'] = \
         '=HYPERLINK("http://uniprot.org/uniprot/%s")' % \
-            uniprot_dict[new_seqid]['id']
+            uniprot_entry['id']
     if 'gene' in uniprot_entry:
       protein['attr']['gene'] = uniprot_entry['gene']
     if 'organism' in uniprot_entry:
       protein['attr']['organism'] = uniprot_entry['organism']
-    protein['attr']['description'] = '; '.join(uniprot_entry['descriptions'])
-    if 'Uncharacterized protein' in protein['attr']['description']: 
+    protein['description'] = '; '.join(uniprot_entry['descriptions'])
+    if 'Uncharacterized protein' in protein['description']: 
       if 'comment' in uniprot_entry:
         if '-!- SIMILARITY' in uniprot_entry['comment']:
           found_similarity = False
-          protein['attr']['description'] = ''
+          protein['description'] = ''
           for line in uniprot_entry['comment'].splitlines():
             if found_similarity and '-!-' in line:
               break
             if '-!- SIMILARITY' in line:
               found_similarity = True
-            protein['attr']['description'] += line.strip()
+            protein['description'] += line.strip()
     protein['sequence'] = uniprot_entry['sequence']
     protein['attr']['length'] = len(protein['sequence'])
 
 
 def write_proteins_to_csv(proteins, proteins_csv):
-  title_key_pairs = [
-      ('group', 'group_id'),
-      ('sibling', 'sibling'),
-      ('seqid', 'seqid'),
-      ('uniprot_id', 'id'),
-      ('url', 'link'),
-      ('description', 'description'),
-      ('gene', 'gene'),
-      ('length', 'length'),
-      ('percent_coverage', 'percent_coverage'),
-      ('probability', 'probability'),
-      ('num_peptide', 'n_peptide'),
-      ('num_spectra', 'n_spectrum'),
-      ('percent_spectra', 'percent_spectra'),
-      ('num_unique_peptide', 'n_unique_peptide'),
-      ('num_unique_spectra', 'n_unique_spectrum'),
-      ('percent_unique_spectra', 'percent_unique_spectra'),
-      ('organism', 'organism'),
-      ('other_seqids', 'other_seqids')
-      ]
+  headings = [
+    'group_id',
+    'sibling',
+    'seqid',
+    'uniprot_id',
+    'link',
+    'description',
+    'gene',
+    'length',
+    'percent_coverage',
+    'probability',
+    'n_peptide',
+    'n_spectrum',
+    'percent_spectra',
+    'n_unique_peptide',
+    'n_unique_spectrum',
+    'percent_unique_spectra',
+    'organism',
+    'other_seqids'
+    ]
 
-  headings = [title for title, key in title_key_pairs]
   rows = []
   for seqid in proteins:
     protein = proteins[seqid]
     row = []
-    for title, key in title_key_pairs:
+    for key in headings:
       if key in protein['attr']:
         if key == 'other_seqids':
           val = ','.join(protein['attr'][key])
         else:
           val = protein['attr'][key]
+      elif key in protein:
+        val = protein[key]
       else:
         val = ''
       row.append(val)

@@ -131,6 +131,7 @@ def make_peptide(pepxml_match, pepxml_scan, source):
     'sequence': pepxml_match['peptide'],
     'modified_sequence': pepxml_match['modified_sequence'],
     'intensity': pepxml_match['probability'],
+    'mask': pepxml_match['fpe'],
     'attr': {
       'pepxml_id': pepxml_scan['index'],
       'scan_id': pepxml_scan['start_scan'],
@@ -140,7 +141,6 @@ def make_peptide(pepxml_match, pepxml_scan, source):
       'modifications': pepxml_match['modifications'],
       'probability': pepxml_match['probability'],
       'missed_cleavages': pepxml_match['num_missed_cleavages'],
-      'fpe': pepxml_match['fpe'],
       'mass': pepxml_scan['precursor_neutral_mass'],
       'mass_diff': pepxml_match['massdiff'],
       'source': parse.basename(source),
