@@ -121,13 +121,16 @@ And finally, the step to generate the visualiations:
     }
     peptagram.proteins.make_proteins_directory(data, 'out/tpp-pr')
 
+On the command-line, run the script to generate the visualization:
 
+    python tpp_mzml_example.py
 
-Optionally 
-
-search results in ProteinProphet prot.xml files containing all protein groups, and peptides. The peptide-spectrum matches are contained in the PeptideProphet pep.xml files. However, neither prot.xml or pep.xml contain full sequence information, so a sequence database in FASTA format is required. Optionally, the mzML corresponding to the peptide-spectrum matches can be used to integrate the MS/MS spectrum for each match.
 
 ### EXAMPLE: TPP from X!Tandem
+
+The default search-engine that comes with the TPP is X!Tandem. It is easy to generate  visualizations with X!Tandem-generated protXML and pepXML files, as X!Tandem tandemXML files contain both protein sequences and the peaks for the MS/MS spectra.
+
+search results in ProteinProphet prot.xml files containing all protein groups, and peptides. The peptide-spectrum matches are contained in the PeptideProphet pep.xml files. However, neither prot.xml or pep.xml contain full sequence information, so a sequence database in FASTA format is required. Optionally, the mzML corresponding to the peptide-spectrum matches can be used to integrate the MS/MS spectrum for each match.
 
 ### EXAMPLE: Mascot with TPP
 

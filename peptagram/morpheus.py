@@ -65,7 +65,7 @@ def parse_peptide(text, modification_dict):
         in_modification = False
         i = len(chars) - 1
         if mod_str not in modification_dict:
-          print('Warning: modification {} unknown'.format(mod_str))
+          log.debug('Warning: modification {} unknown'.format(mod_str))
           continue
         modification = {
             'i':i, 
@@ -180,10 +180,10 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
         modification_table)
     peptide_sequence = src_peptide['base peptide sequence']
     if extracted_peptide_sequence != peptide_sequence:
-      print("Error with", src_peptide['peptide sequence'], extracted_peptide_sequence, peptide_sequence)
+      logger.warning("Peptide sequences don't match: " + src_peptide['peptide sequence'] + " " + extracted_peptide_sequence + " " + peptide_sequence)
     i = sequence.find(peptide_sequence)
     if i < 0:
-      print('Warning:', peptide_sequence, 'not found in', protein['attr']['seqid'])
+      logger.warning(peptide_sequence + ' not found in ' + protein['attr']['seqid'])
       continue
     q_value = float(src_peptide['q-value (%)'])
     if 'scan number' in src_peptide:
