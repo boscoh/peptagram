@@ -37,6 +37,8 @@ function build_peptides_panel(data, div) {
     peptide_link.addClass('link');
     var seq = peptide['sequence'];
     var modified = [];
+    var is_nterminal = false;
+    var is_cterminal = false;
     if ('modifications' in peptide.attr) {
       var modifications = peptide.attr.modifications;
       for (var i=0; i<seq.length; i++) {
@@ -44,7 +46,16 @@ function build_peptides_panel(data, div) {
       }
       for (var i=0; i<modifications.length; i++) {
         modified[modifications[i].i] = true;
+        if (modifications[i].i == -1) {
+          is_nterminal = true;
+        }
+        else if (modifications[i].i == seq.length) {
+          is_cterminal = true;
+        }
       }
+    }
+    if (is_nterminal) {
+      peptide_link.append($('<span>').append('>').addClass('modification'));
     }
     for (var i=0; i<seq.length; i++) {
       if (modified[i]) {
@@ -53,6 +64,9 @@ function build_peptides_panel(data, div) {
         var s = seq[i];    
       }
       peptide_link.append(s);
+    }
+    if (is_cterminal) {
+      peptide_link.append($('<span>').append('<').addClass('modification'));
     }
     peptide_link.click(data.controller.pick_peptide_callback(protein, i_source, i_peptide));
     td.append(peptide_link);

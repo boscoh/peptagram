@@ -135,24 +135,12 @@ def change_seqids_in_proteins(proteins, clean_seqid):
         proteins[new_seqid]['attr']['seqid'] = new_seqid
 
 
-def load_fastas_into_proteins(
-    proteins, fastas, clean_seqid=None, iso_leu_isomerism=False):
-  if clean_seqid:
-    change_seqids_in_proteins(proteins, clean_seqid)
-    change_seqids_in_proteins(fastas, clean_seqid)
-  for seqid in proteins.keys():
+def calculate_peptide_positions(proteins, iso_leu_isomerism=False):
+  for seqid in proteins:
     protein = proteins[seqid]
-    if seqid not in fastas:
-      logger.debug("%s not found in fasta database" % seqid)
-      del proteins[seqid]
-      continue
-    protein_sequence = fastas[seqid]['sequence']
-    protein['description'] = fastas[seqid]['description']
-    protein['sequence'] = protein_sequence
-    protein['attr']['length'] = len(protein_sequence)
+    protein_sequence = protein['sequence']
     if iso_leu_isomerism:
       protein_sequence = protein_sequence.replace("L", "I")
-    n_peptide = 0
     for source in protein['sources']:
       peptides = source['peptides']
       for i_peptide in reversed(range(len(peptides))):
@@ -166,10 +154,24 @@ def load_fastas_into_proteins(
           del peptides[i_peptide]
           continue
         peptide['i'] = i 
-        # peptide['j'] = i + len(peptide_sequence)
-      n_peptide += len(peptides)
-    if n_peptide == 0:
+
+
+def load_fastas_into_proteins(
+    proteins, fastas, clean_seqid=None, iso_leu_isomerism=False):
+  if clean_seqid:
+    change_seqids_in_proteins(proteins, clean_seqid)
+    change_seqids_in_proteins(fastas, clean_seqid)
+  for seqid in proteins.keys():
+    protein = proteins[seqid]
+    if seqid not in fastas:
+      logger.debug("%s of proteins not found in fastas" % seqid)
       del proteins[seqid]
+      continue
+    protein_sequence = fastas[seqid]['sequence']
+    protein['attr']['description'] = fastas[seqid]['description']
+    protein['sequence'] = protein_sequence
+    protein['attr']['length'] = len(protein_sequence)
+  calculate_peptide_positions(proteins, iso_leu_isomerism)
 
 
 def load_fasta_db_into_proteins(
@@ -220,8 +222,7 @@ def transfer_newer_files(in_dir, out_dir):
     os.makedirs(out_dir)
   for src in glob.glob(os.path.join(in_dir, '*')):
     dst = os.path.join(out_dir, os.path.basename(src))
-    if not os.path.isfile(dst) or os.path.getmtime(dst) < os.path.getmtime(src):
-      shutil.copy(src, dst)
+    shutil.copy(src, dst)
 
 
 def make_peptograph_directory(data, out_dir):

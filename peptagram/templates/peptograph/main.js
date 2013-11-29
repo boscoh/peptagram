@@ -19,9 +19,9 @@ function build_protein_info_panel(data, div) {
 function ColorIntensityPalette() {
   this.neutral = [200, 200, 200];
   this.positive = [242, 90, 90];
-  this.negative = [90, 144, 120];
+  this.negative = [90, 120, 144];
   this.positive_extremum = [255, 0, 0];
-  this.negative_extremum = [0, 144, 93];
+  this.negative_extremum = [0, 93, 144];
 
   this.rgb = function(color) {
       rgb = "rgb(" + 

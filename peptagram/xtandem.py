@@ -9,8 +9,7 @@ import re
 import logging
 
 import parse
-import mass
-
+import proteins as proteins_module
 
 
 """
@@ -21,7 +20,6 @@ Parser for X!Tandem XML output.
 logger = logging.getLogger('xtandem')
 
 
-
 def strip_whitespace(txt):
   result = ""
   for line in txt.splitlines():
@@ -29,35 +27,27 @@ def strip_whitespace(txt):
   return result
 
 
-def parse_scan(group, nsmap):
+def parse_scan(top_elem, nsmap):
   scan = {}
-  fastas = {}
-
-  scan.update(parse.parse_attrib(group))
+  scan.update(parse.parse_attrib(top_elem))
 
   scan['matches'] = []
-  for protein in group.findall('protein'):
-    match = {}
-
+  for protein in top_elem.findall('protein'):
     words = protein.attrib['label'].split()
     seqid = words[0]
     description = ' '.join(words[1:])
     peptide_elem = protein.find('peptide')
-
-    match['seqid'] = seqid
-
-    if seqid not in fastas:
-      sequence = strip_whitespace(peptide_elem.text)
-      fastas[seqid] = {
-        'description': description,
-        'sequence': sequence,
-      }
-
+    sequence = strip_whitespace(peptide_elem.text)
+    match = {  
+      'seqid': seqid,
+      'sequence': sequence,
+      'description': description
+    }
     domain_elem = peptide_elem.find('domain')
     match.update(parse.parse_attrib(domain_elem))
     scan['matches'].append(match)
 
-  elem = group.find('group[@label="fragment ion mass spectrum"]')
+  elem = top_elem.find('group[@label="fragment ion mass spectrum"]')
 
   note = elem.find('note')
   if note:
@@ -81,10 +71,10 @@ def parse_scan(group, nsmap):
       'GAML:trace/GAML:attribute[@type="M+H"]', namespaces=nsmap)
   scan['mass'] = mass_elem.text.strip()
 
-  return scan, fastas
+  return scan
 
 
-def read(xtandem_xml):
+def read_xtandem(xtandem_xml):
   fastas = {}
   scans = []
   nsmap = {}
@@ -93,42 +83,59 @@ def read(xtandem_xml):
       nsmap.update({elem})
     if event == 'end':
       if elem.tag == 'group' and elem.attrib['type'] == 'model':
-        scan, scan_fastas = parse_scan(elem, nsmap)
-        scans.append(scan)
-        fastas.update(scan_fastas)
+        scan = parse_scan(elem, nsmap)
+        yield scan
         elem.clear()
-  return scans, fastas
 
 
-def merge_peaks(unmatched_peaks, matched_peaks):
-  peaks = []
-  for m, i in unmatched_peaks:
-    peaks.append([m, i, ''])
-  peaks.extend(matched_peaks)
-  return peaks
+def load_xtandem_into_proteins(proteins, xtandem_fname, i_source, n_peak=50):
+  proteins_by_seqid = {}
+  for seqid in proteins:
+    protein = proteins[seqid]
+    proteins_by_seqid[seqid] = protein
+    for other_seqid in protein['attr']['other_seqids']:
+      proteins_by_seqid[other_seqid] = protein
 
+  fastas = {}
 
-def load_scans_into_proteins(proteins, xtandem_scans, i_source, n_peak=50):
-  """
-  Only takes top n_peak from xtandem.
-  """
-  scans = { int(scan['id']):scan for scan in xtandem_scans }
-  for seqid in proteins.keys():
-    source = proteins[seqid]['sources'][i_source]
-    scan_ids = []
-    for peptide in source['peptides']:
-      scan_id = peptide['attr']['scan_id']
-      sequence = peptide['sequence']
-      modifications = peptide['attr']['modifications']
-      if scan_id not in scans:
-        logger.warning("Couldn't find xtadnem entry for scan {} in pepxml".format(scan_id))
+  for scan in read_xtandem(xtandem_fname):
+    scan_id = scan['id']
+    is_match = False
+    for match in scan['matches']:
+      seqid = match['seqid']
+      if seqid not in proteins_by_seqid:
         continue
-      scan = scans[scan_id]
-      x_vals = map(float, scan['masses'].split())
-      y_vals = map(float, scan['intensities'].split())
-      ions = [(x, y) for x, y in zip(x_vals, y_vals)]
-      ions.sort(key=lambda i:-i[1])
-      peptide['spectrum'] = ions[:n_peak]
+      protein = proteins_by_seqid[seqid]
+      if seqid not in fastas:
+        fastas[seqid] = {
+          'sequence': match['sequence'],
+          'description': match['description'],
+        }
+      source = protein['sources'][i_source]    
+      for peptide in source['peptides']:
+        if scan_id != peptide['attr']['scan_id']:
+          continue
+        is_match = True
+        x_vals = map(float, scan['masses'].split())
+        y_vals = map(float, scan['intensities'].split())
+        ions = [(x, y) for x, y in zip(x_vals, y_vals)]
+        ions.sort(key=lambda i:-i[1])
+        peptide['spectrum'] = ions[:n_peak]
+
+  proteins_module.load_fastas_into_proteins(proteins, fastas)
+  for seqid in proteins.keys():
+    protein = proteins[seqid]
+    if 'sequence' not in protein:
+      logger.debug("Protein {} not found in x!tandem".format(seqid))
+      del proteins[seqid]
+      continue
+    n_peptide = sum([len(source['peptides']) for source in protein['sources']])
+    if n_peptide == 0:
+      del proteins[seqid]
+      logger.debug("No peptide-spectra matches found in {}".format(seqid))
+      continue
+
+  # proteins_module.calculate_peptide_positions(proteins)
 
 
 

@@ -19,6 +19,22 @@ Parser for Morpheus files
 logger = logging.getLogger('morpheus')
 
 
+def read_tsv_iter(tsv_txt):
+  """
+  Reads a title top TSV file, converts all keys to lower case
+  and returns a list of dictionaries.
+  """
+  f = open(tsv_txt, "UR")
+  titles = [w.lower() for w in parse.split_tab(f.readline())]
+  results = []
+  for line in f:
+    group = {}
+    for key, val in zip(titles, parse.split_tab(line)):
+      group[key] = parse.parse_string(val)
+    yield group
+    del group
+
+
 def read_modification_dict(modifications_tsv):
   result = {}
   for entry in parse.read_tsv(modifications_tsv):
@@ -45,7 +61,7 @@ def parse_peptide(text, modification_dict):
   mod_str = ''
   for c in seq:
     if in_modification:
-      if c == ']':
+      if c == ']' or c == ')':
         in_modification = False
         i = len(chars) - 1
         if mod_str not in modification_dict:
@@ -59,7 +75,7 @@ def parse_peptide(text, modification_dict):
       else:
         mod_str += c
     else:
-      if c == '[':
+      if c == '[' or c == '(':
         in_modification = True
         mod_str = ''
       else:
@@ -75,27 +91,44 @@ def get_first(s, delimiter='/'):
   return s.split(delimiter)[0].strip()
 
 
+class DictListWriter():
+  def __init__(self, is_debug, fname):
+    self.fname = fname
+    self.is_debug = is_debug
+    if self.is_debug:
+      logger.debug('Dumping dict list to ' + self.fname)
+      self.file = open(self.fname, 'w')
+      self.file.write('[\n')
+
+  def dump_dict(self, data_dict):
+    if self.is_debug:
+      pprint(data_dict, stream=self.file)
+      self.file.write(',\n')
+
+  def close(self):
+    if self.is_debug:
+      self.file.write(']\n')
+      self.file.close()
+
+
 def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
+  is_debug = logger.root.level <= logging.DEBUG
   dump_dir = os.path.dirname(protein_groups_fname)
+
   if modifications_fname is not None:
     modification_table = read_modification_dict(modifications_fname)
   else:
     modification_table = {}
-  peptides = parse.read_tsv(psm_fname)
-  protein_groups = parse.read_tsv(protein_groups_fname)
-
-  if logger.root.level <= logging.DEBUG:
-    dump = os.path.join(dump_dir, 'peptides.dump')
-    logger.debug('Dumping peptides data structure to ' + dump)
-    parse.save_data_dict(peptides, dump)
-    dump = os.path.join(dump_dir, 'protein_groups.dump')
-    logger.debug('Dumping protein_groups data structure to ' + dump)
-    parse.save_data_dict(protein_groups, dump)
-
+  
   proteins = {}
-  for i_group, protein_group in enumerate(protein_groups):
+  dict_dump_writer = DictListWriter(is_debug, os.path.join(dump_dir, 'protein_groups.dump'))
+  for i_group, protein_group in enumerate(read_tsv_iter(protein_groups_fname)):
     descriptions = protein_group['protein description'].split(' / ')
-    coverage =  float(get_first(protein_group['protein sequence coverage (%)'], ';'))
+    coverage_str = str(protein_group['protein sequence coverage (%)'])
+    if ';' in coverage_str:
+      coverage =  float(get_first(coverage_str, ';'))
+    else:
+      coverage =  float(get_first(coverage_str, '/'))
     seqs = protein_group['protein sequence'].split('/')
     seqids = [desc.split()[0] for desc in descriptions]
     for seqid in seqids:
@@ -115,6 +148,8 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
       'sources': [{ 'peptides':[] }]
     }
     proteins[seqids[0]] = protein
+    dict_dump_writer.dump_dict(protein_group)
+  dict_dump_writer.close()
 
   protein_by_seqid = {}
   for seqid in proteins:
@@ -122,27 +157,30 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
     protein_by_seqid[seqid] = protein
     for alt_seqid in protein['attr']['other_seqids']:
       protein_by_seqid[alt_seqid] = protein
-  unmatched_peptides = []
+
+  dict_dump_writer = DictListWriter(is_debug, os.path.join(dump_dir, 'peptides.dump'))
+  n_peptide = 0
   n_peptide_matched = 0
-  for src_peptide in peptides:
+  for src_peptide in read_tsv_iter(psm_fname):
+    dict_dump_writer.dump_dict(src_peptide)
     descriptions = src_peptide['protein description'].split(' / ')
     peptide_seqids = [d.split()[0] for d in descriptions]
     protein = None
     for peptide_seqid in peptide_seqids:
       if peptide_seqid in protein_by_seqid:
         protein = protein_by_seqid[peptide_seqid]
-        # if peptide_seqid != protein['attr']['seqid']:
-        #   print('secondary seqid', protein['attr']['seqid'], peptide_seqid)
         break
+    n_peptide += 1
     if protein is None:
-      unmatched_peptides.append(src_peptide)
       continue
     n_peptide_matched += 1
     sequence = protein['sequence']
-    peptide_sequence, modifications = parse_peptide(
+    extracted_peptide_sequence, modifications = parse_peptide(
         src_peptide['peptide sequence'],
         modification_table)
     peptide_sequence = src_peptide['base peptide sequence']
+    if extracted_peptide_sequence != peptide_sequence:
+      print("Error with", src_peptide['peptide sequence'], extracted_peptide_sequence, peptide_sequence)
     i = sequence.find(peptide_sequence)
     if i < 0:
       print('Warning:', peptide_sequence, 'not found in', protein['attr']['seqid'])
@@ -150,8 +188,8 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
     q_value = float(src_peptide['q-value (%)'])
     if 'scan number' in src_peptide:
       scan_id = src_peptide['scan number']
-    elif 'spectrum index' in src_peptide:
-      scan_id = src_peptide['spectrum index']
+    elif 'spectrum number' in src_peptide:
+      scan_id = src_peptide['spectrum number']
     else:
       scan_id = ''
     if 'retention time (min)' in src_peptide:
@@ -183,12 +221,14 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
 
     protein['sources'][0]['peptides'].append(peptide)
 
+  dict_dump_writer.close()
+
   dump = os.path.join(dump_dir, 'proteins.dump')
-  logger.debug('Dumping proteins data structure to ' + dump)
   if logger.root.level <= logging.DEBUG:
+    logger.debug('Dumping proteins data structure to ' + dump)
     parse.save_data_dict(proteins, dump)
 
-  logger.info("Assigned {}/{} of PSMs.tsv to protein_groups.tsv".format(n_peptide_matched, len(unmatched_peptides)))
+  logger.info("Assigned {}/{} of PSMs.tsv to protein_groups.tsv".format(n_peptide_matched, n_peptide))
 
   return proteins
 

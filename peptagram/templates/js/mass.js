@@ -52,17 +52,24 @@ ion_type_props = {
   },
 }
 
-function parse_aa_masses(sequence, aa_mass, modified_masses) {
-  masses = [];
+/* returns a list of masses with len(sequence)+2.
+  First position is for N-termius modifications, and
+  last position is for C-terminus modifications */
+function parse_terminal_aa_masses(sequence, aa_mass, modified_masses) {
+  masses = [0.0];
   for (var i=0; i<sequence.length; i++) {
     var aa = sequence[i];
     var mass = aa_mass[aa];
     masses.push(mass);
   }
+  masses.push(0.0);
   for (var j=0; j<modified_masses.length; j++) {
     var modified = modified_masses[j];
-    if (modified.i < sequence.length) {
-      masses[modified.i] = modified.mass;
+    var i_with_terminii = modified.i+1;
+    if (i_with_terminii < masses.length) {
+      masses[i_with_terminii] = Number(modified.mass);
+    } else {
+      console.log('warning modification.i longer than sequence', sequence);
     }
   }
   return masses;
@@ -99,27 +106,31 @@ function calculate_mz(aa_masses, charge, ion_type) {
 }
 
 
-function calculate_peaks(aa_masses, charge, ion_type) {
+function calculate_peaks(terminii_aa_masses, charge, ion_type) {
   peaks = [];
-  var n = aa_masses.length; 
-  for (var i=0; i<n; i++) {
+  var n_all = terminii_aa_masses.length; 
+  var n_seq = n_all - 2;
+  for (var i_cut=0; i_cut<n_seq; i_cut++) {
     if (ion_type_props[ion_type].is_nterm) {
-      fragment = aa_masses.slice(0,i+1);
+      fragment = terminii_aa_masses.slice(0,i_cut+2);
     } else {
-      fragment = aa_masses.slice(i,n);
+      fragment = terminii_aa_masses.slice(i_cut+1,n_all);
     }
-    mz = calculate_mz(fragment, charge, ion_type);
-    // round to 4 decimal places
-    mz = Math.round(1000*mz)/1000
-    label = ion_label(fragment.length, charge, ion_type);
-    peaks.push([mz, label]);
+    var fragment_length = fragment.length-1
+    if (fragment_length > 0) {
+      mz = calculate_mz(fragment, charge, ion_type);
+      // round to 4 decimal places
+      mz = Math.round(1000*mz)/1000
+      label = ion_label(fragment_length, charge, ion_type);
+      peaks.push([mz, label]);
+    }
   }
   return peaks;
 }
 
 
 function map_matched_ions(ion_type, sequence, peaks, mz_delta, modified_aa_masses, aa_mass) {
-  var aa_masses = parse_aa_masses(sequence, aa_mass, modified_aa_masses);
+  var terminii_aa_masses = parse_terminal_aa_masses(sequence, aa_mass, modified_aa_masses);
   if (ion_type[0] == 'b') {
     var ion = 'b';
   } else {
@@ -131,7 +142,10 @@ function map_matched_ions(ion_type, sequence, peaks, mz_delta, modified_aa_masse
   } else {
     var charge = 1
   }
-  var theory_peaks = calculate_peaks(aa_masses, charge, ion);
+  var theory_peaks = calculate_peaks(terminii_aa_masses, charge, ion);
+  if (terminii_aa_masses.length-2 != sequence.length) {
+    console.log('discrepancy in aa_masses', sequence, terminii_aa_masses, modified_aa_masses);
+  }
   var matched = [];
   for (var j=0; j<theory_peaks.length; j++) {
     for (var i=0; i<peaks.length; i++) {
@@ -202,18 +216,18 @@ spectrum = [[622.494, 2192.0],
  [777.839, 186.0],
  [550.083, 159.0]];
 
-delta_mass = 0.8
-modified_aa_masses = [];
-aa_masses = parse_aa_masses(seq, aa_monoisotopic_mass, modified_aa_masses);
-console.log(aa_masses)
-modified_aa_masses = [{ 'i':3, 'mass':100.0 }];
-aa_masses = parse_aa_masses(seq, aa_monoisotopic_mass, modified_aa_masses);
-console.log('modified')
-console.log(modified_aa_masses)
-console.log(aa_masses);
-bion_peaks = calculate_peaks(aa_masses, 1, 'b');
-yion_peaks = calculate_peaks(aa_masses, 1, 'y');
-console.log(bion_peaks.concat(yion_peaks));
-matched = map_matched_ions('y', seq, spectrum, delta_mass, modified_aa_masses, aa_monoisotopic_mass)
-console.log(matched);
+// delta_mass = 0.8
+// modified_aa_masses = [];
+// aa_masses = parse_terminal_aa_masses(seq, aa_monoisotopic_mass, modified_aa_masses);
+// console.log(aa_masses)
+// modified_aa_masses = [{ 'i':3, 'mass':100.0 }];
+// aa_masses = parse_terminal_aa_masses(seq, aa_monoisotopic_mass, modified_aa_masses);
+// console.log('modified')
+// console.log(modified_aa_masses)
+// console.log(aa_masses);
+// bion_peaks = calculate_peaks(aa_masses, 1, 'b');
+// yion_peaks = calculate_peaks(aa_masses, 1, 'y');
+// console.log(bion_peaks.concat(yion_peaks));
+// matched = map_matched_ions('y', seq, spectrum, delta_mass, modified_aa_masses, aa_monoisotopic_mass)
+// console.log(matched);
 

@@ -73,7 +73,7 @@ def parse_peptide_probabilities(elem, nsmap):
 
 
 class PepxmlReader(object):
-  def __init__(self, pepxml, prob_cutoff=None, error_cutoff=None):
+  def __init__(self, pepxml):
     self.pepxml = pepxml
     self.distribution = None
     self.source_names = []
@@ -81,12 +81,12 @@ class PepxmlReader(object):
     self.nsmap = {}
     self.is_debug = logger.root.level <= logging.DEBUG
 
-  def iter(self):
+  def __iter__(self):
     if self.is_debug:
       fname = self.pepxml + '.dump'
       logging.debug('Dumping pepxml reads into ' + fname)
       self.debug_file = open(fname, 'w')
-      self.debug_file.write('{\n')
+      self.debug_file.write('[\n')
     for event, elem in etree.iterparse(self.pepxml, events=('start', 'end', 'start-ns')):
       if event == 'start-ns':
         self.nsmap.update({elem})
@@ -122,7 +122,7 @@ class PepxmlReader(object):
             pprint(self.distribution, open(fname, 'w'))
           elem.clear()
     if self.is_debug:
-      self.debug_file.write('}\n')
+      self.debug_file.write(']\n')
       self.debug_file.close()
 
 
@@ -150,14 +150,6 @@ def make_peptide(pepxml_match, pepxml_scan, source):
   peptide['attr']['matched_ions'] += '/'
   peptide['attr']['matched_ions'] += str(pepxml_match['tot_num_ions'])
   return peptide
-
-
-def not_in_peptides(new_peptide, peptides):
-  for peptide in peptides:
-    if peptide['sequence'] == new_peptide['sequence']:
-      if peptide['attr']['scan_id'] == new_peptide['attr']['scan_id']:
-        return False
-  return True
 
 
 def parse_protein_probabilities(elem, nsmap):
@@ -213,22 +205,41 @@ def parse_protein_group(elem, nsmap):
   return group
 
 
-def read_protxml(protxml):
-  nsmap = {}
-  distribution = {}
-  protein_groups = {}
-  for event, elem in etree.iterparse(protxml, events=('end', 'start-ns')):
-    if event == 'start-ns':
-      nsmap.update({elem})
-    if event == 'end':
-      if elem.tag == parse.fixtag('', 'protein_group', nsmap):
-        group = parse_protein_group(elem, nsmap)
-        protein_groups[group['group_number']] = group
-        elem.clear()
-      elif elem.tag == parse.fixtag('', 'proteinprophet_details', nsmap):
-        distribution = parse_protein_probabilities(elem, nsmap)
-        elem.clear()
-  return protein_groups, distribution
+class ProtxmlReader(object):
+  def __init__(self, protxml):
+    self.protxml = protxml
+    self.distribution = None
+    self.nsmap = {}
+    self.debug_file = None
+    self.is_debug = logger.root.level <= logging.DEBUG
+    self.nsmap = {}
+
+  def __iter__(self):
+    if self.is_debug:
+      fname = self.protxml + '.dump'
+      logging.debug('Dumping protxml reads into ' + fname)
+      self.debug_file = open(fname, 'w')
+      self.debug_file.write('{\n')
+    for event, elem in etree.iterparse(self.protxml, events=('end', 'start-ns')):
+      if event == 'start-ns':
+        self.nsmap.update({elem})
+      if event == 'end':
+        if elem.tag == parse.fixtag('', 'protein_group', self.nsmap):
+          group = parse_protein_group(elem, self.nsmap)
+          yield group
+          if self.is_debug:
+            pprint(group, stream=self.debug_file)
+            self.debug_file.write(',\n')
+          elem.clear()
+        elif elem.tag == parse.fixtag('', 'proteinprophet_details', self.nsmap):
+          self.distribution = parse_protein_probabilities(elem, self.nsmap)
+          if self.is_debug:
+            fname = self.protxml + '.distribution.dump'
+            pprint(self.distribution, open(fname, 'w'))
+          elem.clear()
+    if self.is_debug:
+      self.debug_file.write('}\n')
+      self.debug_file.close()
 
 
 def make_protein(protxml_protein):
@@ -251,16 +262,17 @@ def make_protein(protxml_protein):
   return protein
 
 
-def make_proteins_from_protxml(protein_groups):
+def generate_proteins_from_protxml(protxml):
   proteins = {}
-  for protein_group in protein_groups.values():
+  protxml_reader = ProtxmlReader(protxml)
+  for protein_group in protxml_reader:
     for protxml_protein in protein_group['proteins']:
       seqid = protxml_protein['protein_name']
       if seqid in proteins:
         logger.warning("%s found in multiple protein groups" % seqid)
-      protein = make_protein(protxml_protein)
-      proteins[seqid] = protein
-  return proteins
+      proteins[seqid] = make_protein(protxml_protein)
+  protein_probs = protxml_reader.distribution
+  return proteins, protein_probs
 
 
 def filter_proteins(proteins, prob_cutoff):
@@ -287,13 +299,13 @@ def add_source(proteins):
     protein['sources'].append({'peptides': []})
 
 
-def load_pepxml(proteins, pepxml, prob_cutoff=None, error_cutoff=None, source_names=[]):
+def load_pepxml(proteins, pepxml_fname, prob_cutoff=None, error_cutoff=None, source_names=[]):
   logging.debug('Peptide error cutoff: {}'.format(error_cutoff))
   protein_by_seqid = get_protein_by_seqid(proteins)
   n_source = len(proteins.values()[0]['sources'])
-  pepxml_reader = PepxmlReader(pepxml)
+  pepxml_reader = PepxmlReader(pepxml_fname)
   source_name_indices = {}
-  for scan in pepxml_reader.iter():
+  for scan in pepxml_reader:
     for match in scan['matches']:
       if error_cutoff is not None and match['fpe'] > error_cutoff:
         continue
@@ -320,6 +332,7 @@ def load_pepxml(proteins, pepxml, prob_cutoff=None, error_cutoff=None, source_na
                 protxml_peptide['modified_sequence'] == match['modified_sequence']:  
               peptide['attr']['protxml_probability'] = protxml_peptide['nsp_adjusted_probability']
               peptide['attr']['protxml_weight'] = protxml_peptide['weight']
+              peptide['attr']['is_contributing_evidence'] = protxml_peptide['is_contributing_evidence']
           peptides.append(peptide)
   source_names.extend(pepxml_reader.source_names)
 
@@ -377,56 +390,32 @@ def filter_peptides(proteins, probability):
       del proteins[seqid]
 
 
-def count_peptides_tpp_way(proteins):
+def count_tpp_indep_spectra(proteins):
   for seqid in proteins:
     protein = proteins[seqid]
-    n_slice_populated = 0
-    n_peptide = 0
     n_unique_peptide = 0
-    n_spectrum = 0
     n_unique_spectrum = 0
-    sequence_set = set()
     unique_sequence_set = set()
     for source in protein['sources']:
-      if len(source['peptides']) > 0:
-        n_slice_populated += 1
-        n_spectrum += len(source['peptides'])
       for peptide in source['peptides']:
         sequence = str(peptide['attr']['charge']) + peptide['modified_sequence']
-        sequence_set.add(sequence)
-        if 'protxml_weight' not in peptide['attr']:
-          logging.warning('Missing protxml_weight for ' + sequence)
-          continue
-        if float(peptide['attr']['protxml_weight']) > 0.50 \
-          and not peptide['attr']['protxml_probability'] < 0.20:
+        if 'is_contributing_evidence' in peptide['attr'] and peptide['attr']['is_contributing_evidence'] == 'Y':
           n_unique_spectrum += 1
           unique_sequence_set.add(sequence)
-    n_peptide = len(sequence_set)
     n_unique_peptide = len(unique_sequence_set)
-    protein['attr']['n_peptide'] = n_peptide 
-    protein['attr']['n_unique_peptide'] = n_unique_peptide 
-    protein['attr']['n_spectrum'] = n_spectrum 
-    protein['attr']['n_unique_spectrum'] = n_unique_spectrum 
-
+    protein['attr']['n_indep_spectra'] = n_unique_spectrum 
   # calculate percentages of scans
   n_unique_spectrum_total = 0
-  n_spectrum_total = 0
   for seqid in proteins:
     protein = proteins[seqid]
-    n_unique_spectrum_total += protein['attr']['n_unique_spectrum']
-    n_spectrum_total += protein['attr']['n_spectrum']
+    n_unique_spectrum_total += protein['attr']['n_indep_spectra']
   for seqid in proteins:
     protein = proteins[seqid]
     if n_unique_spectrum_total == 0:
       percent = 0
     else:
-      percent = 100.0*protein['attr']['n_unique_spectrum']/n_unique_spectrum_total
-    protein['attr']['percent_unique_spectra'] = float('%.2f' % percent)
-    if n_spectrum_total == 0:
-      percent = 0
-    else:
-      percent = 100.0*protein['attr']['n_spectrum']/n_spectrum_total
-    protein['attr']['percent_spectra'] = float('%.2f' % percent)
+      percent = 100.0*protein['attr']['n_indep_spectra']/n_unique_spectrum_total
+    protein['attr']['percent_indep_spectra'] = float('%.2f' % percent)
 
 
 def get_proteins_and_sources(
@@ -435,28 +424,14 @@ def get_proteins_and_sources(
   Returns a proteins dictionary and list of source names.
   """
   logger.info('Loading protxml ' + protxml)
-  protein_groups, protein_probs = read_protxml(protxml)
-  proteins = make_proteins_from_protxml(protein_groups)
+  proteins, protein_probs = generate_proteins_from_protxml(protxml)
 
-  is_debug = logger.root.level <= logging.DEBUG
-  if is_debug:
-    dump = protxml + '.dump'
-    logger.debug('Dumping protxml data structure to ' + dump)
-    parse.save_data_dict(protein_groups, dump)
-    dump = protxml + 'dist.dump'
-    logger.debug('Dumping protein error distribution to ' + dump)
-    parse.save_data_dict(protein_probs, dump)
-
-  prob_cutoff = None
   source_names = []
   for pepxml in pepxmls:
     logger.info('Loading pepxml ' + pepxml)
-    load_pepxml(proteins, pepxml, prob_cutoff, peptide_error, source_names)
+    load_pepxml(proteins, pepxml, error_cutoff=peptide_error, source_names=source_names)
     
-
-  # parse_proteins.determine_unique_peptides(proteins)
-  # parse_proteins.count_peptides(proteins)
-  count_peptides_tpp_way(proteins)
+  count_tpp_indep_spectra(proteins)
 
   probability = error_to_probability(protein_probs, protein_error)
   filter_proteins(proteins, probability)
