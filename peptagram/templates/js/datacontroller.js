@@ -9,7 +9,7 @@ function DataController(data) {
     if (this.data.mask_labels.length > 0) {
       this.data.mask = parseFloat(this.data.mask_labels[0]);
     } else {
-      this.data.mask = 0.0;
+      this.data.mask = 1.0;
     }
     console.log('this.data.mask ' + this.data.mask);
     this.data.canvas_font = "10px 'Andale Mono'";

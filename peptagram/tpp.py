@@ -137,7 +137,6 @@ def make_peptide(pepxml_match, pepxml_scan, source):
       'scan_id': pepxml_scan['start_scan'],
       'charge': pepxml_scan['assumed_charge'],
       'expect': pepxml_match['expect'],
-      'retention_time': pepxml_scan['retention_time_sec'],
       'modifications': pepxml_match['modifications'],
       'probability': pepxml_match['probability'],
       'missed_cleavages': pepxml_match['num_missed_cleavages'],
@@ -146,6 +145,13 @@ def make_peptide(pepxml_match, pepxml_scan, source):
       'source': parse.basename(source),
     }
   }
+  def grab_opt(peptide_key, scan_key, source_dict):
+    if scan_key in source_dict:
+      peptide['attr'][peptide_key] = source_dict[scan_key]
+  grab_opt('retention_time', 'retention_time_sec', pepxml_scan)
+  grab_opt('score', 'ionscore', pepxml_match)
+  grab_opt('homology', 'homologyscore', pepxml_match)
+  grab_opt('identity', 'identityscore', pepxml_match)
   peptide['attr']['matched_ions'] = str(pepxml_match['num_matched_ions'])
   peptide['attr']['matched_ions'] += '/'
   peptide['attr']['matched_ions'] += str(pepxml_match['tot_num_ions'])

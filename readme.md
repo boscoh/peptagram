@@ -1,11 +1,9 @@
 # PEPTAGRAM
 
-`peptagram` provides a hassle-free overview  of proteomics data for casual/non-expert users. From your proteomics search results, `peptagram` generates a single-page HTML5 web-app to visualize:
+`peptagram` provides a hassle-free visual overview of proteomics data for casual/non-expert users. From your proteomics search results, `peptagram` generates a single-page HTML5 web-app to visualize:
 
 1. an entire proteomics experiment ([example]()),
 2. a comparison between multiple proteomics experiment ([example]()).
-
-As well, `peptagram` provides a number of parsers for proteomics search results.
 
 The resulting HTML5 web-app is:
 
@@ -15,6 +13,8 @@ The resulting HTML5 web-app is:
 - publishable: *installable on any server, even on Dropbox*
 
 `peptagram` is not meant to replace heavy-duty proteomics visulaization tools such as peptide-shaker or PepXMLViewer. Instead, it provides a useful overview of proteomics experiments in a package that is convenient for down-stream purposes.
+
+As well, `peptagram` provides a number of parsers for proteomics search results.
 
 ## Installation
 
@@ -32,7 +32,7 @@ In proteomics, as you may very well know, there are many different formats, each
 
 - mzML
 - Morpheus
-- TransatlanticProteomicsPipeline
+- TPP
 - X!Tandem
 - Mascot
 - MaxQuant
@@ -86,7 +86,7 @@ On the command-line, run the script to generate the visualization:
 
     python morpheus_example.py
 
-### EXAMPLE: TPP with mzML
+### EXAMPLE: protXML/pepXML with mzML
 
 The Transatlantic Protein Pipeline (TPP) represents one of the largest open-source proteomics toolkits. They have pushed for their `.protXML` and `.pepXML` formats as standards. As such `.protXML` and `.pepXML` search results can come from any number of search-engines and data sources.
 
@@ -126,9 +126,9 @@ On the command-line, run the script to generate the visualization:
     python tpp_mzml_example.py
 
 
-### EXAMPLE: TPP from X!Tandem
+### EXAMPLE: X!Tandem with protXML/pepXML
 
-The default search-engine that comes with the TPP is X!Tandem. It is easy to generate  visualizations with X!Tandem-generated protXML and pepXML files, as X!Tandem tandemXML files contain both protein sequences and the peaks for the MS/MS spectra.
+The default search-engine that comes with the TPP is X!Tandem. It is easy to generate  visualizations with `.protXML` and `.pepXML` files that have been generated from `.tandem` files. This is because `.tandem` files contain protein sequences and MS/MS peaks.
 
 search results in ProteinProphet prot.xml files containing all protein groups, and peptides. The peptide-spectrum matches are contained in the PeptideProphet pep.xml files. However, neither prot.xml or pep.xml contain full sequence information, so a sequence database in FASTA format is required. Optionally, the mzML corresponding to the peptide-spectrum matches can be used to integrate the MS/MS spectrum for each match.
 
