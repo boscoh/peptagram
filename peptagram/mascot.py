@@ -4,8 +4,14 @@ from pprint import pprint
 import math
 import json
 import urllib
+import logging
+
 
 from parse import parse_string, save_data_dict
+
+
+logger = logging.getLogger('mascot')
+
 
 """
 Parser for Mascot dat files 
@@ -181,6 +187,36 @@ def split_mascot_ion_str(s):
     "Parses an Ion entry string into a dictionary"
     pairs = [piece.split(':') for piece in s.split(',')]
     return [[float(x),float(y)] for x,y in pairs]
+
+
+def load_mascot_dat_to_proteins(proteins, i_source, mascot_dat):
+  peptide_by_match_id = {}
+  for seqid in proteins:
+    protein = proteins[seqid]
+    for source in protein['sources']:
+      for peptide in source['peptides']:
+        if 'identity' in peptide['attr']:
+          match_id = "%.2f%.2f%.2f%s" % \
+              (peptide['attr']['score'],
+               peptide['attr']['identity'],
+               peptide['attr']['homology'],
+               peptide['sequence'])
+          peptide_by_match_id[match_id] = peptide
+  scans, mascot_proteins = read_mascot_dat(mascot_dat)
+  n_match = 0
+  for scan in scans.values():
+    for match in scan['matches']:
+      match_id = "%.2f%.2f%.2f%s" % \
+          (match['score'],
+           scan['identity'],
+           scan['homology'],
+           match['sequence'])
+      if match_id in peptide_by_match_id:
+        n_match += 1
+        peptide = peptide_by_match_id[match_id]
+        peptide['spectrum'] = split_mascot_ion_str(scan['Ions1'])
+  logger.info('%s: matched %d pepXML to %d mascot PSM' % \
+      (mascot_dat, len(peptide_by_match_id), n_match))
 
 
 if __name__ == '__main__':

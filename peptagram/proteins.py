@@ -14,6 +14,9 @@ import logging
 
 import fasta
 
+import uniprot
+
+
 logger = logging.getLogger('proteins')
 
 
@@ -168,10 +171,22 @@ def load_fastas_into_proteins(
       del proteins[seqid]
       continue
     protein_sequence = fastas[seqid]['sequence']
-    protein['attr']['description'] = fastas[seqid]['description']
+    protein['description'] = fastas[seqid]['description']
     protein['sequence'] = protein_sequence
     protein['attr']['length'] = len(protein_sequence)
   calculate_peptide_positions(proteins, iso_leu_isomerism)
+
+
+def load_sequences_from_uniprot(proteins, cache_basename=None):
+  seqids = []
+  for seqid in proteins:
+    seqids.append(seqid)
+    if 'other_seqids' in proteins[seqid]['attr']:
+      seqids.extend(proteins[seqid]['attr']['other_seqids'])
+  uniprot_data = uniprot.get_metadata_with_some_seqid_conversions(seqids, cache_basename)
+  load_fastas_into_proteins(proteins, uniprot_data)
+  if cache_basename:
+    uniprot.write_fasta(cache_basename+'.fasta', uniprot_data, uniprot_data.keys())
 
 
 def load_fasta_db_into_proteins(
