@@ -336,37 +336,44 @@ The main focus of the Python scripts is turn all the different proteomics data f
                 key4: value4
               spectrum:
                 -
-                  mass: 500
-                  intensity: 34.3
+                  - 501
+                  - 34.3
+                -
+                  - 503.4
+                  - 82.3
 
-This data-structure is written verbeten into a JSON-based javascript file, which is then processed by the javascript application that generates the visual display. Optional fields are moved into `attr` fileds, both at the protein level, and at the peptide level.
+This data-structure is written verbeten into a JSON-based javascript file, which is then processed by the javascript application that generates the visual display. Optional fields are moved into the `attr` dictionary.
 
-There are several hierarchies to notice. The peptide information are sorted into separate lists in the `sources` field. This allows a clear demarcation for different experiments. However, for single experiments, this adds an extra layer, where the peptides must be accessed as:
+The primary level of organization of the dictionary `proteins` is, obviously, at the level of proteins. All peptide-spectrum matches will be sorted into each protein match. Presumably, the results will have been sorted into protein groups and read in with a usable sub-set of representative proteins for the protein identification.
+
+The peptide information are sorted into separate lists in the `sources` field. This allows a clear demarcation for different experiments. However, for single experiments, this adds an extra layer, where the peptides must be accessed as:
  
-    proteins['example-seqid']['sources'][0]
+    source = proteins['example-seqid']['sources'][0]
+    peptides = source['peptides']
 
 
 ### Peptide-spectrum match list
 
 Each peptide entry in the `peptides` list represents a distinct peptide-spectrum match. 
 
-    peptides:
-      - 
-        sequence: 'CDE'
-        i: 1
-        intensity: 1.0
-        mask: 0.0
-        attr:
-          modifications: 
-            -
-              i: 0
-              mass: 344.4
-          key3: value3
-          key4: value4
-        spectrum:
-          -
-            mass: 500
-            intensity: 34.3
+    sequence: 'CDE'
+    i: 1
+    intensity: 1.0
+    mask: 0.0
+    attr:
+      modifications: 
+        -
+          i: 0
+          mass: 344.4
+      key3: value3
+      key4: value4
+    spectrum:
+      -
+        - 501
+        - 34.3
+      -
+        - 503.4
+        - 82.3
 
 `i` gives 0-based position of the peptide, and should match that of the full sequence.
 
@@ -374,32 +381,81 @@ Each peptide entry in the `peptides` list represents a distinct peptide-spectrum
 
 `mask` gives an optional value to control masking for certain peptide-spectrum matches. The webapp can accept several master `mask` values. When a master `mask` value is selected, all peptide-spectrum matches with higher `mask` values are hidden.
 
-`spectrum` gives a list peaks that will be used in the spectrum viewer. The `mass` corresponds to the m/z value and correspondingly, the `intensity`
+`spectrum` gives a list peaks that will be used in the spectrum viewer. The first number corresponds to the m/z value and the second, to the intensity. In general, only the top 50 are read in, but of course you can add more, which will probably bloat the javascript file.
 
-`modifications` refers to any amino acid modifications.
+`modifications` is an optional field that describes any amino acid modifications in the peptide. It is a list of dictionaries. In each dictionary, the `i` gives the position, and `mass` gives the mass of the modified amino acid. To allow for N-terminal modifications, `i` can take the value -1. For C-terminal modifiactions, `i` can take the value n where n is the length of the sequence.
 
-### Sequence identifiers and protein sequences
+### Sequence identifiers 
 
-Loading uniprot data
+As discussed in the Examples, handling sequence identifiers (seqids) correctly is a recurring problem in bioinformatics. If seqids are not formatted correctly, it becomes impossible to match data from different sources. So it useful if we can format or transform all seqids into a consistent format. This idea of passing in seqid transforming functions is available in all parts of `peptagram`. This way you can organize the seqids as you read them in. 
 
-Add uniprot metadata, and reorganization of data.
+In `peptagram.proteins`, there is a useful convenience function `change_seqids_in_proteins` that transforms the seqids found in a `proteins` datastructure, including the alternate seqids found in `other_seqids`. It takes a any string function `clean_seqid` and transforms all seqids found in `proteins` to this function, including the protein seqid keys at the top level.
 
+    import peptogram.proteins
 
-multiple sources: source_labels, sources
+    def change_seqid(seqid):
+      return seqid.split('|')[0]
 
-JSON data structure
+    peptagram.proteins.change_seqids_in_proteins(proteins, clean_seqid)
+
+### Protein sequences
+
+Loading protein sequences in the `proteins` is a necessary step in `peptogram` as it is required to generate the visualizations. As well, it is necessary to view the protein. Several of the proteomics data formats do not provide this information and so we need to read in the fasta sequences from another source.
+
+The most common source is a `.fasta` file, preferably one that was used for the peptide search. To load the correct sequence, the sequence identifiers between the peptide-spectrum matches and the fasta files must much. We offer where the protein sequences used in the peptide serch are The different data formats AnAdd uniprot metadata, and reorganization of data.
+
+    import peptogram.proteins
+
+    def change_seqid(seqid):
+      return seqid.split('|')[0]
+
+    peptagram.proteins.load_fasta_db_into_proteins(
+        proteins, 'mascot/HUMAN.fasta', clean_seqid)
+
+### Multiple data sources
+
+As the structure of each protein in `proteins` contains potentially several sources, it's important to track the name of the different experiments. Most of the parsing methods returns a `source_names` list that contains the name of the different source files. Once cleaned up, these can serve as labels for the different experiment, especially in the view of the experiment-comparison mode. Often the source name is a long directory name, where the unique part is in the basename. A quick way to clean this up is:
+
+    import os
+    source_labels = [os.path.basename(name) for name in source_names]
+
+This `source_labels` can then be placed directly in the `data` structure used to generate the web-app.    
 
 ### Finangling MS/MS spectra
 
+Being able to easily view spectra is one of the most useful aspects of `peptagram`. It was important that we could reconcile the scan identifiers in the different data formats so that we could load the spectra directly if the `.mzML` files available. Being able to do this has expanded the flexibility of the system. By the time each parser has generated a `proteins` structure, the peptide-spectrum matches should contain a valid `.mzML` scan identifier. This is the `scan_id` filed in the `attr` dictionary of each peptide entry.
+
+Given this, we can run:
+
+    peptagram.mzml.load_mzml(
+        proteins, 0, 'example/morpheus/OK20130822_MPProtomap_KO1.mzML')
+
+
+
 ### Loading data into the webapp
 
-attr dictionary can take any JSON values. For protein attr values, these can be sorted through within the page.
+Once the `proteins` data is appropriately filled in, we can pipe it through to the web-app generating method. For display, we need a little bit more information, and this is used to populate a `data` dictionary:
 
-python script to turn search results into a python data structure.
+    data = {
+      'title': 'Mascot example',
+      'proteins': proteins,
+      'source_labels': map(peptagram.parse.basename, source_names),
+      'color_names': ['P=1', 'P=0', ''],
+      'mask_labels': ['1.0'],
+    }
 
-This data structure is piped into a json structure, that is stored within a javascript structure in the website. 
+`title` gives the title that will be displayed across the top of the web-app
 
-Examples are given to combine the results file in order to generate the `proteins` data structure. This is then written as an equivalent JSON object in a JAVASCRIPT object  called `data` that is loaded into a template web-page.
+`proteins` is the dictionary that you generated consistent with the structure given above
 
-There are quite a few packages that read proteomics (pyteomics, ) search results. Why another one? Well, one thing we are focusing on here is that the results are organized in terms of consistent data structure, abstracted over all the different search engines. The focus here is on proteins, and protein groups of related proteins. We also want to express the data structure in a convenient data structure to explore within Python.
-pp
+`source_labels` is an optional list of the names of the different experiments that will be used in the experiment-comparison mode
+
+`mask_labels` are a list of values that will be used to mask the display of the peptides. If this list empty, then no masking will be offered.
+
+Finally, to generate the webapp for the single-experiment mode:
+
+And for the experiment-comparison mode:
+
+    peptagram.proteins.make_peptograph_directory(
+        data, 'mascot/webapp')
+
