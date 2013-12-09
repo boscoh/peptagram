@@ -1,36 +1,26 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-# This is to disable the 'black magic' surrounding versioned repositories... Terrible!
-from setuptools.command import sdist
-del sdist.finders[:]
-
 description = \
-"""Embellish is a low-friction static website generator.
+"""Peptagram is a proteomics visualizer
 
-Docs at http://github.com/boscoh/embellish.
+Docs at http://github.com/boscoh/peptagram.
 """
 
 setup(
-    name='embellish',
-    version='0.9',
+    name='peptagram',
+    version='0.1',
     author='Bosco Ho',
     author_email='boscoh@gmail.com',
-    url='http://github.com/boscoh/embellish',
-    description='Static site generator',
+    url='http://github.com/boscoh/peptagram',
+    description='proteomics visualizer',
     long_description=description,
     license='BSD',
+    include_package_data = True,
     install_requires=[
-        'markdown',
-        'PyYaml',
-        'jinja2', 
-        'hamlpy',
-        'python-dateutil',
-        'sassin',
-        'pyScss',
-        'flask',
+        'uniprot',
+        'pymzml',
     ],
-    packages=['embellish',],
-    package_data={"embellish": ['defaults/default.haml',]},
-    scripts=['bin/embellish'],
+    packages=['peptagram',],
+    scripts=[],
 )
