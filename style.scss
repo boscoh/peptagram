@@ -1,0 +1,39 @@
+body {
+  min-height: 2000px; }
+h1, h2, h3 {
+  font-weight: 100; }
+h1 {
+  font-size: 70px;
+  letter-spacing: 0.1em; }
+.navbar-static-top {
+  margin-bottom: 0; }
+#title-container {
+  background-color: #66A;
+  padding-top: 100px;
+  padding-bottom: 40px; }
+.title {
+  color: #AAA;
+  font-size: 22px;
+  font-weight: 100;
+  letter-spacing: 0.1em; }
+.title h1 {
+  color: white; }
+#screenshots-container {
+  background-color: #336;
+  padding: 20px 0px; }
+.screenshots, .screenshots a, .screenshots:visited {
+  color: #CCC; }
+.screenshots {
+  letter-spacing: 0.1em;
+  font-weight: 100; }
+#main, #installation-container, #end-container {
+  letter-spacing: 0.1em;
+  font-size: 16px;
+  line-height: 2em;
+  padding-top: 50px;
+  padding-bottom: 50px; }
+#installation-container {
+  background-color: #F9F9FF; }
+#end-container {
+  background-color: #336;
+  color: #999; }

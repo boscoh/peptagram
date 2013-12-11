@@ -1,0 +1,86 @@
+%html{lang:'en'}
+  %head
+    %meta{name:"viewport",content:"width=device-width, initial-scale=1.0"}
+    %link{href:'bootstrap/css/bootstrap.css', rel:'stylesheet'}
+    %link{href:'style.css', rel:'stylesheet'}
+
+  %body
+    .navbar.navbar-inverse.navbar-static-top{role:'navigation'}
+      .container
+        .navbar-header
+          %button.navbar-toggle{type:'button',data-toggle:'collapse',data-target:'.navbar-collapse'}
+            %span.sr-only Toggle navigation
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.navbar-brand{href:'../'} peptagram
+        .navbar-collapse.collapse
+          %ul.nav.navbar-nav
+            %li.active
+              %a{href:'../'} home
+            %li
+              %a{href:'vizhelp.html'} viz help
+            %li
+              %a{href:'vizgen.html'} viz generation
+            %li
+              %a{href:'api.html'} programming api
+    #banner
+      .container
+        .row
+          .col-lg-12
+            %h1 PEPTAGRAM
+            %h4 hassle-free visualisation of proteomics data
+    #screenshot
+      .container
+        .row
+          .col-lg-5.col-md-6
+            %a{href:'examples/single/index.html'}
+              %h4 Ex. 1: Single-experiment mode
+              %img{style:'width:100%',src:'single.png'}
+            %br
+            %br
+          .col-lg-5.col-md-6
+            %a{href:'examples/multiple/index.html'}
+              %h4 Ex. 2: Experiment-comparison mode
+              %img{style:'width:100%',src:'multiple.png'}
+            %br
+            %br
+    #plaintext
+      .container
+        .row
+          .col-lg-8
+            :markdown
+
+              `peptagram` converts protoemics data into an HTML5 visualization, which is instantly:
+
+              - executable: *runs on any modern webbrowser*
+              - cross-platform: *everyone has a webbrowser*
+              - self-contained: *just zip directory and send by email*
+              - publishable: *installable on any server, even on Dropbox*
+
+              `peptagram` is not meant to replace heavy-duty tools such as [peptide-shaker](https://code.google.com/p/peptide-shaker/) or the [TPP PepXMLViewer](http://tools.proteomecenter.org/wiki/index.php?title=TPP_Tutorial). Instead, it provides a useful overview of proteomics experiments in a convenient format for end-users.
+
+    #tintedtext
+      .container
+        .row
+          .col-lg-8
+            :markdown
+              ## Installation
+
+              To install, you need to have installed Python and the preferably, pip - the Python installer. Then, on the command-line:
+
+                  pip install peptagram
+
+              This should install `peptagram` and its dependencies: `pymzml` and `uniprot`.
+
+    #footer
+      .container
+        .row
+          .col-lg-8
+            :markdown
+                `peptagram` was developed at the [Monash Proteomics Facility](http://monash.edu/proteomics).  <br>
+                Source code hosted at <http://github.com/boscoh/peptagram> under BSD license.   <br>
+                &copy; 2013. Bosco K. Ho.
+
+    %script{src:'jquery-1.10.2.min.js'}
+    %script{src:'bootstrap/js/bootstrap.js'}

@@ -1,0 +1,159 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <script type="text/javascript" src="js/jquery.js"></script>
+  <script type="text/javascript" src="js/util.js"></script>
+  <script type="text/javascript" src="js/mass.js"></script>
+  <script type="text/javascript" src="data.js"></script>
+  <script type="text/javascript" src="js/datacontroller.js"></script>
+  <script type="text/javascript" src="js/peptidelist.js"></script>
+  <script type="text/javascript" src="js/proteinlist.js"></script>
+  <script type="text/javascript" src="js/canvaswidget.js"></script>
+  <script type="text/javascript" src="js/spectrumwidget.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+  <style>
+    body, table, pre {
+      font-family: 'Andale Mono', Lucidatypewriter, monospace;
+      font-size: 10px;
+      color: #666;
+      margin: 0;
+    }
+    .title {
+      font-size :12px;
+      font-weight: bold;
+      margin: 10px auto;
+      width: 100%;
+      border-bottom: 1px dotted #AAA;
+    }
+    .sorting_msg {
+      position: absolute;
+      width: 100%;
+      height: 6em;
+      top: 0;
+      left: 10;
+      padding: 10;
+      z-index: 10;
+      background-color: #F99;
+    }
+    #header {
+      width: 100%;
+      text-align: center;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 30px;
+      font-weight: bold;
+      padding: 30px 0px 20px 0px;
+    }
+    #column1, #column2, #column3 {
+      position: absolute;
+      padding-left: 10px;
+      padding-right: 10px;
+      background-color: #F9F9F9;
+    }
+    #column1, #column2 {
+      margin-left: 5px;
+      margin-right: 5px;
+      width: 350px;
+    }
+    #column2 {
+      width: 400px;
+    }
+    #protein_control {
+      border-bottom: 1px dotted #AAA;
+    }
+    #protein_list {
+      white-space: nowrap; 
+      background-color: #F9F9F9;
+      overflow: scroll;
+      cursor: pointer;
+    }
+    #protein_info {
+      margin-bottom: 10px;
+    }
+    #peptograph {
+      position: absolute;
+      height: 290px;
+    }
+    #sequence {
+      position: absolute;
+      background-color: #F9F9F9;
+      padding-top: 5px;
+      padding-bottom: 20px;
+      overflow: scroll;
+    }
+    #sequence pre {
+      color: #BBB;
+    }
+    .sequence_link {
+      color: #333;
+      cursor: pointer;
+    }
+    .highlight_peptide {
+      background-color: #CFC;
+    }
+    .modification {
+      background-color: #FAA;
+    }
+    .link {
+      color: black;
+      cursor: pointer;
+    }
+    #peptide_list_title {
+      position: absolute;
+    }
+    #peptide_list {
+      position: absolute;
+      overflow: auto;
+    }
+    #peptide_list table {
+      border-collapse:collapse;
+    }
+    #peptide_list th, #peptide_list td {
+      padding-right: 10px;
+    }
+    #spectrum {
+      cursor: pointer;
+    }
+    #ion_table {
+      overflow: auto;
+    }
+    .heading_row {
+      outline: thin solid #CCC;
+    }
+    .dashed_border {
+      border-top: 1px dotted #AAA;
+      border-bottom: 1px dotted #AAA;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      margin-bottom: 5px;
+      margin-top: 5px;
+    }
+    #ion_table table {
+      border-spacing: 0px;
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">Peptograph analysis of Sample</div>
+  <div id="column1">
+    <div class="title">PROTEIN LIST - PRESS [N][P]</div>
+    <div id="protein_control"></div>
+    <div id="protein_list"></div>
+  </div>
+  <div id="column2">
+    <div class="title">PROTEIN</div>
+    <div id="protein_info"></div>
+    <div id="sequence"></div>
+    <div id="peptide_list_title" class="title">PEPTIDE LIST - PRESS [J][K]</div>
+    <div id="peptide_list"></div>
+  </div>
+  <div id="column3">
+    <div class="title">PEPTIDE-SPECTRUM MATCH</div>
+    <div id="peptide_info"></div>
+    <div id="spectrum"></div>
+    <div id="ion_table"></div>
+  </div>
+</body>
+</html>

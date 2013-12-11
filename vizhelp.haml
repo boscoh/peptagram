@@ -1,0 +1,84 @@
+%html{lang:'en'}
+  %head
+    %meta{name:"viewport",content:"width=device-width, initial-scale=1.0"}
+    %link{href:'bootstrap/css/bootstrap.css', rel:'stylesheet'}
+    %link{href:'style.css', rel:'stylesheet'}
+
+  %body
+    .navbar.navbar-inverse.navbar-static-top{role:'navigation'}
+      .container
+        .navbar-header
+          %button.navbar-toggle{type:'button',data-toggle:'collapse',data-target:'.navbar-collapse'}
+            %span.sr-only Toggle navigation
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.navbar-brand{href:'../'} peptagram
+        .navbar-collapse.collapse
+          %ul.nav.navbar-nav
+            %li
+              %a{href:'../'} home
+            %li.active
+              %a{href:'vizhelp.html'} viz help
+            %li
+              %a{href:'vizgen.html'} viz generation
+            %li
+              %a{href:'api.html'} programming api
+    #banner
+      .container
+        .row
+          .col-lg-12
+            %h1 PEPTAGRAM
+            %h4 hassle-free visualisation of proteomics data
+
+    #plaintext
+      .container
+        .row
+          .col-lg-8
+            :markdown
+
+              # HTML5 Visualisation Guide 
+
+              The visalization presents an integrated display of:
+
+              - peptide distributions for identified proteins
+              - single-sequence/comparison-distribution display
+              - peptide-spectrum matches
+              - optional top 50 MS/MS peaks for each peptide-spectrum match
+
+              ### Protein List
+              All identified proteins are shown on the left, withe the peptides illustrated in a the bar graph. All proteins are normalized to the same width of the screen as there is too great a difference between protein sequence lengths to show this in proportion. Clicking on a protein on this light will bring up a detailed display of the sequence, with the peptides tintedtexted by clickable links. This list can be sorted by the pop-up menu at the top of the section. All attributes displayed in the protein info panel can be sorted against.
+
+              ### Keyboard Shortcuts
+              Several keyboard shortcuts have been included, and these are labeled above the sub-headings of the relevant section. These are:
+
+                 - N and P: to move through proteins in the protein list
+                 - J and K: to move through the peptide-spectrum matches
+                 - U and D: to move between experiments in the comparison mode
+
+              ### Searching 
+              Can be done using the built-in web-browser search. All the text for the proteins, and principal seqid are always available in the protein-list view, and thus searchable.
+
+              ### Peptide-Spectrum Matches 
+              Below that is the list of peptide spectrum matches, listed by their positions in the sequence and the sequnce. If modifications were read in, they will be tintedtexted. Click on thes will display the MS/MS spectra if available.
+
+              ### Spectrum Viewer 
+              If the MS/MS spectra have been loaded then, if a peptide-spectrum match is clicked, a simple spectrum viewer is shown of the top 50 peaks found in the peptide-spectrum match. Below the viewer is an interactive ion table, showing b-ions and y-ions. By click on the labels at the top of the table, different charge states for the b-ions and y-ions are displayed, both in the the table and the spectrum viewer. Clicking on the viewer will zoom to the nearest peak, where the viewer will scale to the height of the zoomed peak, which should now be in the middle of the viewer. Clicking again on the viewer will zoom out. The viewer automatically scales to the minimum-maxium peak m/z values.
+
+              ### Single Experiment Mode
+              In the single-experiment mode, the central panel shows the entire sequence of the protein rendered in an easy to scan 5 x 5 blocks, with the the peptides identified tintedtexted as clickable links
+
+              ### Experiment Comparison Mode
+              In the experiment-comparison mode, the central model shows an interactive display where, for a selected protein, the central panel shows a display consisting of rows. Each row represents the peptides identified for each separate experiment.
+
+    #footer
+      .container
+        .row
+          .col-lg-8
+            :markdown
+                `peptagram` was developed at the [Monash Proteomics Facility](http://monash.edu/proteomics).  <br>
+                Source code hosted at <http://github.com/boscoh/peptagram> under BSD license.   <br>
+                &copy; 2013. Bosco K. Ho.
+
+    %script{src:'jquery-1.10.2.min.js'}
+    %script{src:'bootstrap/js/bootstrap.js'}

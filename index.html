@@ -1,0 +1,111 @@
+<html lang='en'>
+  <head>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport' />
+    <link href='bootstrap/css/bootstrap.css' rel='stylesheet' />
+    <link href='style.css' rel='stylesheet' />
+
+  </head>
+  <body>
+    <div class='navbar navbar-inverse navbar-static-top' role='navigation'>
+      <div class='container'>
+        <div class='navbar-header'>
+          <button class='navbar-toggle' data-toggle='collapse' type='button' data-target='.navbar-collapse'>
+            <span class='sr-only'>Toggle navigation</span>
+            <span class='icon-bar'></span>
+            <span class='icon-bar'></span>
+            <span class='icon-bar'></span>
+          </button>
+          <a class='navbar-brand' href='../'>peptagram</a>
+        </div>
+        <div class='navbar-collapse collapse'>
+          <ul class='nav navbar-nav'>
+            <li class='active'>
+              <a href='../'>home</a>
+            </li>
+            <li>
+              <a href='vizhelp.html'>viz help</a>
+            </li>
+            <li>
+              <a href='vizgen.html'>viz generation</a>
+            </li>
+            <li>
+              <a href='api.html'>programming api</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div id='banner'>
+      <div class='container'>
+        <div class='row'>
+          <div class='col-lg-12'>
+            <h1>PEPTAGRAM</h1>
+            <h4>hassle-free visualisation of proteomics data</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id='screenshot'>
+      <div class='container'>
+        <div class='row'>
+          <div class='col-lg-5 col-md-6'>
+            <a href='examples/single/index.html'>
+              <h4>Ex. 1: Single-experiment mode</h4>
+              <img src='single.png' style='width:100%' />
+            </a>
+            <br />
+            <br />
+          </div>
+          <div class='col-lg-5 col-md-6'>
+            <a href='examples/multiple/index.html'>
+              <h4>Ex. 2: Experiment-comparison mode</h4>
+              <img src='multiple.png' style='width:100%' />
+            </a>
+            <br />
+            <br />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id='plaintext'>
+      <div class='container'>
+        <div class='row'>
+          <div class='col-lg-8'>
+
+<p><code>peptagram</code> converts protoemics data into an HTML5 visualization, which is instantly:</p>
+<ul>
+<li>executable: <em>runs on any modern webbrowser</em></li>
+<li>cross-platform: <em>everyone has a webbrowser</em></li>
+<li>self-contained: <em>just zip directory and send by email</em></li>
+<li>publishable: <em>installable on any server, even on Dropbox</em></li>
+</ul>
+<p><code>peptagram</code> is not meant to replace heavy-duty tools such as <a href="https://code.google.com/p/peptide-shaker/">peptide-shaker</a> or the <a href="http://tools.proteomecenter.org/wiki/index.php?title=TPP_Tutorial">TPP PepXMLViewer</a>. Instead, it provides a useful overview of proteomics experiments in a convenient format for end-users.</p>          </div>
+        </div>
+      </div>
+    </div>
+    <div id='tintedtext'>
+      <div class='container'>
+        <div class='row'>
+          <div class='col-lg-8'>
+<h2>Installation</h2>
+<p>To install, you need to have installed Python and the preferably, pip - the Python installer. Then, on the command-line:</p>
+<pre><code>pip install peptagram
+</code></pre>
+<p>This should install <code>peptagram</code> and its dependencies: <code>pymzml</code> and <code>uniprot</code>.</p>          </div>
+        </div>
+      </div>
+    </div>
+    <div id='footer'>
+      <div class='container'>
+        <div class='row'>
+          <div class='col-lg-8'>
+<p><code>peptagram</code> was developed at the <a href="http://monash.edu/proteomics">Monash Proteomics Facility</a>.  <br>
+Source code hosted at <a href="http://github.com/boscoh/peptagram">http://github.com/boscoh/peptagram</a> under BSD license.   <br>
+&copy; 2013. Bosco K. Ho.</p>          </div>
+        </div>
+      </div>
+    </div>
+    <script src='jquery-1.10.2.min.js'></script>
+    <script src='bootstrap/js/bootstrap.js'></script>
+  </body>
+</html>
