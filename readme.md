@@ -60,15 +60,15 @@ Given the variety of proteomics formats, different combinations of data are need
 In this download, we have examples of:
 
 - Morpheus & mzML
-- TPP & fasta & mzML
+- TPP & fasta
 - TPP & x!Tandem
 - TPP & Mascot & fasta
-- MaxQuant
+- MaxQuant & fasta
 
 These will be discussed in detail below.
 
 
-## Example: Morpheus and mzML
+### Example: Morpheus and mzML
 
 Morpheus is a search engine designed for high-quality data, where the assumption that MS/MS peaks are well-resolved results in better performance. As Morpheus does not come with a bundled viewer, `peptagram` provides a unique tool to view Morpheus proteomics search results. 
 
@@ -119,7 +119,7 @@ Which is run on the command-line in the examples directory:
     python run_morpheus.py
 
 
-## Example: TPP with fasta and mzML 
+### Example: TPP with fasta and mzML 
 
 The Transatlantic Protein Pipeline (TPP) represents one of the largest open-source proteomics toolkits. As the TPP have pushed for their `.protXML` and `.pepXML` formats as standards, the search results can come from any number of search-engines. As such, by handling TPP files, `peptagram` can  handle search data indirectly from many different sources.
 
@@ -173,7 +173,7 @@ And finally, the step to generate the visualisations:
       data, 'out/tpp-pr')
 
 
-## Example: X!Tandem in TPP
+### Example: X!Tandem in TPP
 
 The default search-engine that comes with the TPP is X!Tandem. The great thing about `.tandem` files is that they provide both protein sequences and the MS/MS spectra for each peptide-spectrum match. You can thus generate a full `peptagram` visualization with `.tandem`, `.protXML` and `.pepXML` files. 
 
@@ -228,7 +228,7 @@ Then we can generate the web-app:
         data, 'xtandem/webapp')
 
 
-## Example: TPP with fasta and Mascot
+### Example: TPP with fasta and Mascot
 
 Despite the weirdness of `.dat` files, Mascot is one of the oldest and most popular search engines. Here, we have a parser for Mascot `.dat` files, which is a mish-mash of mime-type, xml, and random acts of text. As Mascot does not group proteins, we only provide an example where mascot `.dat` files have been processed by the TPP. 
 
@@ -292,7 +292,7 @@ Finally, we generate the webapp:
 
 
 
-## Example: MaxQuant & fasta
+### Example: MaxQuant & fasta
 
 We have used MaxQuant mainly for its ability to do isotype-labelling comparisons (eg SILAC). Maxquant results are stored as tab-separated-value files as `.txt` files in a summary directory. 
 
