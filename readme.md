@@ -15,7 +15,7 @@ The resulting HTML5 web-app is:
 - self-contained: *just zip directory and send by email*
 - publishable: *installable on any server, even on Dropbox*
 
-User guide to the visualisation webapp at <http://boscoh.github.io/vizhelp.html>.
+User guide to the visualisation webapp at <http://boscoh.github.io/peptagram/vizhelp.html>.
 
 `peptagram` is not meant to replace heavy-duty tools such as peptide-shaker or PepXMLViewer.  Instead, it provides a useful overview of proteomics experiments in a convenient format for end-users.
 
