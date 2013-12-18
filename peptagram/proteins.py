@@ -177,7 +177,9 @@ def load_fastas_into_proteins(
   calculate_peptide_positions(proteins, iso_leu_isomerism)
 
 
-def load_sequences_from_uniprot(proteins, cache_basename=None):
+def load_sequences_from_uniprot(proteins, clean_seqid=None, cache_basename=None):
+  if clean_seqid:
+    change_seqids_in_proteins(proteins, clean_seqid)
   seqids = []
   for seqid in proteins:
     seqids.append(seqid)
@@ -232,7 +234,7 @@ def save_data_js(data, js_fname):
   f.close()
 
 
-def transfer_newer_files(in_dir, out_dir):
+def transfer_files(in_dir, out_dir):
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
   for src in glob.glob(os.path.join(in_dir, '*')):
@@ -240,7 +242,7 @@ def transfer_newer_files(in_dir, out_dir):
     shutil.copy(src, dst)
 
 
-def make_peptograph_directory(data, out_dir):
+def make_comparison_visualisation(data, out_dir):
   # sanity checks
   proteins = data['proteins']
   determine_unique_peptides(proteins)
@@ -263,13 +265,13 @@ def make_peptograph_directory(data, out_dir):
     os.makedirs(out_dir)
 
   save_data_js(data, os.path.join(out_dir, 'data.js'))
-  transfer_newer_files(os.path.join(this_dir, 'templates/peptograph'), out_dir)
-  transfer_newer_files(os.path.join(this_dir, 'templates/js'), os.path.join(out_dir, 'js'))
+  transfer_files(os.path.join(this_dir, 'templates/comparison'), out_dir)
+  transfer_files(os.path.join(this_dir, 'templates/js'), os.path.join(out_dir, 'js'))
   index_html = os.path.abspath(os.path.join(out_dir, 'index.html'))
-  logger.info("Made peptograph in " + index_html)
+  logger.info('Made peptograph in "' + index_html + '"')
 
 
-def make_proteins_directory(data, out_dir):
+def make_overview_visualisation(data, out_dir):
   # sanity checks
   proteins = data['proteins']
   determine_unique_peptides(proteins)
@@ -292,10 +294,10 @@ def make_proteins_directory(data, out_dir):
     os.makedirs(out_dir)
 
   save_data_js(data, os.path.join(out_dir, 'data.js'))
-  transfer_newer_files(os.path.join(this_dir, 'templates/proteins'), out_dir)
-  transfer_newer_files(os.path.join(this_dir, 'templates/js'), os.path.join(out_dir, 'js'))
+  transfer_files(os.path.join(this_dir, 'templates/overview'), out_dir)
+  transfer_files(os.path.join(this_dir, 'templates/js'), os.path.join(out_dir, 'js'))
   index_html = os.path.abspath(os.path.join(out_dir, 'index.html'))
-  logger.info("Made peptograph in " + index_html)
+  logger.info('Made peptograph in "' + index_html + '"')
 
 
 

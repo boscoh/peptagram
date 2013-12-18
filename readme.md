@@ -60,7 +60,7 @@ Given the variety of proteomics formats, different combinations of data are need
 In this download, we have examples of:
 
 - Morpheus & mzML
-- TPP & fasta
+- TPP & fasta/uniprot
 - TPP & x!Tandem
 - TPP & Mascot & fasta
 - MaxQuant & fasta
@@ -68,7 +68,7 @@ In this download, we have examples of:
 These will be discussed in detail below.
 
 
-### Example: Morpheus and mzML
+### Example: Morpheus & mzML
 
 Morpheus is a search engine designed for high-quality data, where the assumption that MS/MS peaks are well-resolved results in better performance. As Morpheus does not come with a bundled viewer, `peptagram` provides a unique tool to view Morpheus proteomics search results. 
 
@@ -88,8 +88,10 @@ The following function reads in the sequences and protein groupings from `.prote
 
 __OPTIONAL:__ If you did the Morpheus search with .mzML files, you can load in the raw spectra into `proteins` from the `.mzML` file, which will be displayed. The function will match the spectra in the `.mzML` to  entries in the `.PSM.tsv` file. For this case, only one data-set has been read into `proteins`, so the second parameter is given 0, to refer to the first data-set:
 
+    i_source = 0
     peptagram.mzml.load_mzml(
-        proteins, 0, 'morpheus/OK20130822_MPProtomap_KO1.mzML')
+        proteins, i_source, 
+        'morpheus/OK20130822_MPProtomap_KO1.mzML')
 
 Now that `proteins` is properly read, we can generate the visualation. The visualisation requires a little bit information to provide useful annotations for the user.  This is to be put in a `data` dictionary:
 
@@ -101,42 +103,42 @@ Now that `proteins` is properly read, we can generate the visualation. The visua
       'mask_labels': [],
     }
 
-A quick description of the fields:
+A description of the fields:
   
   - `title`: the text that will be displayed at the top of the web-app
-  - `proteins`: the proteins data structure, in the future you may want to construct your own
+  - `proteins`: the proteins data structure referred to above
   - `source_labels`: in comparison mode, this is the label for the different proteomics experiment. ignored if it is an empty list
   - `color_names`: in comparison mode, the labels for the colors in the legend
   - `mask_labels`: alternative masking for the display of higher accuracies
 
-The `data` dictionary is then passed into the function that generates the visualisation web-app in the `out/morpheus-pr` directory:
+The `data` dictionary is then passed into the function that generates the visualisation web-app in the indicated directory:
 
-    peptagram.proteins.make_proteins_directory(
-        data, 'out/morpheus-pr')
+    peptagram.proteins.make_overview_visualisation(
+        data, 'morpheus/overview')
 
 Which is run on the command-line in the examples directory:
 
     python run_morpheus.py
 
 
-### Example: TPP with fasta and mzML 
+### Example: TPP & fasta/uniprot
 
 The Transatlantic Protein Pipeline (TPP) represents one of the largest open-source proteomics toolkits. As the TPP have pushed for their `.protXML` and `.pepXML` formats as standards, the search results can come from any number of search-engines. As such, by handling TPP files, `peptagram` can  handle search data indirectly from many different sources.
 
 The example script is called `run_tpp.py`, and the requiredn modules are:
 
     import peptagram.tpp
-    import peptagram.mzml
-    import peptagram.fasta
     import peptagram.proteins
 
 First, the protein-groups and peptide-spectrum matches are read in from a `.protXML` file and potentially several `.pepXML` files, which is treated as a list of filenames:
+
+    protein_error = 0.01
 
     proteins, source_names = peptagram.tpp.get_proteins_and_sources(
         'tpp/hca-lysate-16.prot.xml', 
         ['tpp/hca-lysate-16.pep.xml'],
         peptide_error=0.05,
-        protein_error=0.01)
+        protein_error=protein_error)
 
 Two extra parameters are provided, `peptide_error` is a false-positive-error cutoff for the peptide entries in the `.pepXML` file, and `protein_error` is a false-positive-error cutoff for the `.protXML` file. These are calculated from the probability-error distributions included in every `.pepXML` and `.protXML` file.
 
@@ -156,6 +158,13 @@ Now we load the protein sequences from a `.fasta` file using `clean_seqid` to tr
         clean_seqid=clean_seqid,
         iso_leu_isomerism=False)
 
+**Alternatively**: you can load the sequences directly from <http://uniprot.org>. This can be seen in the `run_tpp_uniprot.py` script. The sequence loading occurs with the alternative function, which requires a `cache_basename` - a filename location for temporary files:
+
+    peptagram.proteins.load_sequences_from_uniprot(
+        proteins, 
+        clean_seqid=clean_seqid,
+        cache_basename='tpp/uniprot')
+        
 The sequences are loaded into the data structure, and the positions relative to the full protein of the peptides in the peptide-spectrum-matches are calculated.
 
 Notice the `iso_leu_isomerism` flag, which is required for some packages that don't distinguish this mass isomerism in peptides.
@@ -165,15 +174,15 @@ And finally, the step to generate the visualisations:
     data = {
       'title': 'TPP example',
       'proteins': proteins,
-      'source_labels': ['hca'],
+      'source_labels':source_names,
       'color_names': ['P=1', 'P=0', ''],
-      'mask_labels': [0.05, 0.025, 0.01],
+      'mask_labels': [protein_error],
     }
-    peptagram.proteins.make_proteins_directory(
-      data, 'out/tpp-pr')
+    peptagram.proteins.make_overview_visualisation(
+      data, 'tpp/overview')
 
 
-### Example: X!Tandem in TPP
+### Example: X!Tandem & TPP
 
 The default search-engine that comes with the TPP is X!Tandem. The great thing about `.tandem` files is that they provide both protein sequences and the MS/MS spectra for each peptide-spectrum match. You can thus generate a full `peptagram` visualization with `.tandem`, `.protXML` and `.pepXML` files. 
 
@@ -185,6 +194,7 @@ The example script is `run_xtandem.py`. First, read in the `proteins` data struc
     import peptagram.proteins
 
     errors = [0.05, 0.025, 0.01]
+    
     proteins, source_names = peptagram.tpp.get_proteins_and_sources(
         'xtandem/interact.prot.xml', 
         ['xtandem/interact.pep.xml'], 
@@ -198,9 +208,7 @@ The example script is `run_xtandem.py`. First, read in the `proteins` data struc
         'xtandem/Seq23284_E1O1.tandem',
       ]
 
- As such, we need to make use of the `source_names` return variable from above, which contains the names of the source files in the `.pepXML` entries. Hopefully, these will match the `.tandem` to the `source_names`. 
-
- Here's a function to figure out the match of the `.tandem` files to the `source_names`:
+ As such, we need to make use of the `source_names` return variable from above, which contains the names of the source files in the `.pepXML` entries. Hopefully, these will match the `.tandem` to the `source_names`. To figure out the match of the `.tandem` files to the `source_names`:
 
     def get_i_source(tandem, source_names):
       basename = os.path.splitext(os.path.basename(tandem))[0]
@@ -224,13 +232,20 @@ Then we can generate the web-app:
       'color_names': ['P=1', 'P=0', ''],
       'mask_labels': errors,
     }
-    peptagram.proteins.make_peptograph_directory(
-        data, 'xtandem/webapp')
+    peptagram.proteins.make_comparison_visualisation(
+        data, 'xtandem/comparison')
 
 
-### Example: TPP with fasta and Mascot
+### Example: TPP & Mascot & fasta
 
 Despite the weirdness of `.dat` files, Mascot is one of the oldest and most popular search engines. Here, we have a parser for Mascot `.dat` files, which is a mish-mash of mime-type, xml, and random acts of text. As Mascot does not group proteins, we only provide an example where mascot `.dat` files have been processed by the TPP. 
+
+In this instance, the `.pepXML` file was generated from 2 mascot `.dat` files:
+
+    mascot_dats = [
+      'mascot/F022043.dat',
+      'mascot/F022045.dat',
+    ]
 
  So first we read in the `proteins` data structure from the `.pepXML` and `.protXML` files:
 
@@ -244,13 +259,6 @@ Despite the weirdness of `.dat` files, Mascot is one of the oldest and most popu
         ['mascot/interact.pep.xml'], 
         peptide_error=None,
         protein_error=None)
-
-In this instance, the `.pepXML` file was generated from 2 mascot `.dat` files:
-
-    mascot_dats = [
-      'mascot/F022043.dat',
-      'mascot/F022045.dat',
-    ]
 
 We define a function to match the `.dat` files to the `source_names` in the original read with this function:
 
@@ -285,21 +293,19 @@ Finally, we generate the webapp:
       'proteins': proteins,
       'source_labels': map(peptagram.parse.basename, source_names),
       'color_names': ['P=1', 'P=0', ''],
-      'mask_labels': ['1.0'],
+      'mask_labels': [],
     }
-    peptagram.proteins.make_peptograph_directory(
-        data, 'mascot/webapp')
-
+    peptagram.proteins.make_comparison_visualisation(
+        data, 'mascot/comparison')
 
 
 ### Example: MaxQuant & fasta
 
 We have used MaxQuant mainly for its ability to do isotype-labelling comparisons (eg SILAC). Maxquant results are stored as tab-separated-value files as `.txt` files in a summary directory. 
 
-The script is `run_maxquant` that reads the relevant `.txt` files for the protein groups, peptide-spectrum matches, matched peaks, from the summary directory:
+The script is `run_maxquant` that reads the relevant `.txt` files from the summary directory:
 
     import peptagram.maxquant
-    import peptagram.fasta
     import peptagram.proteins
 
     proteins, sources = peptagram.maxquant.get_proteins_and_sources(
@@ -307,7 +313,7 @@ The script is `run_maxquant` that reads the relevant `.txt` files for the protei
 
 A word of warning: the spectra read in is only a list of matched peaks, which is not really that useful for evaluating the quality of the peak matching. Unfortunately, the MaxQuant output was quite confusing and it was not clear how to calculate the theoretical heavy and light isotope peaks.
 
-Then, we use the next function to use the isotype intensity ratios to populate the `intensity` fields, which is used to generate the color the display in the webapp:
+Then, we use the next function to use the isotype intensity ratios to populate the `intensity` field in the peptide-spectrum matches, which is used to generate the color:
 
     peptagram.maxquant.calculate_ratio_intensities(proteins, max_ratio=1.5)
 
@@ -324,7 +330,7 @@ As MaxQuant files do not contain sequences, here's the `.fasta` loading:
         'maxquant/yeast_orf_trans_all_05-Jan-2010.fasta', 
         clean_seqid=clean_seqid)
 
-And now we can generate the webapp:
+And now we can generate the webapp, where the colors represents the SILAC ratios. As such we give the ratios as the `color_names`:
 
     data = {  
       'title': 'Maxquant example', 
@@ -333,8 +339,8 @@ And now we can generate the webapp:
       'color_names': ['1.5', '1', '0.66'],
       'mask_labels': [],
     }
-    peptagram.proteins.make_peptograph_directory(
-      data, 'maxquant/webapp/')
+    peptagram.proteins.make_comparison_visualisation(
+      data, 'maxquant/comparison')
 
 
 ## Python Programming API
