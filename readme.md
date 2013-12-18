@@ -2,11 +2,11 @@
 
 `peptagram` generates a single-page HTML5 web-app to visualize proteomics analyses for:
 
-1. an single proteomics experiment ([example][example1]),
+1. an overview of a proteomics experiment ([example][example1]),
 2. a comparison between multiple proteomics experiment ([example][example2]).
 
-[example1]:http://boscoh.github.io/peptagram/examples/single/index.html
-[example2]:http://boscoh.github.io/peptagram/examples/multiple/index.html
+[example1]:http://boscoh.github.io/peptagram/examples/overview/index.html
+[example2]:http://boscoh.github.io/peptagram/examples/comparison/index.html
 
 The resulting HTML5 web-app is:
 
