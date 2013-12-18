@@ -158,6 +158,8 @@ Now we load the protein sequences from a `.fasta` file using `clean_seqid` to tr
         clean_seqid=clean_seqid,
         iso_leu_isomerism=False)
 
+Notice the `iso_leu_isomerism` flag, which is required for some packages that don't distinguish this mass isomerism in peptides.
+
 **Alternatively**: you can load the sequences directly from <http://uniprot.org>. This can be seen in the `run_tpp_uniprot.py` script. The sequence loading occurs with the alternative function, which requires a `cache_basename` - a filename location for temporary files:
 
     peptagram.proteins.load_sequences_from_uniprot(
@@ -166,8 +168,6 @@ Now we load the protein sequences from a `.fasta` file using `clean_seqid` to tr
         cache_basename='tpp/uniprot')
         
 The sequences are loaded into the data structure, and the positions relative to the full protein of the peptides in the peptide-spectrum-matches are calculated.
-
-Notice the `iso_leu_isomerism` flag, which is required for some packages that don't distinguish this mass isomerism in peptides.
 
 And finally, the step to generate the visualisations:
 
