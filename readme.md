@@ -18,8 +18,7 @@ The resulting HTML5 web-app is:
 - self-contained: *just zip directory and send by email*
 - publishable: *installable on any server, even on Dropbox*
 
-`peptagram` is not meant to replace heavy-duty tools such as peptide-shaker or PepXMLViewer.  Instead, it provides a useful overview of proteomics experiments in a convenient format for end-users.
-
+More information at <http://boscoh.github.io/peptagram>.
 
 
 ## Installation
@@ -43,20 +42,22 @@ And install from the package directory:
 
 These should be installed automatically from the above scripts, but if that fails, you may need to install them manually.
 
+Examples download (~135 MB) at <http://monash.edu/proteomics/peptagram/examples-0.1a.zip>
 
 
 ## Usage
 
-More information at <http://boscoh.github.io/peptagram>.
+1. User guide to the HTML5 visualisation <http://boscoh.github.io/peptagram/vizhelp.html>.
 
-1. User guide to the HTML5 visualisation. Check out the [visualisation guide](http://boscoh.github.io/peptagram/vizhelp.html).
+2. Examples for generating visualisations from standard proteomics formats <http://boscoh.github.io/peptagram/vizgen.html>.
 
-2. Generating visualisations from standard proteomics data formats. Follow the [installation and visualisation-generation guide](http://boscoh.github.io/peptagram/vizgen.html).
+3. Programming API to use custom data <http://boscoh.github.io/peptagram/api.html>.
 
-3. Using custom data to generate visualisation. Wade into the [programming api guide](api.html).
-
-4. Open source contributions. Fork and pull-request at <http://github.com/boscoh/peptagram>.
+4. Open source contributions <http://github.com/boscoh/peptagram>.
 
 
 
-Copyright (c) 2013, Bosco K. Ho. Supported by Monash University.
+##
+
+Copyright (c) 2013, Bosco K. Ho. 
+Supported by Monash University.

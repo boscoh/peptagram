@@ -535,7 +535,7 @@ function Pepto(data) {
     // set the right column heights
     set_outer_height(this.column3_div, main_height);
     var height = get_content_height(this.column3_div);
-    set_outer_height(this.peptide_list_div, Math.round(0.3*height));
+    set_outer_height(this.peptide_list_div, Math.round(0.2*height));
     var top = get_bottom(this.peptide_list_div);
     set_top(this.spectrum_div, top);
     this.spectrum_canvas.set_height(Math.round(0.2*height));

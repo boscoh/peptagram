@@ -96,7 +96,7 @@ var SequenceView = function(div, data) {
       }
       if (i_res % 50 == 0) {
         if (i_res > 0) {
-          pre.append('<br>');
+          pre.append('&nbsp; &nbsp;&nbsp;<br>');
         }
         num_str = '' + i_res;
         while (num_str.length < 5) {
@@ -191,6 +191,8 @@ function Pepto(data) {
     // move the central column to its right place
     var column1_width = get_outer_width(this.column1_div);
     set_left(this.column2_div, column1_width);
+    var width = get_outer_width(this.sequence_div);
+    this.column2_div.width(width);
     var width = get_content_width(this.column2_div);
     set_outer_width(this.peptide_list_div, width);
     set_outer_width(this.peptide_list_title_div, width);
@@ -217,7 +219,7 @@ function Pepto(data) {
     // set the right column heights
     set_outer_height(this.column3_div, main_height);
     var height = get_content_height(this.column3_div);
-    this.spectrum_canvas.set_height(Math.round(0.4*height));
+    this.spectrum_canvas.set_height(Math.round(0.3*height));
     var top = get_bottom(this.peptide_info_div) + this.spectrum_div.outerHeight(true);
     set_outer_height(this.ion_table_div, height - top);
   }
@@ -226,9 +228,10 @@ function Pepto(data) {
     build_protein_info_panel(this.data, this.protein_info_div);  
     build_peptides_panel(this.data, this.peptide_list_div);
     build_peptide_info_panel(this.data, this.peptide_info_div);
-    this.resize_display();
-    this.protein_list.update();
     this.sequence_view.update();
+    this.resize_display();
+    // canvas drawing done after resize_display!
+    this.protein_list.update();
     this.spectrum_widget.update();
     this.ion_table.update();
   }

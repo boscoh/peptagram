@@ -67,6 +67,27 @@ function set_outer_width(div, width) {
 }
 
 
+function set_max_outer_height(div, max_height) {
+  var scroll_height = div[0].scrollHeight;
+  var height = max_height;
+  console.log(scroll_height, max_height);
+  if (scroll_height < max_height) {
+    height = scroll_height;
+  }
+  set_outer_height(div, height);
+}
+
+
+function set_max_outer_width(div, max_width) {
+  var scroll_width = div[0].scrollWidth;
+  var width = max_width;
+  if (scroll_width < max_width) {
+    width = scroll_width;
+  }
+  set_outer_width(div, width);
+}
+
+
 function get_outer_width(div) {
   return div.outerWidth(true);
 }

@@ -19,7 +19,7 @@ function DataController(data) {
     this.data.selected_seqid = null;
     this.data.delta_mz = 0.5
     this.data.start = true;
-    this.data.mass_units = ['mz(Da)', 'error(ppm)'];
+    this.data.mass_units = ['m/z(Da)', 'error(ppm)'];
     this.data.mass_unit = this.data.mass_units[0];
     this.data.ion_types = {
        "b(3+)": false,

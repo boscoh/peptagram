@@ -336,8 +336,7 @@ def load_pepxml(proteins, pepxml_fname, prob_cutoff=None, error_cutoff=None, sou
           for protxml_peptide in protein['protxml_peptides']:
             if protxml_peptide['charge'] == scan['assumed_charge'] and \
                 protxml_peptide['modified_sequence'] == match['modified_sequence']:  
-              peptide['attr']['protxml_probability'] = protxml_peptide['nsp_adjusted_probability']
-              peptide['attr']['protxml_weight'] = protxml_peptide['weight']
+              peptide['attr']['probability_protxml'] = protxml_peptide['nsp_adjusted_probability']
               peptide['attr']['is_contributing_evidence'] = protxml_peptide['is_contributing_evidence']
           peptides.append(peptide)
   source_names.extend(pepxml_reader.source_names)
