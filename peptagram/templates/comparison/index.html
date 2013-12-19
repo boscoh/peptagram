@@ -38,11 +38,9 @@
     #header {
       width: 100%;
       text-align: center;
-      font-weight: bold;
       text-transform: uppercase;
-      font-size: 30px;
-      font-weight: bold;
-      padding: 30px 0px 20px 0px;
+      font-size: 25px;
+      padding: 10px 0px 10px 0px;
     }
     #column1, #column2, #column3 {
       position: absolute;
@@ -135,9 +133,22 @@
       width: 100%;
       text-align: center;
     }
+    #watermark {
+      text-align: right;
+      font-size: 12px;
+      padding: 3px;
+    }
+    #watermark a,
+    #watermark a:visited {
+      color: #AAA;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
+  <div id="watermark">
+    <a href="http://boscoh.github.com/peptagram/vizhelp.html">HELP</a>
+  </div>
   <div id="header">Peptograph analysis of Sample</div>
   <div id="column1">
     <div class="title">PROTEINS - PRESS [N}[P]</div>

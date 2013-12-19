@@ -242,7 +242,7 @@ def transfer_files(in_dir, out_dir):
     shutil.copy(src, dst)
 
 
-def make_comparison_visualisation(data, out_dir):
+def make_graphical_comparison_visualisation(data, out_dir):
   # sanity checks
   proteins = data['proteins']
   determine_unique_peptides(proteins)
@@ -271,7 +271,7 @@ def make_comparison_visualisation(data, out_dir):
   logger.info('Made peptograph in "' + index_html + '"')
 
 
-def make_overview_visualisation(data, out_dir):
+def make_sequence_overview_visualisation(data, out_dir):
   # sanity checks
   proteins = data['proteins']
   determine_unique_peptides(proteins)

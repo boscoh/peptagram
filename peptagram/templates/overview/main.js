@@ -159,7 +159,7 @@ function Pepto(data) {
     this.spectrum_div = $("#spectrum");
     this.peptide_match_info_div = $("#peptide_match_info");
 
-    this.header_div.text(this.data.title);
+    this.header_div.html(this.data.title);
 
     // Build interactive page objects
     this.protein_list = new ProteinList(
@@ -176,7 +176,7 @@ function Pepto(data) {
     var window_height = $(window).height();
 
     // set columns at the right height
-    var header_height = get_outer_height(this.header_div);
+    var header_height = get_bottom(this.header_div);
     set_top(this.column1_div, header_height);
     set_top(this.column2_div, header_height);
     set_top(this.column3_div, header_height);
