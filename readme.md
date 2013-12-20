@@ -47,7 +47,7 @@ These should be installed automatically from the above scripts, but if that fail
 
 1. User guide to the HTML5 visualisation <http://boscoh.github.io/peptagram/vizhelp.html>.
 
-2. Examples for generating visualisations from standard xformats <http://boscoh.github.io/peptagram/vizgen.html>.
+2. Examples for generating visualisations from standard formats <http://boscoh.github.io/peptagram/vizgen.html>.
 
 3. Programming API to use custom data <http://boscoh.github.io/peptagram/api.html>.
 
@@ -55,7 +55,7 @@ These should be installed automatically from the above scripts, but if that fail
 
 
 
-##
-
-Copyright (c) 2013, Bosco K. Ho. 
-Supported by Monash University.
+## Credits
+Original concept by Oded Kleifeld.  
+Developed at the Monash Proteomics Facility.  
+Copyright (c) 2013, Bosco K. Ho.  
