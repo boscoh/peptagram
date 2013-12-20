@@ -7,7 +7,7 @@ setup(
     author='Bosco Ho',
     author_email='boscoh@gmail.com',
     url='http://boscoh.github.io/peptagram',
-    description='generates HTML5 visualization for proteomics analyses',
+    description='python scripts to generate HTML5/javascript visualization for proteomics data',
     long_description="Docs at http://boscoh.github.io/peptagram",
     license='BSD',
     include_package_data = True,
