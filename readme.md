@@ -42,18 +42,16 @@ And install from the package directory:
 
 These should be installed automatically from the above scripts, but if that fails, you may need to install them manually.
 
-Examples download (~135 MB) at <http://monash.edu/proteomics/peptagram/examples-0.1a.zip>
-
 
 ## Usage
 
 1. User guide to the HTML5 visualisation <http://boscoh.github.io/peptagram/vizhelp.html>.
 
-2. Examples for generating visualisations from standard proteomics formats <http://boscoh.github.io/peptagram/vizgen.html>.
+2. Examples for generating visualisations from standard xformats <http://boscoh.github.io/peptagram/vizgen.html>.
 
 3. Programming API to use custom data <http://boscoh.github.io/peptagram/api.html>.
 
-4. Open source contributions <http://github.com/boscoh/peptagram>.
+4. Source code and open-source contributions <http://github.com/boscoh/peptagram>.
 
 
 
