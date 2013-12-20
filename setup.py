@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='peptagram',
-    version='0.1',
+    version='0.1.1',
     author='Bosco Ho',
     author_email='boscoh@gmail.com',
     url='http://boscoh.github.io/peptagram',
