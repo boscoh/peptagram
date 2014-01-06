@@ -1,7 +1,7 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <script type="text/javascript" src="js/jquery.js"></script>
+<meta name="viewport" content="initial-scale=1, maximum-scale=1">  <script type="text/javascript" src="js/jquery.js"></script>
   <script type="text/javascript" src="js/util.js"></script>
   <script type="text/javascript" src="js/mass.js"></script>
   <script type="text/javascript" src="data.js"></script>
@@ -73,7 +73,11 @@
       white-space: nowrap; 
       background-color: #F9F9F9;
       overflow: scroll;
+      -webkit-overflow-scrolling: touch;
       cursor: pointer;
+    }
+    .protein_bar {
+      background-color: #F9F9F9;
     }
     #protein_info {
       margin-bottom: 10px;
@@ -89,6 +93,7 @@
       padding-top: 5px;
       padding-bottom: 20px;
       overflow: scroll;
+      -webkit-overflow-scrolling: touch;
     }
     #sequence pre {
       color: #BBB;
@@ -112,6 +117,7 @@
     }
     #peptide_list {
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
     }
     #peptide_list table {
       border-collapse:collapse;
@@ -124,6 +130,7 @@
     }
     #ion_table {
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .heading_row {
       outline: thin solid #CCC;

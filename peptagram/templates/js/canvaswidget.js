@@ -75,8 +75,8 @@ var CanvasWidget = function(div, bg_color) {
     this.x_mouse = event.clientX - this.x();
     this.y_mouse = event.clientY - this.y();
     if (event.touches) {
-      this.x_mouse = event.touches[0].clientX - x;
-      this.y_mouse = event.touches[0].clientY - y;
+      this.x_mouse = event.touches[0].clientX - this.x();
+      this.y_mouse = event.touches[0].clientY - this.y();
     }
   }
   
@@ -327,6 +327,39 @@ var CanvasWidget = function(div, bg_color) {
   this.canvas_dom.addEventListener(
     'mousemove',
     function(e) { _this.mousemove(e); }, 
+    false);
+
+  // handle touch interface
+  this.canvas_dom.onselectstart = function(e) {};
+  this.canvas_dom.unselectable = 'on';
+
+  this.canvas_dom.addEventListener(
+    'touchstart', 
+    function(e) { 
+      e.preventDefault();
+      _this.mousedown(e); 
+    }, 
+    false);
+  this.canvas_dom.addEventListener(
+    'touchmove',
+    function(e) { 
+      e.preventDefault();
+      _this.mousemove(e); 
+    }, 
+    false);
+  this.canvas_dom.addEventListener(
+    'touchend', 
+    function(e) { 
+      e.preventDefault();
+      _this.mouseup(e); 
+    }, 
+    false);
+  this.canvas_dom.addEventListener(
+    'touchcancel', 
+    function(e) { 
+      e.preventDefault();
+      _this.mouseup(e); 
+    }, 
     false);
 }
 

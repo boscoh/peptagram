@@ -169,7 +169,7 @@ function ProteinList(control_div, column1_div, data) {
         description += seqid + ": ";
         description += protein.description;
 
-        var column2_div = $("<div>")
+        var column2_div = $("<div>");
         column2_div.append($("<div>").text(description));
         column2_div.click(_this.data.controller.pick_protein_callback(seqid));
         _this.protein_divs.push(column2_div);

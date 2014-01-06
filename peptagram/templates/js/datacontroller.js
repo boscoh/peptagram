@@ -93,7 +93,6 @@ function DataController(data) {
 
   this.check_location_hash = function() {
     this.data.start = true;
-
     var hash = window.location.hash.substr(1);
     var params = hash.split('&');
 
@@ -105,6 +104,7 @@ function DataController(data) {
     if (!seqid in this.data.proteins) {
       return;
     }
+
     this.data.start = false;
     this.data.selected_seqid = seqid;
     var protein = this.data.proteins[seqid];
