@@ -11,14 +11,12 @@ function DataController(data) {
     } else {
       this.data.mask = 1.0;
     }
-    console.log('this.data.mask ' + this.data.mask);
     this.data.canvas_font = "10px 'Andale Mono'";
     this.data.select_bg_color = '#CFC';
     this.data.bg_color = '#F9F9F9';
     this.data.text_color = "#999";
     this.data.selected_seqid = null;
     this.data.delta_mz = 0.5
-    this.data.start = true;
     this.data.mass_units = ['m/z(Da)', 'error(ppm)'];
     this.data.mass_unit = this.data.mass_units[0];
     this.data.ion_types = {
@@ -93,6 +91,28 @@ function DataController(data) {
     }
   }
 
+  this.check_location_hash = function() {
+    this.data.start = true;
+    var hash = window.location.hash.substr(1);
+    var params = hash.split('&');
+    var pieces = params[0].split('=');
+    if (pieces.length < 2) {
+      return;
+    }
+    var seqid = pieces[1];
+    if (!seqid in this.data.proteins) {
+      return;
+    }
+    this.data.start = false;
+    this.data.selected_seqid = seqid;
+    var protein = this.data.proteins[seqid];
+    var i_source = params[1].split('=')[1];
+    protein.i_source_selected = i_source;
+    protein.i_source_view = i_source;
+    var i_peptide = params[2].split('=')[1];
+    protein.i_peptide_selected = i_peptide;
+  }
+
   this.get_current_protein = function() {
     var seqid = this.data.selected_seqid;
     if (seqid == null) {
@@ -115,13 +135,24 @@ function DataController(data) {
     return peptides[i_peptide];
   }
 
+  this.set_location_hash = function() {
+    var hash = '#';
+    var protein = this.get_current_protein()
+    hash += 'protein=' + this.data.selected_seqid;
+    hash += '&source=' + protein.i_source_selected;
+    hash += '&peptide=' + protein.i_peptide_selected;
+    window.location.hash = hash;
+  }
+
   this.pick_source_view = function(protein, i_source) {
     protein.i_source_view = i_source;
+    this.set_location_hash();
   }
 
   this.pick_peptide = function(protein, i_source, i_peptide) {
     protein.i_source_selected = i_source;
     protein.i_peptide_selected = i_peptide;
+    this.set_location_hash();
   }
 
   this.pick_peptide_callback = function(protein, i_source, i_peptide) {
@@ -135,6 +166,7 @@ function DataController(data) {
 
   this.pick_protein = function(seqid) {
     this.data.selected_seqid = seqid;
+    this.set_location_hash();
   }
 
   this.pick_protein_callback = function(seqid) {
@@ -165,6 +197,7 @@ function DataController(data) {
       protein.i_peptide_selected = best_i_peptide;
       protein.i_source_selected = i_source;
     }
+    this.set_location_hash();
   }
 
   this.toggle_zoom = function() {
@@ -208,7 +241,6 @@ function DataController(data) {
   this.get_labeled_spectrum = function() {
     var peptide = this.get_selected_peptide();
     if (!('labeled_peaks' in peptide)) {
-      console.log('label time');
       peptide.labeled_peaks = peptide.spectrum.slice(0);
       for (ion_type in this.data.ion_types) {
         if (this.data.ion_types[ion_type]) {
@@ -320,5 +352,6 @@ function DataController(data) {
   this.init();
   this.count_peptides();
   this.check_data();
+  this.check_location_hash();
 }
 

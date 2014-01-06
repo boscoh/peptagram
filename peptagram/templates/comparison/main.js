@@ -263,7 +263,7 @@ function PeptographWidget(canvas, data, color_bar) {
         this.y_from_j(this.protein.i_source_view), 
         this.get_diff_width(0, this.data.n_res_in_view), 
         slice_height,
-        "#999");
+        "#AAA");
 
     //  highlight selected peptide
     var i_source_selected = this.protein.i_source_selected;
