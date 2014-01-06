@@ -93,8 +93,10 @@ function DataController(data) {
 
   this.check_location_hash = function() {
     this.data.start = true;
+
     var hash = window.location.hash.substr(1);
     var params = hash.split('&');
+
     var pieces = params[0].split('=');
     if (pieces.length < 2) {
       return;
@@ -106,9 +108,11 @@ function DataController(data) {
     this.data.start = false;
     this.data.selected_seqid = seqid;
     var protein = this.data.proteins[seqid];
+
     var i_source = params[1].split('=')[1];
     protein.i_source_selected = i_source;
     protein.i_source_view = i_source;
+
     var i_peptide = params[2].split('=')[1];
     protein.i_peptide_selected = i_peptide;
   }
