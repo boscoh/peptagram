@@ -500,8 +500,21 @@ function Pepto(data) {
     var top =  get_bottom(this.protein_control_div);
     set_outer_height(this.protein_list_div, column1_height - top);
 
-    // move the central column to its right place
+    // resize column1_width if necessary
     var column1_width = get_outer_width(this.column1_div);
+    // if (window_width < 800) {
+    //   var default_width = 200;
+    // } else {
+    //   var default_width = 400;
+    // }
+    // if (column1_width != default_width) {
+    //   console.log(column1_width, default_width);
+    //   column1_width = default_width
+    //   set_outer_width(this.column1_div, column1_width);
+    //   this.protein_list.build_list();
+    // }
+
+    // move the central column to its right place
     set_left(this.column2_div, column1_width);
 
     // set heights and tops of central protein view

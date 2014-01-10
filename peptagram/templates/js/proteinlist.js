@@ -39,10 +39,13 @@ function ProteinBarWidget(canvas, data, seqid) {
     }
   }
 
+  // this.canvas.canvas_dom.unselectable = 'off';
   this.drag = function(x, y) {
-    if (this.data.selected_seqid != this.seqid) {
-      this.data.controller.pick_protein(this.seqid);
-      this.data.observer();
+    if (this.canvas.touch) {
+      if (this.selected_seqid != this.seqid) {
+        this.data.controller.pick_protein(this.seqid);
+        this.data.observer();
+      }  
     }
   }
 }

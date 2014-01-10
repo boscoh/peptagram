@@ -330,13 +330,14 @@ var CanvasWidget = function(div, bg_color) {
     false);
 
   // handle touch interface
-  this.canvas_dom.onselectstart = function(e) {};
+  // this.canvas_dom.onselectstart = function(e) {};
   this.canvas_dom.unselectable = 'on';
 
   this.canvas_dom.addEventListener(
     'touchstart', 
     function(e) { 
       e.preventDefault();
+      _this.touch = true;
       _this.mousedown(e); 
     }, 
     false);
@@ -351,6 +352,7 @@ var CanvasWidget = function(div, bg_color) {
     'touchend', 
     function(e) { 
       e.preventDefault();
+      _this.touch = false;
       _this.mouseup(e); 
     }, 
     false);
@@ -359,6 +361,7 @@ var CanvasWidget = function(div, bg_color) {
     function(e) { 
       e.preventDefault();
       _this.mouseup(e); 
+      _this.touch = false;
     }, 
     false);
 }
