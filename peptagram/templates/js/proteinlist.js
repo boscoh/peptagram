@@ -38,6 +38,13 @@ function ProteinBarWidget(canvas, data, seqid) {
       }
     }
   }
+
+  this.drag = function(x, y) {
+    if (this.data.selected_seqid != this.seqid) {
+      this.data.controller.pick_protein(this.seqid);
+      this.data.observer();
+    }
+  }
 }
 
 
