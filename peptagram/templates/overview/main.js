@@ -165,7 +165,7 @@ function Pepto(data) {
     this.protein_list = new ProteinList(
         this.protein_control_div, this.protein_list_div, this.data);
     this.sequence_view = new SequenceView(this.sequence_div, this.data);
-    this.spectrum_canvas = new CanvasWidget(this.spectrum_div, "#EFEFEF");
+    this.spectrum_canvas = new CanvasWidget(this.spectrum_div, "#EFEFEF", true);
     this.spectrum_widget = new SpectrumWidget(this.spectrum_canvas, this.data);
     this.spectrum_canvas.push(this.spectrum_widget);
     this.ion_table = new IonTable(this.ion_table_div, this.data);
@@ -188,8 +188,21 @@ function Pepto(data) {
     var top =  get_bottom(this.protein_control_div);
     set_outer_height(this.protein_list_div, column1_height - top);
 
-    // move the central column to its right place
+    // resize column1_width if necessary
     var column1_width = get_outer_width(this.column1_div);
+    if (window_width < 1200) {
+      var default_width = 220;
+    } else {
+      var default_width = 450;
+    }
+    if (column1_width != default_width) {
+      column1_width = default_width;
+      set_outer_width(this.column1_div, column1_width);
+      width = get_content_width(this.column1_div);
+      this.protein_list.redraw_bars();
+    }
+
+    // move the central column to its right place
     set_left(this.column2_div, column1_width);
     var width = get_outer_width(this.sequence_div);
     this.column2_div.width(width);
@@ -250,6 +263,7 @@ function Pepto(data) {
   this.init_data(data);
   this.init_widgets();
   this.register_callbacks();
+  block_bounce_except_for_touchscroll();
 }
 
 

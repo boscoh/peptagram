@@ -1,7 +1,8 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <script type="text/javascript" src="js/jquery.js"></script>
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1">  
+  <script type="text/javascript" src="js/jquery-2.0.3.js"></script>
   <script type="text/javascript" src="js/util.js"></script>
   <script type="text/javascript" src="js/mass.js"></script>
   <script type="text/javascript" src="data.js"></script>
@@ -24,6 +25,8 @@
       font-family: 'Andale Mono', Lucidatypewriter, monospace;
       font-size: 10px;
       color: #666;
+    }
+    table, pre {
       margin: 0;
     }
     .title {
@@ -74,7 +77,6 @@
       white-space: nowrap; 
       background-color: #F9F9F9;
       overflow: scroll;
-      -webkit-overflow-scrolling: touch;
       cursor: pointer;
     }
     #protein_info {
@@ -91,7 +93,6 @@
       padding-top: 5px;
       padding-bottom: 20px;
       overflow: scroll;
-      -webkit-overflow-scrolling: touch;
     }
     #sequence pre {
       color: #BBB;
@@ -116,7 +117,6 @@
     #peptide_list {
       position: absolute;
       overflow: auto;
-      -webkit-overflow-scrolling: touch;
     }
     #peptide_list table {
       border-collapse:collapse;
@@ -129,7 +129,6 @@
     }
     #ion_table {
       overflow: auto;
-      -webkit-overflow-scrolling: touch;
     }
     .heading_row {
       outline: thin solid #CCC;
@@ -162,6 +161,11 @@
       color: #AAA;
       text-decoration: none;
     }
+    .touchscroll {
+      overflow: scroll;
+      /* inertial scrolling on OSX */
+      -webkit-overflow-scrolling: touch;
+    }
   </style>
 </head>
 <body>
@@ -172,20 +176,20 @@
   <div id="column1">
     <div class="title">PROTEINS - PRESS [N][P]</div>
     <div id="protein_control"></div>
-    <div id="protein_list"></div>
+    <div id="protein_list" class="touchscroll"></div>
   </div>
   <div id="column2">
     <div class="title">PROTEIN INFO</div>
     <div id="protein_info"></div>
-    <div id="sequence"></div>
+    <div id="sequence" class="touchscroll"></div>
     <div id="peptide_list_title" class="title">PEPTIDE-SPECTRUM MATCHES - PRESS [J][K]</div>
-    <div id="peptide_list"></div>
+    <div id="peptide_list" class="touchscroll"></div>
   </div>
   <div id="column3">
     <div class="title">PEPTIDE-SPECTRUM MATCH INFO</div>
     <div id="peptide_info"></div>
     <div id="spectrum"></div>
-    <div id="ion_table"></div>
+    <div id="ion_table" class="touchscroll"></div>
   </div>
 </body>
 </html>
