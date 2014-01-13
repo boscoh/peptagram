@@ -331,7 +331,6 @@ var CanvasWidget = function(div, bg_color, is_touch) {
 
   // handle touch interface
   this.is_touch = is_touch;
-  console.log(this.is_touch);
   if (this.is_touch) {
     this.canvas_dom.onselectstart = function(e) {};
     this.canvas_dom.unselectable = 'on';

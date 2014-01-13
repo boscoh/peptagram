@@ -117,3 +117,27 @@ function set_left(div, left) {
   div.css('left', left);
 }
 
+function block_bounce_except_for_touchscroll() {
+  console.log('ya bastards');
+  var shift_from_edge;
+  $(document).on('touchmove', function(e) {
+    e.preventDefault();
+  });
+  $('body').on('touchmove', '.touchscroll', function(e) {
+    return e.stopPropagation();
+  });
+  shift_from_edge = function(e) {
+    var bottom, target;
+    target = e.currentTarget;
+    bottom = target.scrollTop + target.offsetHeight;
+    if (target.scrollTop === 0) {
+      target.scrollTop = 1;
+    } else if (target.scrollHeight === bottom) {
+      target.scrollTop -= 1;
+    }
+  };
+  $('body').on('touchstart', '.touchscroll', function(e) {
+    shift_from_edge(e);
+  });
+}
+

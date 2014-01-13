@@ -511,7 +511,7 @@ function Pepto(data) {
       column1_width = default_width;
       set_outer_width(this.column1_div, column1_width);
       width = get_content_width(this.column1_div);
-      this.protein_list.redraw_bars(width);
+      this.protein_list.redraw_bars();
     }
 
     // move the central column to its right place
@@ -582,6 +582,8 @@ function Pepto(data) {
   this.init_data(data);
   this.init_widgets();
   this.register_callbacks();
+  block_bounce_except_for_touchscroll();
+
 }
 
 

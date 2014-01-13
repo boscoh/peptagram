@@ -178,17 +178,17 @@ function ProteinList(control_div, column1_div, data) {
         description += seqid + ": ";
         description += protein.description;
 
-        var column2_div = $("<div>");
-        column2_div.append($("<div>").text(description));
-        column2_div.click(_this.data.controller.pick_protein_callback(seqid));
-        _this.protein_divs.push(column2_div);
-        _this.main_div.append(column2_div);
+        var protein_div = $("<div>");
+        protein_div.append($("<div>").text(description));
+        protein_div.click(_this.data.controller.pick_protein_callback(seqid));
+        _this.protein_divs.push(protein_div);
+        _this.main_div.append(protein_div);
 
         var canvas_div = $("<div>");
         canvas_div.css('width', _this.main_div.width() - 10);
         canvas_div.css('height', 12);
         canvas_div.css('margin', '5px 0');
-        column2_div.append(canvas_div);
+        protein_div.append(canvas_div);
 
         var canvas = new CanvasWidget(canvas_div, "#EFEFEF");
         var protein_bar_widget = new ProteinBarWidget(canvas, data, seqid);
@@ -212,9 +212,10 @@ function ProteinList(control_div, column1_div, data) {
   // drawing bars is a bit difficult since the widths are not
   // transmitted directly on resize! so have to reparameterize
   // directly
-  this.redraw_bars = function(width) {
+  this.redraw_bars = function() {
     for (var i=0; i<this.protein_widgets.length; i++) {
       var widget = this.protein_widgets[i];
+      var width = widget.canvas.div.parent().width();
       widget.canvas.set_width(width);
       widget.draw();
     }
