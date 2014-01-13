@@ -56,7 +56,7 @@ def parse_string(s):
 # tsv helper function
 
 def splitter(s, convert_fn=None, delimiter=";"):
-  s = s.strip()
+  s = str(s).strip()
   if not s:
     return []
   words = s.split(delimiter)

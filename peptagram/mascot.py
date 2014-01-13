@@ -26,9 +26,9 @@ Some useful formulae:
 
 def piece(s, splitter, i, j=None):
   if j is None:
-    return s.split(splitter)[i]
+    return str(s).split(splitter)[i]
   else:
-    return s.split(splitter)[i:j]
+    return str(s).split(splitter)[i:j]
 
 
 def process_summary(l, scans):
