@@ -26,7 +26,7 @@ function is_canvas_suppported() {
 // The widget thus gets a simple IO with the user
 // mainly through the this.drag function.
 
-var CanvasWidget = function(div, bg_color) {
+var CanvasWidget = function(div, bg_color, is_touch) {
 
   this.pos_dom = function() {
     var curr_dom = this.canvas_dom;
@@ -330,40 +330,44 @@ var CanvasWidget = function(div, bg_color) {
     false);
 
   // handle touch interface
-  // this.canvas_dom.onselectstart = function(e) {};
-  this.canvas_dom.unselectable = 'on';
+  this.is_touch = is_touch;
+  console.log(this.is_touch);
+  if (this.is_touch) {
+    this.canvas_dom.onselectstart = function(e) {};
+    this.canvas_dom.unselectable = 'on';
 
-  this.canvas_dom.addEventListener(
-    'touchstart', 
-    function(e) { 
-      e.preventDefault();
-      _this.touch = true;
-      _this.mousedown(e); 
-    }, 
-    false);
-  this.canvas_dom.addEventListener(
-    'touchmove',
-    function(e) { 
-      e.preventDefault();
-      _this.mousemove(e); 
-    }, 
-    false);
-  this.canvas_dom.addEventListener(
-    'touchend', 
-    function(e) { 
-      e.preventDefault();
-      _this.touch = false;
-      _this.mouseup(e); 
-    }, 
-    false);
-  this.canvas_dom.addEventListener(
-    'touchcancel', 
-    function(e) { 
-      e.preventDefault();
-      _this.mouseup(e); 
-      _this.touch = false;
-    }, 
-    false);
+    this.canvas_dom.addEventListener(
+      'touchstart', 
+      function(e) { 
+        e.preventDefault();
+        _this.touch = true;
+        _this.mousedown(e); 
+      }, 
+      false);
+    this.canvas_dom.addEventListener(
+      'touchmove',
+      function(e) { 
+        e.preventDefault();
+        _this.mousemove(e); 
+      }, 
+      false);
+    this.canvas_dom.addEventListener(
+      'touchend', 
+      function(e) { 
+        e.preventDefault();
+        _this.touch = false;
+        _this.mouseup(e); 
+      }, 
+      false);
+    this.canvas_dom.addEventListener(
+      'touchcancel', 
+      function(e) { 
+        e.preventDefault();
+        _this.mouseup(e); 
+        _this.touch = false;
+      }, 
+      false);
+  }
 }
 
 

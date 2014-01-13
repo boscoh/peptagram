@@ -158,6 +158,11 @@
       color: #AAA;
       text-decoration: none;
     }
+    .touchscroll {
+      overflow: scroll
+      /* inertial scrolling on OSX */
+      -webkit-overflow-scrolling: touch
+    }
   </style>
 </head>
 <body>
@@ -168,13 +173,13 @@
   <div id="column1">
     <div class="title">PROTEINS - PRESS [N}[P]</div>
     <div id="protein_control"></div>
-    <div id="protein_list"></div>
+    <div id="protein_list" class="touchscroll"></div>
   </div>
   <div id="column2">
     <div class="title">PROTEIN INFO - PRESS [U][D]</div>
     <div id="protein_info"></div>
     <div id="peptograph"></div>
-    <div id="sequence"></div>
+    <div id="sequence" class="touchscroll"></div>
   </div>
   <div id="column3">
     <div class="title">PEPTIDE-SPECTRUM MATCHES - PRESS [J][K]</div>
@@ -182,7 +187,7 @@
     <div class="title">PEPTIDE-SPECTRUM MATCH INFO</div>
     <div id="peptide_info"></div>
     <div id="spectrum"></div>
-    <div id="ion_table"></div>
+    <div id="ion_table" class="touchscroll"></div>
   </div>
 </body>
 </html>

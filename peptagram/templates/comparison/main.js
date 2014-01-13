@@ -462,7 +462,7 @@ function Pepto(data) {
     this.protein_list = new ProteinList(
         this.protein_control_div, this.protein_list_div, this.data);
 
-    this.peptograph_canvas = new CanvasWidget(this.peptograph_div, this.data.bg_color);
+    this.peptograph_canvas = new CanvasWidget(this.peptograph_div, this.data.bg_color, true);
     var width = this.peptograph_canvas.div.width();
     this.color_bar = new ColorBarWidget(
         this.peptograph_canvas, this.data['color_names'], this.data.canvas_font);
@@ -475,7 +475,7 @@ function Pepto(data) {
     this.peptograph_canvas.push(peptograph_widget);
 
     this.sequence_view = new SequenceView(this.sequence_div, this.data);
-    this.spectrum_canvas = new CanvasWidget(this.spectrum_div, this.data.bg_color);
+    this.spectrum_canvas = new CanvasWidget(this.spectrum_div, this.data.bg_color, true);
 
     this.spectrum_widget = new SpectrumWidget(this.spectrum_canvas, this.data);
     this.spectrum_canvas.push(this.spectrum_widget);
@@ -502,17 +502,17 @@ function Pepto(data) {
 
     // resize column1_width if necessary
     var column1_width = get_outer_width(this.column1_div);
-    // if (window_width < 800) {
-    //   var default_width = 200;
-    // } else {
-    //   var default_width = 400;
-    // }
-    // if (column1_width != default_width) {
-    //   console.log(column1_width, default_width);
-    //   column1_width = default_width
-    //   set_outer_width(this.column1_div, column1_width);
-    //   this.protein_list.build_list();
-    // }
+    if (window_width < 1200) {
+      var default_width = 220;
+    } else {
+      var default_width = 450;
+    }
+    if (column1_width != default_width) {
+      column1_width = default_width;
+      set_outer_width(this.column1_div, column1_width);
+      width = get_content_width(this.column1_div);
+      this.protein_list.redraw_bars(width);
+    }
 
     // move the central column to its right place
     set_left(this.column2_div, column1_width);
