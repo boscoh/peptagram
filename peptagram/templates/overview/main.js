@@ -163,6 +163,7 @@ function Pepto(data) {
     this.peptide_match_info_div = $("#peptide_match_info");
 
     this.header_div.html(this.data.title);
+    document.title = this.data.title;
 
     // Build interactive page objects
     this.protein_list = new ProteinList(

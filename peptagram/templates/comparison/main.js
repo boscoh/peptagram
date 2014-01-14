@@ -456,7 +456,8 @@ function Pepto(data) {
     this.spectrum_div = $("#spectrum");
     this.peptide_match_info_div = $("#peptide_match_info");
 
-    this.header_div.text(this.data['title']);
+    this.header_div.text(this.data.title);
+    document.title = this.data.title;
 
     // Build interactive page objects
     this.protein_list = new ProteinList(
