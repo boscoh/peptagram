@@ -503,8 +503,8 @@ function Pepto(data) {
 
     // resize column1_width if necessary
     var column1_width = get_outer_width(this.column1_div);
-    if (window_width < 1200) {
-      var default_width = 220;
+    if (window_width < 1600) {
+      var default_width = 180;
     } else {
       var default_width = 450;
     }
@@ -534,8 +534,19 @@ function Pepto(data) {
     top = get_bottom(this.peptograph_div);
     set_top(this.sequence_div, top);
 
-    // set widths of the central protein view
+    // check column3 variable width
     var column3_width = get_outer_width(this.column3_div)
+    if (window_width < 1600) {
+      var default_width = 240;
+    } else {
+      var default_width = 450;
+    }
+    if (column3_width != default_width) {
+      column3_width = default_width;
+      set_outer_width(this.column3_div, column3_width);
+    }
+
+    // set widths of the central protein view
     var width = window_width - column1_width - column3_width;
     set_outer_width(this.column2_div, width);
     width = get_content_width(this.column2_div);

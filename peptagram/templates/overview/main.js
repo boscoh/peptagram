@@ -18,6 +18,8 @@ var SequenceView = function(div, data) {
   this.data = data;
   this.seqid = null;
   this.div = div;
+  this.small_block = 10;
+  this.big_block = 50;
   this.dom = this.div[0];
 
   this.char_width = function() {
@@ -76,6 +78,7 @@ var SequenceView = function(div, data) {
     var sequence = this.protein.sequence;
     var n_res = sequence.length;
 
+    console.log(this.small_block, this.big_block);
     var target = pre;
     current_i_peptide = -1;
     for (var i_res=0; i_res<sequence.length; i_res++) {
@@ -94,9 +97,9 @@ var SequenceView = function(div, data) {
         current_i_peptide = -1;
         target = pre;
       }
-      if (i_res % 50 == 0) {
+      if (i_res % this.big_block == 0) {
         if (i_res > 0) {
-          pre.append('&nbsp; &nbsp;&nbsp;<br>');
+          pre.append(' <br>');
         }
         num_str = '' + i_res;
         while (num_str.length < 5) {
@@ -108,7 +111,7 @@ var SequenceView = function(div, data) {
           pre.append(peptide_link);
           target = peptide_link;
         }
-      } else if (i_res % 10 == 0) {
+      } else if (i_res % this.small_block == 0) {
         target.append(' ');
       }
       target.append(sequence[i_res]);
@@ -191,11 +194,20 @@ function Pepto(data) {
     // resize column1_width if necessary
     var column1_width = get_outer_width(this.column1_div);
     if (window_width < 1200) {
-      var default_width = 220;
+      var default_width = 180;
+      this.sequence_view.small_block = 5;
+      this.sequence_view.big_block = 25;
+    } else if (window_width < 1600) {
+      var default_width = 350;
+      this.sequence_view.small_block = 10;
+      this.sequence_view.big_block = 50;
     } else {
-      var default_width = 450;
+      var default_width = 500;
+      this.sequence_view.small_block = 10;
+      this.sequence_view.big_block = 100;
     }
     if (column1_width != default_width) {
+      this.sequence_view.build();
       column1_width = default_width;
       set_outer_width(this.column1_div, column1_width);
       width = get_content_width(this.column1_div);
