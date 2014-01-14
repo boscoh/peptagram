@@ -211,6 +211,7 @@ var CanvasWidget = function(div, bg_color, is_touch) {
   }
 
   this.draw = function() {
+    this.update_size();
     this.draw_background();
     for (var i=0; i<this.widgets.length; i++) {
       this.widgets[i].draw();

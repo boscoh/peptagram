@@ -542,8 +542,6 @@ function Pepto(data) {
     set_outer_width(this.sequence_div, width);
     set_outer_width(this.peptograph_div, width);
 
-    this.peptograph_canvas.update_size();
-
     // move and resize the width right column 
     set_left(this.column3_div, window_width - column3_width);
 

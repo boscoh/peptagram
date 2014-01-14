@@ -17,7 +17,6 @@ function ProteinBarWidget(canvas, data, seqid) {
   }
 
   this.draw = function() {
-    this.canvas.update_size();
     this.width = this.canvas.width;
     this.height = this.canvas.height;
 
@@ -56,7 +55,7 @@ function ProteinList(control_div, column1_div, data) {
   this.main_div = column1_div
   this.control_div = control_div;
   this.data = data;
-  this.protein_widgets = [];
+  this.protein_canvases = [];
   this.protein_divs = [];
   this.sort_key;
   this.sorting_msg_div;
@@ -132,18 +131,18 @@ function ProteinList(control_div, column1_div, data) {
     this.data.selected_seqid = this.data.sorted_seqids[this.i_protein];
     if (this.i_old_protein != null) {
       this.protein_divs[this.i_old_protein].css('color', '#666');
-      this.protein_widgets[this.i_old_protein].draw();
+      this.protein_canvases[this.i_old_protein].draw();
     }
     this.protein_divs[this.i_protein].css({'color':'#333'});
-    this.protein_widgets[this.i_protein].draw();
+    this.protein_canvases[this.i_protein].draw();
     this.i_old_protein = this.i_protein;
   }
 
 
   this.build_list = function() {
     this.main_div.empty();
-    while (this.protein_widgets.length > 0) {
-      this.protein_widgets.pop();
+    while (this.protein_canvases.length > 0) {
+      this.protein_canvases.pop();
     }
     while (this.protein_divs.length > 0) {
       this.protein_divs.pop();
@@ -195,7 +194,7 @@ function ProteinList(control_div, column1_div, data) {
 
         var canvas = new CanvasWidget(canvas_div, "#EFEFEF");
         var protein_bar_widget = new ProteinBarWidget(canvas, data, seqid);
-        _this.protein_widgets.push(protein_bar_widget);
+        _this.protein_canvases.push(canvas);
 
         canvas.push(protein_bar_widget);
         canvas.draw();
@@ -213,8 +212,8 @@ function ProteinList(control_div, column1_div, data) {
   }
 
   this.redraw_bars = function() {
-    for (var i=0; i<this.protein_widgets.length; i++) {
-      this.protein_widgets[i].draw();
+    for (var i=0; i<this.protein_canvases.length; i++) {
+      this.protein_canvases[i].draw();
     }
   }
 
