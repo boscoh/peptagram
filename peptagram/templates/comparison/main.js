@@ -462,6 +462,7 @@ function Pepto(data) {
     this.protein_list = new ProteinList(
         this.protein_control_div, this.protein_list_div, this.data);
 
+    this.peptograph_div.css('width', '100%');
     this.peptograph_canvas = new CanvasWidget(this.peptograph_div, this.data.bg_color, true);
     var width = this.peptograph_canvas.div.width();
     this.color_bar = new ColorBarWidget(
@@ -510,7 +511,6 @@ function Pepto(data) {
     if (column1_width != default_width) {
       column1_width = default_width;
       set_outer_width(this.column1_div, column1_width);
-      width = get_content_width(this.column1_div);
       this.protein_list.redraw_bars();
     }
 
@@ -521,16 +521,16 @@ function Pepto(data) {
     set_outer_height(this.column2_div, main_height);
     var top = get_bottom(this.protein_info_div);
     set_top(this.peptograph_div, top);
-    var height = get_content_height(this.column2_div) - 1;
-    height += - top - get_outer_height(this.sequence_div)
+    var peptograph_height = get_content_height(this.column2_div) - 1;
+    peptograph_height += - top - get_outer_height(this.sequence_div)
     var n_source = this.data.controller.get_current_protein().sources.length;
     if (n_source < 5) {
       var fixed_height = this.color_bar.height*n_source + 10;
-      if (fixed_height < height) {
-        height = fixed_height;
+      if (fixed_height < peptograph_height) {
+        peptograph_height = fixed_height;
       }
     }
-    this.peptograph_canvas.set_height(height);
+    set_outer_height(this.peptograph_div, peptograph_height);
     top = get_bottom(this.peptograph_div);
     set_top(this.sequence_div, top);
 
@@ -539,8 +539,10 @@ function Pepto(data) {
     var width = window_width - column1_width - column3_width;
     set_outer_width(this.column2_div, width);
     width = get_content_width(this.column2_div);
-    this.peptograph_canvas.set_width(width);
     set_outer_width(this.sequence_div, width);
+    set_outer_width(this.peptograph_div, width);
+
+    this.peptograph_canvas.update_size();
 
     // move and resize the width right column 
     set_left(this.column3_div, window_width - column3_width);
@@ -551,7 +553,7 @@ function Pepto(data) {
     set_outer_height(this.peptide_list_div, Math.round(0.2*height));
     var top = get_bottom(this.peptide_list_div);
     set_top(this.spectrum_div, top);
-    this.spectrum_canvas.set_height(Math.round(0.2*height));
+    set_outer_height(this.spectrum_div, Math.round(0.2*height));
     var top = get_bottom(this.peptide_info_div) + this.spectrum_div.outerHeight(true);
     set_outer_height(this.ion_table_div, height - top);
   }

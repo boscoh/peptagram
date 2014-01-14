@@ -17,8 +17,10 @@ function ProteinBarWidget(canvas, data, seqid) {
   }
 
   this.draw = function() {
-    this.width = this.canvas.canvas_dom.width;
-    this.height = this.canvas.canvas_dom.height;
+    this.canvas.update_size();
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
+
     if (this.seqid == this.data.selected_seqid) {
       var bg_color = this.data.select_bg_color;
     } else {
@@ -188,6 +190,7 @@ function ProteinList(control_div, column1_div, data) {
         canvas_div.css('width', _this.main_div.width() - 10);
         canvas_div.css('height', 12);
         canvas_div.css('margin', '5px 0');
+        canvas_div.css('width','100%');
         protein_div.append(canvas_div);
 
         var canvas = new CanvasWidget(canvas_div, "#EFEFEF");
@@ -209,15 +212,9 @@ function ProteinList(control_div, column1_div, data) {
     progressive_build_list();
   }
 
-  // drawing bars is a bit difficult since the widths are not
-  // transmitted directly on resize! so have to reparameterize
-  // directly
   this.redraw_bars = function() {
     for (var i=0; i<this.protein_widgets.length; i++) {
-      var widget = this.protein_widgets[i];
-      var width = widget.canvas.div.parent().width();
-      widget.canvas.set_width(width);
-      widget.draw();
+      this.protein_widgets[i].draw();
     }
   }
 

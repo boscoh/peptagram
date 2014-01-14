@@ -118,7 +118,6 @@ function set_left(div, left) {
 }
 
 function block_bounce_except_for_touchscroll() {
-  console.log('ya bastards');
   var shift_from_edge;
   $(document).on('touchmove', function(e) {
     e.preventDefault();

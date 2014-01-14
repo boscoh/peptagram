@@ -47,15 +47,12 @@ var CanvasWidget = function(div, bg_color, is_touch) {
     return [curr_left, curr_top];
   }
 
-  this.set_width = function(w) { 
-    this.canvas_dom.width = w;
-    this.div.width(w);
-  }
-
-  this.set_height = function(h) {
-    this.canvas_dom.height = h; 
-    this.div.height(h);
-  }
+  this.update_size = function() {
+    this.width = this.div.width();
+    this.height = this.div.height();
+    this.canvas_dom.width =  this.width;
+    this.canvas_dom.height = this.height;
+  } 
 
   this.x = function() { return this.pos_dom(this.canvas_dom)[0]; }
 
@@ -311,8 +308,8 @@ var CanvasWidget = function(div, bg_color, is_touch) {
   this.div.append(this.canvas);
   this.canvas_dom = this.canvas[0];
   this.draw_context = this.canvas_dom.getContext('2d');
-  this.set_width(this.div.width());
-  this.set_height(this.div.height());
+  this.canvas_dom.width = this.div.width();
+  this.canvas_dom.height = this.div.height();
   this.set_scale();
 
   var _this = this;

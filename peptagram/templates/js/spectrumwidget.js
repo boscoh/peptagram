@@ -72,8 +72,10 @@ function SpectrumWidget(canvas, data) {
   }
 
   this.update = function() {
-    this.width = this.canvas.canvas_dom.width;
-    this.height = this.canvas.canvas_dom.height;
+    this.canvas.update_size();
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
+
     this.draw_width = this.width - 2*this.offset;
     this.draw_height = this.height - 2*this.offset;
     var label_color = '#BCB';

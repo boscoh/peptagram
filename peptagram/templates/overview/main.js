@@ -227,12 +227,11 @@ function Pepto(data) {
     set_left(this.column3_div, left);
     var width = window_width - left;
     set_outer_width(this.column3_div, width);
-    this.spectrum_canvas.set_width(width - 20);
 
     // set the right column heights
     set_outer_height(this.column3_div, main_height);
     var height = get_content_height(this.column3_div);
-    this.spectrum_canvas.set_height(Math.round(0.3*height));
+    set_outer_height(this.spectrum_div, Math.round(0.3*height));
     var top = get_bottom(this.peptide_info_div) + this.spectrum_div.outerHeight(true);
     set_outer_height(this.ion_table_div, height - top);
   }
