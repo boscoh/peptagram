@@ -4,6 +4,9 @@ from pprint import pprint
 import os
 import json
 import math
+import logging
+
+logger = logging.getLogger('maxquant')
 
 import numpy 
 
@@ -13,14 +16,6 @@ import proteins as parse_proteins
 """
 Parser for Maxquant summary text files
 """
-
-
-def read(in_dir):
-  peptides = parse.read_tsv(os.path.join(in_dir, 'peptides.txt'))
-  scans = parse.read_tsv(os.path.join(in_dir, 'msms.txt'))
-  protein_groups = parse.read_tsv(os.path.join(in_dir, 'proteinGroups.txt'))
-  evidence = parse.read_tsv(os.path.join(in_dir, 'evidence.txt'))
-  return peptides, scans, protein_groups, evidence
 
 
 def get_labeled_spectrum(scan):
@@ -75,27 +70,39 @@ def change_key(data, old_key, new_key):
   del data[old_key]
 
 
+def read_tsv(tsv_txt):
+  """
+  Reads a title top TSV file, converts all keys to lower case
+  and returns a list of dictionaries.
+  """
+  f = open(tsv_txt, "UR")
+  titles = [w.lower() for w in split_tab(f.readline())]
+  results = []
+  for line in f.readlines():
+    group = {}
+    for key, val in zip(titles, split_tab(line)):
+      group[key] = parse_string(val)
+    results.append(group)
+  return results
+
+
 def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
-  peptide_list, scan_list, protein_group_list, evidence_list = \
-        read(in_dir)
 
-  peptides = { int(p['id']):p for p in peptide_list }
-  scans = { int(s['id']):s for s in scan_list }
-  protein_groups = { int(p['id']):p for p in protein_group_list }
-  evidence_dict = { int(e['id']):e for e in evidence_list }
-
-  parse.save_data_dict(peptides, in_dir + '/peptides.dump')
-  parse.save_data_dict(scans, in_dir + '/scans.dump')
-  parse.save_data_dict(protein_groups, in_dir + '/protein_groups.dump')
-  parse.save_data_dict(evidence_dict, in_dir + '/evidence.dump')
+  evidence_fname = os.path.join(in_dir, 'evidence.txt')
+  logger.info('Loading evidence file: ' + evidence_fname)
+  evidence_iter = parse.read_tsv(evidence_fname)
+  evidence_dict = { int(e['id']):e for e in evidence_iter }
 
   sources_set = set(e['raw file'] for e in evidence_dict.values())
   sources = [str(s) for s in sorted(sources_set)]
   i_sources = {source:k for k, source in enumerate(sources)}
 
+  protein_group_fname = os.path.join(in_dir, 'proteinGroups.txt')
+  logger.info('Loading protein groups: ' + protein_group_fname)
   proteins = {}
   protein_by_group_id = {}
-  for group_id, protein_group in protein_groups.items():
+  for protein_group in parse.read_tsv(protein_group_fname):
+    group_id = protein_group['id']
     protein = {
       'description': '',
       'attr': { 
@@ -112,13 +119,19 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
     protein['attr']['other_seqids'] = seqids[1:]
     protein_by_group_id[group_id] = protein
 
-  print("Matching sequences and scan in proteins")
+  peptides_fname = os.path.join(in_dir, 'peptides.txt')
+  logger.info('Loading peptides file: ' + peptides_fname)
+  peptides_iter = parse.read_tsv(peptides_fname)
+  peptides = { int(p['id']):p for p in peptides_iter }
+
+  scans_fname = os.path.join(in_dir, 'msms.txt')
+  logger.info('Loading scans and matching: ' + scans_fname)
   i_scan = 0
-  n_scan = len(scans)
-  for scan_id, scan in scans.items():
+  for scan in parse.read_tsv(scans_fname):
+    scan_id = int(scan['id'])
     i_scan += 1
     if i_scan % 5000 == 0:
-      print("{}/{} scans processed".format(i_scan, n_scan))
+      logger.info("{} scans processed".format(i_scan))
     evidence_id = int(scan['evidence id'])
     evidence = evidence_dict[evidence_id]
 
@@ -229,11 +242,5 @@ def calculate_lfq_ratio_intensities(
     protein['attr']['ratio'] = group_ratio
 
 
-if __name__ == '__main__':
-  peptides, scans, protein_groups, evidence = read('../example/maxquant/silac')
-  parse.save_data_dict(peptides, '../example/maxquant/peptides.dump')
-  parse.save_data_dict(scans, '../example/maxquant/scans.dump')
-  parse.save_data_dict(protein_groups, '../example/maxquant/protein_groups.dump')
-  parse.save_data_dict(evidence, '../example/maxquant/evidence.dump')
 
 

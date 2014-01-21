@@ -83,8 +83,7 @@ def read_tsv(tsv_txt):
     group = {}
     for key, val in zip(titles, split_tab(line)):
       group[key] = parse_string(val)
-    results.append(group)
-  return results
+    yield group
 
 
 # XML helper functions

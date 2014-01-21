@@ -157,6 +157,10 @@ def calculate_peptide_positions(proteins, iso_leu_isomerism=False):
           del peptides[i_peptide]
           continue
         peptide['i'] = i 
+      for peptide in peptides:
+        if 'i' not in peptide:
+          pprint(peptide)
+          raise ValueError
 
 
 def load_fastas_into_proteins(
