@@ -304,21 +304,21 @@ function DataController(data) {
   }
 
   this.onkeydown = function(c) {
-    if (c == 'N') {
+    if (c == 'A') {
       var i = this.get_i_protein() + 1;
       if (i < this.data.sorted_seqids.length) {
         var seqid = this.data.sorted_seqids[i];
         this.pick_protein_callback(seqid)();
         return false;
       }
-    } else if (c == 'P') {
+    } else if (c == 'W') {
       var i = this.get_i_protein() - 1;
       if (i >= 0) {
         var seqid = this.data.sorted_seqids[i];
         this.pick_protein_callback(seqid)();
         return false;
       }
-    } else if (c == 'J') {
+    } else if (c == 'D') {
       var protein = this.get_current_protein();
       var i_source = protein.i_source_selected;
       var i_peptide = protein.i_peptide_selected + 1;
@@ -326,14 +326,14 @@ function DataController(data) {
       if (i_peptide < peptides.length) {
         this.pick_peptide_callback(protein, i_source, i_peptide)();
       }
-    } else if (c == 'K') {
+    } else if (c == 'R') {
       var protein = this.get_current_protein();
       var i_source = protein.i_source_selected;
       var i_peptide = protein.i_peptide_selected - 1;
       if (i_peptide >= 0) {
         this.pick_peptide_callback(protein, i_source, i_peptide)();
       }
-    } else if (c == 'D') {
+    } else if (c == 'S') {
       var protein = this.get_current_protein();
       var i_source = protein.i_source_view;
       if (i_source < protein.sources.length-1) {
@@ -341,7 +341,7 @@ function DataController(data) {
         this.data.observer();
         return false;
       }
-    } else if (c == 'U') {
+    } else if (c == 'E') {
       var protein = this.get_current_protein();
       var i_source = protein.i_source_view;
       if (i_source > 0) {
