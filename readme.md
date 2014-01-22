@@ -55,6 +55,7 @@ These should be installed automatically from the above scripts, but if that fail
 
 
 ## Credits
+Contributors: Rob Goode.
 Original concept by Oded Kleifeld.  
 Developed at the Monash Proteomics Facility.  
 Copyright (c) 2013, Bosco K. Ho.  
