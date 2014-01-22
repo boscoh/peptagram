@@ -1,6 +1,6 @@
 
 
-# PEPTAGRAM - ROB EXTRA FRIENDLY COFFEE VERSION
+# PEPTAGRAM - BLOWING ROB's MIND EXTRA FRIENDLY COFFEE VERSION
 
 
 `peptagram` generates a single-page HTML5 web-app to visualize proteomics analyses for:
