@@ -101,7 +101,7 @@ function DataController(data) {
       return;
     }
     var seqid = pieces[1];
-    if (!seqid in this.data.proteins) {
+    if (!(seqid in this.data.proteins)) {
       return;
     }
 
@@ -110,10 +110,18 @@ function DataController(data) {
     var protein = this.data.proteins[seqid];
 
     var i_source = params[1].split('=')[1];
+    var sources = protein.sources;
+    if (i_source >= sources.length) {
+      i_source = sources.length-1;
+    }
     protein.i_source_selected = i_source;
     protein.i_source_view = i_source;
 
     var i_peptide = params[2].split('=')[1];
+    peptides = sources[i_source];
+    if (i_peptide >= peptides.length) {
+      i_peptide = peptides.length - 1;
+    }
     protein.i_peptide_selected = i_peptide;
   }
 
