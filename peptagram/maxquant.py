@@ -173,15 +173,15 @@ def scale_log(r, max_v):
 
 
 def calculate_ratio_intensities(
-    proteins, max_ratio=2.0, ratio_key='ratio h/l normalized'):
+    proteins, max_ratio=2.0, ratio_key='ratio h/l normalized haha'):
   for seqid in proteins.keys():
     for source in proteins[seqid]['sources']:
        for peptide in source['peptides']:
-        ratio = peptide['attr'][ratio_key]
-        if ratio is None or math.isnan(ratio) or ratio < 0:
-          peptide['intensity'] = ""
-        else:
-          peptide['intensity'] = scale_log(ratio, max_ratio)
+        peptide['intensity'] = ""
+        if ratio_key in peptide['attr']:
+          ratio = peptide['attr'][ratio_key]
+          if ratio is None or math.isnan(ratio) or ratio < 0:
+            peptide['intensity'] = scale_log(ratio, max_ratio)
 
 
 def calculate_lfq_ratio_intensities(
