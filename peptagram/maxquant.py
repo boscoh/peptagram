@@ -158,6 +158,7 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
       protein['sources'][i_source]['peptides'].append(new_peptide)
 
   parse_proteins.count_peptides(proteins)
+  parse_proteins.delete_empty_proteins(proteins)
   
   return proteins, sources
 

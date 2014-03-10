@@ -88,13 +88,23 @@ def count_peptides(proteins):
     protein['attr']['n_slice_populated'] = n_slice_populated
     protein['attr']['n_unique_peptide'] = n_unique_peptide
     protein['attr']['n_peptide'] = n_peptide
+
+
+def delete_empty_proteins(proteins):
+  for seqid in proteins.keys():
+    protein = proteins[seqid]
+    n_peptide = 0
+    for source in protein['sources']:
+      n_peptide += len(source['peptides'])
     if n_peptide == 0:
       del proteins[seqid]
-      continue
 
 
-def find_peptide_proteins(proteins):
-  n_source = len(proteins.values()[0]['sources'])
+def find_peptide_positions_in_proteins(proteins):
+  protein_list = proteins.values()
+  if len(protein_list) == 0:
+    return
+  n_source = len(protein_list[0]['sources'])
   seqids_by_sequence = {}
   for seqid in proteins:
     protein = proteins[seqid]
@@ -251,8 +261,9 @@ def make_graphical_comparison_visualisation(data, out_dir):
   proteins = data['proteins']
   determine_unique_peptides(proteins)
   count_peptides(proteins)
+  delete_empty_proteins(proteins)
   check_missing_fields(proteins)
-  find_peptide_proteins(proteins)
+  find_peptide_positions_in_proteins(proteins)
   for seqid, protein in proteins.items():
     for source in protein['sources']:
       peptides = source['peptides']
@@ -280,8 +291,9 @@ def make_sequence_overview_visualisation(data, out_dir):
   proteins = data['proteins']
   determine_unique_peptides(proteins)
   count_peptides(proteins)
+  delete_empty_proteins(proteins)
   check_missing_fields(proteins)
-  find_peptide_proteins(proteins)
+  find_peptide_positions_in_proteins(proteins)
   for seqid, protein in proteins.items():
     for source in protein['sources']:
       peptides = source['peptides']
