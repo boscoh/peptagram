@@ -129,7 +129,6 @@ def find_peptide_positions_in_proteins(proteins):
             if 'other_seqids' not in peptide['attr']:
               peptide['attr']['other_seqids'] = []
             peptide['attr']['other_seqids'].append(test_seqid)
-            logger.debug('{} in {} also found in {}'.format(sequence, seqid, test_seqid))
 
 
 def change_seqids_in_proteins(proteins, clean_seqid):

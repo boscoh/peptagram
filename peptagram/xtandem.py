@@ -11,7 +11,6 @@ import logging
 import parse
 import proteins as proteins_module
 
-
 """
 Parser for X!Tandem XML output.
 """
@@ -41,16 +40,19 @@ def parse_scan(top_elem, nsmap):
     match = {  
       'seqid': seqid,
       'sequence': sequence,
-      'description': description
+      'description': description,
+      'modifications': []
     }
     domain_elem = peptide_elem.find('domain')
+    for mod_elem in domain_elem.findall('aa'):
+      match['modifications'].append(parse.parse_attrib(mod_elem))
     match.update(parse.parse_attrib(domain_elem))
     scan['matches'].append(match)
 
   elem = top_elem.find('group[@label="fragment ion mass spectrum"]')
 
   note = elem.find('note')
-  if note:
+  if note is not None:
     scan['Description'] = elem.find('note').text.strip()
   else:
     scan['Description'] = ''

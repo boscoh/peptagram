@@ -129,10 +129,10 @@ class PepxmlReader(object):
 def make_peptide(pepxml_match, pepxml_scan, source):
   peptide = {
     'sequence': pepxml_match['peptide'],
-    'modified_sequence': pepxml_match['modified_sequence'],
     'intensity': pepxml_match['probability'],
     'mask': pepxml_match['fpe'],
     'attr': {
+      'modified_sequence': pepxml_match['modified_sequence'],
       'pepxml_id': pepxml_scan['index'],
       'scan_id': pepxml_scan['start_scan'],
       'charge': pepxml_scan['assumed_charge'],

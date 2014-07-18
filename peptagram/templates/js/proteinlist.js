@@ -212,6 +212,8 @@ function ProteinList(control_div, column1_div, data) {
   }
 
   this.redraw_bars = function() {
+    var width = get_content_width(this.control_div);
+    set_outer_width(this.sorting_msg_div, width);
     for (var i=0; i<this.protein_canvases.length; i++) {
       this.protein_canvases[i].draw();
     }

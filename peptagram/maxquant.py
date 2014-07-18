@@ -86,6 +86,36 @@ def read_tsv(tsv_txt):
   return results
 
 
+def get_modifications(mod_seq):
+  if mod_seq.startswith("_"):
+    mod_seq = mod_seq[1:]
+  if mod_seq.endswith("_"):
+    mod_seq = mod_seq[:-1]
+  i_seq = -1
+  seq = ""
+  is_mod = False
+  modifications = []
+  mod = ""
+  for c in mod_seq:
+    if c == "(":
+      is_mod = True
+      mod = ""
+      continue
+    if c == ")":
+      is_mod = False
+      modifications.append({
+        'i': i_seq,
+        'type': mod
+      })
+      continue
+    if is_mod:
+      mod += c
+      continue
+    seq += c
+    i_seq += 1
+  return modifications
+
+
 def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
 
   evidence_fname = os.path.join(in_dir, 'evidence.txt')
@@ -134,6 +164,7 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
       logger.info("{} scans processed".format(i_scan))
     evidence_id = int(scan['evidence id'])
     evidence = evidence_dict[evidence_id]
+    mod_seq = evidence['modified sequence']
 
     peptide_id = int(scan['peptide id'])
     peptide = peptides[peptide_id]
@@ -142,7 +173,8 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
         'sequence': scan['sequence'],
         'spectrum': get_labeled_spectrum(scan),
         'attr' : {
-          'modifications': [],
+          'modified_sequence': mod_seq,
+          'modifications': get_modifications(mod_seq),
           'mq_scan_id': scan_id,
           'is_unique': peptide['unique (groups)'] == 'yes',
         }
