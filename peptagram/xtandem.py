@@ -10,6 +10,8 @@ import logging
 
 import parse
 import proteins as proteins_module
+import peptidemass
+
 
 """
 Parser for X!Tandem XML output.
@@ -138,6 +140,78 @@ def load_xtandem_into_proteins(proteins, xtandem_fname, i_source, n_peak=50):
       continue
 
   # proteins_module.calculate_peptide_positions(proteins)
+
+
+def create_proteins_from_xtandem(
+    xtandem_fname, n_peak=50, expect_upper_cutoff=None, 
+    excluded_seqids=[], include_seqids=[]):
+  proteins = {}
+  i_source = 0
+  print_scan = True
+  for scan in read_xtandem(xtandem_fname):
+    scan_id = scan['id']
+    x_vals = map(float, scan['masses'].split())
+    y_vals = map(float, scan['intensities'].split())
+    ions = [(x, y) for x, y in zip(x_vals, y_vals)]
+    ions.sort(key=lambda i:-i[1])
+
+    for match in scan['matches']:
+      if expect_upper_cutoff is not None:
+        if match['expect'] > expect_upper_cutoff:
+          continue
+      seqid = match['seqid']
+
+      if seqid in excluded_seqids:
+        continue
+      if len(include_seqids) > 0 and seqid not in include_seqids:
+        continue
+
+      if seqid not in proteins:
+        protein = proteins_module.new_protein(seqid)
+        protein.update({
+          'sequence': match['sequence'],
+          'description': match['description'],
+        })
+        proteins[seqid] = protein
+
+      protein = proteins[seqid]
+      source = protein['sources'][i_source]    
+
+      peptide = {
+        'sequence': match['seq'],
+        'modified_sequence': match['seq'],
+        'intensity': 1.0,
+        'mask': '',
+        'spectrum': ions[:n_peak],
+        'attr': {
+          'scan_id': scan['id'],
+          'charge': scan['charge'],
+          'expect': match['expect'],
+          'modifications': [],
+          'missed_cleavages': match['missed_cleavages'],
+          'mass': scan['mass'],
+          'source': parse.basename(xtandem_fname),
+        }
+      }
+      if match['modifications']:
+        for mod in match['modifications']:
+          i_mod_in_full_seq = int(mod['at'])-1
+          full_seq = match['sequence']
+          i_pep_seq = int(match['start'])-1
+          aa = mod['type']
+          if aa in peptidemass.aa_monoisotopic_mass:
+            mass = peptidemass.aa_monoisotopic_mass[aa]
+          else:
+            mass = 0.0
+          peptide['attr']['modifications'].append({
+            'i': i_mod_in_full_seq - i_pep_seq,
+            'mass': mod['modified'] + mass,
+          })
+      source['peptides'].append(peptide)
+      
+  proteins_module.calculate_peptide_positions(proteins)
+
+  return proteins
 
 
 
