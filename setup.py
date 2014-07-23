@@ -16,5 +16,5 @@ setup(
         'pymzml',
     ],
     packages=['peptagram',],
-    scripts=[],
+    scripts=['bin/xtandem_peptagram'],
 )
