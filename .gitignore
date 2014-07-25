@@ -1,0 +1,5 @@
+build 
+dist
+examples-0.2 
+*egg-info 
+*zip *html
