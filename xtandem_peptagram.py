@@ -283,6 +283,7 @@ def fix_list(tcl_list):
     {.*?}   # text found in brackets
     | \S+   # or any non-white-space characters 
   """
+  print regex, tcl_list
   tokens = re.findall(regex, tcl_list, re.X)
   # remove '{' from start and '}' from end of string
   return [re.sub("^{|}$", "", i) for i in tokens]
