@@ -25,7 +25,7 @@ function build_peptides_panel(data, div) {
     tr.append(td);
 
     var td = $('<td>');
-    td.append(peptide.i);
+    td.append(peptide.i+1);
     tr.append(td);
 
     var td = $('<td>');
