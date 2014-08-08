@@ -165,6 +165,7 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
     evidence_id = int(scan['evidence id'])
     evidence = evidence_dict[evidence_id]
     mod_seq = evidence['modified sequence']
+    mod_peptide_id = evidence['mod. peptide id']
 
     peptide_id = int(scan['peptide id'])
     peptide = peptides[peptide_id]
@@ -176,6 +177,7 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
           'modified_sequence': mod_seq,
           'modifications': get_modifications(mod_seq),
           'mq_scan_id': scan_id,
+          'evidence_id': evidence_id,
           'is_unique': peptide['unique (groups)'] == 'yes',
         }
       }
