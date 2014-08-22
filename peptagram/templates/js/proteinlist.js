@@ -26,7 +26,7 @@ function ProteinBarWidget(canvas, data, seqid) {
       var bg_color = this.data.bg_color;
     }
     this.canvas.solid_box(this.x, this.y, this.width, this.height, bg_color);
-    this.canvas.solid_box(this.x, this.y + this.height/2, this.width, 1, '333');
+    this.canvas.solid_box(this.x, this.y + this.height/2, this.width, 1, '#333');
     for (var j=0; j<this.protein.sources.length; j++) {
       var peptides = this.protein.sources[j].peptides;
       for (var i=0; i<peptides.length; i++) {
