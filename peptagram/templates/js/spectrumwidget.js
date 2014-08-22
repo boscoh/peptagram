@@ -81,7 +81,7 @@ function SpectrumWidget(canvas, data) {
     var label_color = '#BCB';
 
     var peptide = this.data.controller.get_selected_peptide();
-    if (attr_empty(peptide, 'spectrum')) {
+    if ((peptide == null) || (attr_empty(peptide, 'spectrum'))) {
       this.canvas.div.css('display', 'none');
       return;
     } 
@@ -296,9 +296,8 @@ function IonTable(div, data) {
     this.div.empty();
     this.div.append('<br>')
 
-
     var peptide = this.data.controller.get_selected_peptide();
-    if (attr_empty(peptide, 'spectrum')) {
+    if ((peptide == null) || (attr_empty(peptide, 'spectrum'))) {
       return;
     }
 

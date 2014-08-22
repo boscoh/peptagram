@@ -269,14 +269,16 @@ function PeptographWidget(canvas, data, color_bar) {
     var i_source_selected = this.protein.i_source_selected;
     var peptides = sources[i_source_selected].peptides;
     if (peptides.length > 0) {
-      peptide = peptides[this.protein.i_peptide_selected];
-      draw_highlight_box(
-          this.canvas, 
-          this.x_from_i(peptide.i),
-          this.y_from_j(i_source_selected),
-          this.get_diff_width(peptide.i, peptide.j),
-          slice_height,
-          "#3F3");
+      if (this.protein.i_peptide_selected >= 0) {
+        peptide = peptides[this.protein.i_peptide_selected];
+        draw_highlight_box(
+            this.canvas, 
+            this.x_from_i(peptide.i),
+            this.y_from_j(i_source_selected),
+            this.get_diff_width(peptide.i, peptide.j),
+            slice_height,
+            "#3F3");
+      }
     }
   }
 
@@ -380,9 +382,11 @@ var SequenceView = function(div, data) {
         i_res = peptide.i;
       }
       var peptide_link = $("<a>");
-      if (this.i_peptide_selected < peptides.length) {
-        if (is_peptides_intersect(i_peptide, this.i_peptide_selected)) {
-          peptide_link.addClass('highlight_peptide');
+      if (this.i_peptide_selected >= 0) {
+        if (this.i_peptide_selected < peptides.length) {
+          if (is_peptides_intersect(i_peptide, this.i_peptide_selected)) {
+            peptide_link.addClass('highlight_peptide');
+          }
         }
       }
       peptide_link.attr('href', '#');
@@ -429,8 +433,10 @@ var SequenceView = function(div, data) {
 function build_peptide_info(data, div) {
   div.empty();
   var peptide = data.controller.get_selected_peptide();
-  div.append(dict_html(peptide['attr']));
-  div.append("<br>");
+  if (peptide != null) {
+    div.append(dict_html(peptide['attr']));
+    div.append("<br>");
+  }
 }
 
 

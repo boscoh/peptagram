@@ -140,10 +140,10 @@ function DataController(data) {
     var protein = this.get_current_protein();
     var i_source = protein.i_source_selected;
     var peptides = protein.sources[i_source].peptides;
-    if (peptides.length == 0) {
+    var i_peptide = protein.i_peptide_selected;
+    if ((i_peptide < 0) || (peptides.length == 0)) {
       return null;
     }
-    var i_peptide = protein.i_peptide_selected;
     return peptides[i_peptide];
   }
 
@@ -158,6 +158,8 @@ function DataController(data) {
 
   this.pick_source_view = function(protein, i_source) {
     protein.i_source_view = i_source;
+    protein.i_source_selected = i_source;
+    protein.i_peptide_selected = -1;
     this.set_location_hash();
   }
 
