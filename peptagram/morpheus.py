@@ -145,7 +145,7 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
         'other_seqids': seqids[1:],
         'seqid': seqids[0],
       },
-      'sources': [{ 'peptides':[] }]
+      'sources': [{ 'matches':[] }]
     }
     proteins[seqids[0]] = protein
     dict_dump_writer.dump_dict(protein_group)
@@ -159,8 +159,8 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
       protein_by_seqid[alt_seqid] = protein
 
   dict_dump_writer = DictListWriter(is_debug, os.path.join(dump_dir, 'peptides.dump'))
-  n_peptide = 0
-  n_peptide_matched = 0
+  n_match = 0
+  n_match_assigned = 0
   for src_peptide in read_tsv_iter(psm_fname):
     dict_dump_writer.dump_dict(src_peptide)
     descriptions = src_peptide['protein description'].split(' / ')
@@ -170,10 +170,10 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
       if peptide_seqid in protein_by_seqid:
         protein = protein_by_seqid[peptide_seqid]
         break
-    n_peptide += 1
+    n_match += 1
     if protein is None:
       continue
-    n_peptide_matched += 1
+    n_match_assigned += 1
     sequence = protein['sequence']
     extracted_peptide_sequence, modifications = parse_peptide(
         src_peptide['peptide sequence'],
@@ -219,7 +219,7 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
         modification['mass'] = parse.round_decimal(modification['mass'], 4)
       peptide['attr']['modifications'] = modifications
 
-    protein['sources'][0]['peptides'].append(peptide)
+    protein['sources'][0]['matches'].append(peptide)
 
   dict_dump_writer.close()
 
@@ -228,7 +228,7 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
     logger.debug('Dumping proteins data structure to ' + dump)
     parse.save_data_dict(proteins, dump)
 
-  logger.info("Assigned {}/{} of PSMs.tsv to protein_groups.tsv".format(n_peptide_matched, n_peptide))
+  logger.info("Assigned {}/{} of PSMs.tsv to protein_groups.tsv".format(n_match_assigned, n_match))
 
   return proteins
 

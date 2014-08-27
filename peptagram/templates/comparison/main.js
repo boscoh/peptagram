@@ -17,11 +17,9 @@ function build_protein_info_panel(data, div) {
 
 // Converts intensities [-1, 1] into an RGB color string
 function ColorIntensityPalette() {
+  this.positive = [255, 0, 0];
   this.neutral = [200, 200, 200];
-  this.positive = [242, 90, 90];
-  this.negative = [90, 120, 144];
-  this.positive_extremum = [255, 0, 0];
-  this.negative_extremum = [0, 93, 144];
+  this.negative = [0, 93, 144];
 
   this.rgb = function(color) {
       rgb = "rgb(" + 
@@ -32,12 +30,6 @@ function ColorIntensityPalette() {
   }
 
   this.str = function(intensity) {
-    if (intensity > 1) {
-      return this.rgb(this.positive_extremum);
-    } else if (intensity < -1) {
-      return this.rgb(this.negative_extremum);
-    }
-
     if (intensity > 0) {
       var top_color = this.positive;
     } else {
@@ -82,27 +74,28 @@ function ColorBarWidget(canvas, names, font) {
   this.height = 80;
 
   this.draw = function() {
-    var height = this.height - 10;
+    var height = this.height;
     var half_height = height/2;
-    var y_min = this.y + 5;
+    var y_min = this.y;
     var x2 = this.x + this.bar_width;
     var y_max = height;
     for (var i=0; i<height; i++) {
       f = (half_height - i)/half_height;
       y = y_min + i;
       this.canvas.line(this.x, y, x2, y, this.palette.str(f), 1);
+      if ((this.names.length == 2) && (i==half_height)) {
+        break;
+      }
     }
     var canvas = this.canvas;
-    var y = y_min - 5;
-    this.canvas.line(this.x, y, x2, y, this.palette.str(2), 10);
-    var y = y_min + height + 5;
-    this.canvas.line(this.x, y, x2, y, this.palette.str(-2), 10);
     var write_name = function(txt, y) {
       canvas.text(txt, x2 + 2, y, this.font, "#999", "left");
     }
     write_name(this.names[0], this.y);
     write_name(this.names[1], this.y + 0.5*this.height);
-    write_name(this.names[2], this.y + this.height);
+    if (this.names.length>2) {
+      write_name(this.names[2], this.y + this.height);
+    }
   }
 }
 
@@ -187,12 +180,12 @@ function PeptographWidget(canvas, data, color_bar) {
     // draw slice freq sidebar
     var max_n_pep = 0;
     for (var j=0; j<sources.length; j++) {
-      if (sources[j].peptides.length > max_n_pep) {
-        max_n_pep = sources[j].peptides.length;
+      if (sources[j].matches.length > max_n_pep) {
+        max_n_pep = sources[j].matches.length;
       }
     }
     for (var i_source=0; i_source<sources.length; i_source++) {
-      var n_pep = sources[i_source].peptides.length;
+      var n_pep = sources[i_source].matches.length;
       if (n_pep > 0) {
         this.canvas.solid_box(
           this.x + this.draw_width, 
@@ -235,11 +228,11 @@ function PeptographWidget(canvas, data, color_bar) {
       }
     }
 
-    // draw peptides
+    // draw matches
     for (var j=0; j<sources.length; j++) {
-      var peptides = sources[j].peptides;
-      for (var i=0; i<peptides.length; i++) {
-        var peptide = peptides[i];
+      var matches = sources[j].matches;
+      for (var i=0; i<matches.length; i++) {
+        var peptide = matches[i];
         if (this.data.mask >= peptide.mask) {
           if (peptide.intensity === "") {
             var color = "lightyellow";
@@ -267,10 +260,10 @@ function PeptographWidget(canvas, data, color_bar) {
 
     //  highlight selected peptide
     var i_source_selected = this.protein.i_source_selected;
-    var peptides = sources[i_source_selected].peptides;
-    if (peptides.length > 0) {
+    var matches = sources[i_source_selected].matches;
+    if (matches.length > 0) {
       if (this.protein.i_peptide_selected >= 0) {
-        peptide = peptides[this.protein.i_peptide_selected];
+        peptide = matches[this.protein.i_peptide_selected];
         draw_highlight_box(
             this.canvas, 
             this.x_from_i(peptide.i),
@@ -301,8 +294,8 @@ function PeptographWidget(canvas, data, color_bar) {
 
     // if click over peptide: select it
     var source = this.protein.sources[i_source];
-    for (var i=0; i<source.peptides.length; i++) {
-      var peptide = source.peptides[i];
+    for (var i=0; i<source.matches.length; i++) {
+      var peptide = source.matches[i];
       if ((peptide.i<=i_res) && (i_res<peptide.j)) {
         this.data.controller.pick_peptide(this.protein, i_source, i);
         break;
@@ -351,13 +344,13 @@ var SequenceView = function(div, data) {
     this.i_source = this.protein.i_source_view;
     this.i_peptide_selected = this.protein.i_peptide_selected;
    
-    var peptides = this.protein.sources[this.i_source].peptides;
+    var matches = this.protein.sources[this.i_source].matches;
     var sequence = this.protein.sequence;
     var n_res = sequence.length;
 
     var is_peptides_intersect = function(i1, i2) {
-      var pep1 = peptides[i1];
-      var pep2 = peptides[i2];
+      var pep1 = matches[i1];
+      var pep2 = matches[i2];
       var not_intersect = ((pep1.j <= pep2.i) || (pep2.j <= pep1.i));
       return !not_intersect;
     }
@@ -372,8 +365,8 @@ var SequenceView = function(div, data) {
     pre.append('<br>');
 
     i_res = 0;
-    for (var i_peptide=0; i_peptide<peptides.length; i_peptide++) {
-      peptide = peptides[i_peptide];
+    for (var i_peptide=0; i_peptide<matches.length; i_peptide++) {
+      peptide = matches[i_peptide];
       if (this.data.mask < peptide.mask) {
         continue;
       }
@@ -383,7 +376,7 @@ var SequenceView = function(div, data) {
       }
       var peptide_link = $("<a>");
       if (this.i_peptide_selected >= 0) {
-        if (this.i_peptide_selected < peptides.length) {
+        if (this.i_peptide_selected < matches.length) {
           if (is_peptides_intersect(i_peptide, this.i_peptide_selected)) {
             peptide_link.addClass('highlight_peptide');
           }

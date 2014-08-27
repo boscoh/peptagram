@@ -7,6 +7,7 @@ import json
 import os
 import re
 import logging
+import math
 
 import parse
 import proteins as proteins_module
@@ -116,7 +117,7 @@ def load_xtandem_into_proteins(proteins, xtandem_fname, i_source, n_peak=50):
           'description': match['description'],
         }
       source = protein['sources'][i_source]    
-      for peptide in source['peptides']:
+      for peptide in source['matches']:
         if scan_id != peptide['attr']['scan_id']:
           continue
         is_match = True
@@ -133,8 +134,8 @@ def load_xtandem_into_proteins(proteins, xtandem_fname, i_source, n_peak=50):
       logger.debug("Protein {} not found in x!tandem".format(seqid))
       del proteins[seqid]
       continue
-    n_peptide = sum([len(source['peptides']) for source in protein['sources']])
-    if n_peptide == 0:
+    n_match = sum([len(source['matches']) for source in protein['sources']])
+    if n_match == 0:
       del proteins[seqid]
       logger.debug("No peptide-spectra matches found in {}".format(seqid))
       continue
@@ -143,7 +144,8 @@ def load_xtandem_into_proteins(proteins, xtandem_fname, i_source, n_peak=50):
 
 
 def create_proteins_from_xtandem(
-    xtandem_fname, n_peak=50, expect_upper_cutoff=None, 
+    xtandem_fname, n_peak=50, good_expect=None,
+    poor_expect=None, cutoff_expect=None, 
     excluded_seqids=[], include_seqids=[]):
   proteins = {}
   i_source = 0
@@ -156,11 +158,20 @@ def create_proteins_from_xtandem(
     ions.sort(key=lambda i:-i[1])
 
     for match in scan['matches']:
-      if expect_upper_cutoff is not None:
-        if match['expect'] > expect_upper_cutoff:
-          continue
-      seqid = match['seqid']
 
+      expect = match['expect']
+      if cutoff_expect is not None:
+        if expect > cutoff_expect:
+          continue
+      if good_expect is None:
+        intensity = 1.0
+      else:
+        x = -math.log(expect)
+        high = -math.log(good_expect)
+        low = -math.log(cutoff_expect)
+        intensity = (x-low)/(high-low)*.8 + .2
+
+      seqid = match['seqid']
       if seqid in excluded_seqids:
         continue
       if len(include_seqids) > 0 and seqid not in include_seqids:
@@ -179,14 +190,13 @@ def create_proteins_from_xtandem(
 
       peptide = {
         'sequence': match['seq'],
-        'modified_sequence': match['seq'],
-        'intensity': 1.0,
+        'intensity': intensity,
         'mask': '',
         'spectrum': ions[:n_peak],
         'attr': {
           'scan_id': scan['id'],
           'charge': scan['charge'],
-          'expect': match['expect'],
+          'expect': expect,
           'modifications': [],
           'missed_cleavages': match['missed_cleavages'],
           'mass': scan['mass'],
@@ -207,7 +217,7 @@ def create_proteins_from_xtandem(
             'i': i_mod_in_full_seq - i_pep_seq,
             'mass': mod['modified'] + mass,
           })
-      source['peptides'].append(peptide)
+      source['matches'].append(peptide)
       
   proteins_module.calculate_peptide_positions(proteins)
 

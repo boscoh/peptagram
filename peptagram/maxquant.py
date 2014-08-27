@@ -139,7 +139,7 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
         'group_id': group_id,
         'other_seqids': [],
       },
-      'sources': [{ 'peptides': [] } for k in range(len(i_sources))],
+      'sources': [{ 'matches': [] } for k in range(len(i_sources))],
     }
     transfer_attrs(protein_group, protein['attr'], protein_parse_list)
 
@@ -189,7 +189,7 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
       
       protein = protein_by_group_id[int(group_id)]
       i_source = i_sources[evidence['raw file']]
-      protein['sources'][i_source]['peptides'].append(new_peptide)
+      protein['sources'][i_source]['matches'].append(new_peptide)
 
   parse_proteins.count_peptides(proteins)
   parse_proteins.delete_empty_proteins(proteins)
@@ -211,7 +211,7 @@ def calculate_ratio_intensities(
     proteins, max_ratio=2.0, ratio_key='ratio h/l normalized haha'):
   for seqid in proteins.keys():
     for source in proteins[seqid]['sources']:
-       for peptide in source['peptides']:
+       for peptide in source['matches']:
         peptide['intensity'] = ""
         if ratio_key in peptide['attr']:
           ratio = peptide['attr'][ratio_key]
@@ -227,7 +227,7 @@ def calculate_lfq_ratio_intensities(
     peptide_intensities2 = []
     for source in protein['sources']:
       peptides_by_seq = {}
-      for peptide in source['peptides']:
+      for peptide in source['matches']:
         seq = peptide['sequence']
         peptides_by_seq.setdefault(seq, []).append(peptide)
       for seq, peptides in peptides_by_seq.items():

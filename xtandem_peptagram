@@ -314,8 +314,12 @@ class PeptagramLoaderApp(tk.Tk):
         self.interior, 'output directory', 'peptagram', load_dir_text='select')
     self.n_peak_entry = LabeledEntry(
         self.interior, 'number of peaks for each PSM', '50')
-    self.expectation_entry = LabeledEntry(
-        self.interior, '(optional) expect cutoff for PSM (eg 0.01)')
+    self.good_expect_entry = LabeledEntry(
+        self.interior, '(optional) good expect (eg 1E-10)')
+    self.poor_expect_entry = LabeledEntry(
+        self.interior, '(optional) poor expect (eg 1E-5)')
+    self.cutoff_expect_entry = LabeledEntry(
+        self.interior, '(optional) cutoff expect (eg 0.01)')
     self.exclude_entry = LabeledEntry(
         self.interior, '(optional) filename of seqids to exclude',
         load_file_text='select')
@@ -366,7 +370,9 @@ class PeptagramLoaderApp(tk.Tk):
     self.push_row(self.job_entry)
     self.push_row(self.outdir_entry)
     self.push_row(self.n_peak_entry)
-    self.push_row(self.expectation_entry)
+    self.push_row(self.good_expect_entry)
+    self.push_row(self.poor_expect_entry)
+    self.push_row(self.cutoff_expect_entry)
     self.push_row(self.exclude_entry)
     self.push_row(self.include_entry)
 
@@ -390,7 +396,9 @@ class PeptagramLoaderApp(tk.Tk):
       'labels': [e.label_stringvar.get() for e in self.file_list_loader.entries],
       'out_dir': self.outdir_entry.stringvar.get(),
       'title': self.job_entry.stringvar.get(),
-      'expect': None,
+      'good_expect': None,
+      'poor_expect': None,
+      'cutoff_expect': None,
       'excluded_seqids': [],
       'include_seqids': [],
       'n_peak': 50,
@@ -398,9 +406,17 @@ class PeptagramLoaderApp(tk.Tk):
     if len(params['tandems']) == 0:
       raise ValueError('No .tandem files were selected.')
     
-    expect_str = self.expectation_entry.stringvar.get()
+    good_expect_str = self.good_expect_entry.stringvar.get()
+    if good_expect_str:
+      params['good_expect'] = float(good_expect_str)
+
+    poor_expect_str = self.poor_expect_entry.stringvar.get()
+    if poor_expect_str:
+      params['poor_expect'] = float(poor_expect_str)
+
+    expect_str = self.cutoff_expect_entry.stringvar.get()
     if expect_str:
-      params['expect'] = float(expect_str)
+      params['cutoff_expect'] = float(expect_str)
 
     excluded_fname = self.exclude_entry.stringvar.get()
     if excluded_fname:
@@ -424,7 +440,9 @@ class PeptagramLoaderApp(tk.Tk):
       these_proteins = peptagram.xtandem.create_proteins_from_xtandem(
           tandem, 
           n_peak=params['n_peak'],
-          expect_upper_cutoff=params['expect'],
+          good_expect=params['good_expect'],
+          poor_expect=params['poor_expect'],
+          cutoff_expect=params['cutoff_expect'],
           excluded_seqids=params['excluded_seqids'])
       proteins = peptagram.proteins.merge_two_proteins(
           proteins, these_proteins)

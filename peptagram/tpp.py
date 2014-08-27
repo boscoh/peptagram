@@ -193,11 +193,11 @@ def parse_protein_group(elem, nsmap):
     protein['other_seqids'] = protein['other_seqids']
     protein['protein_name'] = protein['protein_name']
 
-    protein['peptides'] = []
+    protein['matches'] = []
     n_unique_peptide = 0
     for peptide_elem in protein_elem.findall(parse.fixtag('', 'peptide', nsmap)):
       peptide = parse.parse_attrib(peptide_elem)
-      protein['peptides'].append(peptide)
+      protein['matches'].append(peptide)
       peptide['modifications'] = []
       peptide['modified_sequence'] = peptide['peptide_sequence']
       for modified_elem in peptide_elem.findall(parse.fixtag('', 'modification_info', nsmap)):
@@ -264,7 +264,7 @@ def make_protein(protxml_protein):
   }
   if 'percent_coverage' in protxml_protein:
     protein['attr']['percent_coverage'] = protxml_protein['percent_coverage']
-  protein['protxml_peptides'] = protxml_protein['peptides']
+  protein['protxml_peptides'] = protxml_protein['matches']
   return protein
 
 
@@ -302,7 +302,7 @@ def get_protein_by_seqid(proteins):
 
 def add_source(proteins):
   for protein in proteins.values():
-    protein['sources'].append({'peptides': []})
+    protein['sources'].append({'matches': []})
 
 
 def load_pepxml(proteins, pepxml_fname, prob_cutoff=None, error_cutoff=None, source_names=[]):
@@ -328,7 +328,7 @@ def load_pepxml(proteins, pepxml_fname, prob_cutoff=None, error_cutoff=None, sou
           n_source += 1
           i_source = n_source-1
           source_name_indices[scan['source']] = i_source
-        peptides = protein['sources'][i_source]['peptides']
+        peptides = protein['sources'][i_source]['matches']
         scan_id = scan['start_scan']
         scan_ids = [p['attr']['scan_id'] for p in peptides]
         if scan_id not in scan_ids:
@@ -383,15 +383,15 @@ def probability_to_error(distribution, prob):
 def filter_peptides(proteins, probability):
   seqids = proteins.keys()
   for seqid in seqids:
-    n_peptide = 0
+    n_match = 0
     for source in proteins[seqid]['sources']:
-      peptides = source['peptides']
+      peptides = source['matches']
       for i_peptide in reversed(range(len(peptides))):
         if peptides[i_peptide]['attr']['probability'] < probability:
           del peptides[i_peptide]
         else:
-          n_peptide += 1
-    if n_peptide == 0:
+          n_match += 1
+    if n_match == 0:
       del proteins[seqid]
 
 
@@ -402,7 +402,7 @@ def count_tpp_indep_spectra(proteins):
     n_unique_spectrum = 0
     unique_sequence_set = set()
     for source in protein['sources']:
-      for peptide in source['peptides']:
+      for peptide in source['matches']:
         sequence = str(peptide['attr']['charge']) + peptide['modified_sequence']
         if 'is_contributing_evidence' in peptide['attr'] and peptide['attr']['is_contributing_evidence'] == 'Y':
           n_unique_spectrum += 1

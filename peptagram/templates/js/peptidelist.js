@@ -2,7 +2,7 @@ function build_peptides_panel(data, div) {
   div.empty();
   var protein = data.controller.get_current_protein();
   var i_source = protein.i_source_selected;
-  var peptides = protein.sources[i_source].peptides;
+  var matches = protein.sources[i_source].matches;
   var table = $('<table>');
   table.css('text-align', 'left');
   div.append(table);
@@ -14,8 +14,8 @@ function build_peptides_panel(data, div) {
   tr.append($('<td>').text('i'));
   tr.append($('<td>').text('seq'));
 
-  for (i_peptide=0; i_peptide<peptides.length; i_peptide++) {
-    var peptide = peptides[i_peptide];
+  for (i_peptide=0; i_peptide<matches.length; i_peptide++) {
+    var peptide = matches[i_peptide];
 
     var tr = $('<tr>')
     table.append(tr);

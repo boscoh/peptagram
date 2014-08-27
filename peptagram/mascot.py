@@ -167,7 +167,7 @@ def read_mascot_dat(fname, max_peptide_rank=1):
       if section == "summary":
         process_line = \
             lambda l: process_summary(l, scans)
-      if section == "peptides":
+      if section == 'matches':
         process_line = \
             lambda l: process_matches(l, scans, max_peptide_rank)
       if section == "proteins":
@@ -194,7 +194,7 @@ def load_mascot_dat_to_proteins(proteins, i_source, mascot_dat):
   for seqid in proteins:
     protein = proteins[seqid]
     for source in protein['sources']:
-      for peptide in source['peptides']:
+      for peptide in source['matches']:
         if 'identity' in peptide['attr']:
           match_id = "%.2f%.2f%.2f%s" % \
               (peptide['attr']['score'],

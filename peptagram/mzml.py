@@ -8,7 +8,7 @@ def load_mzml(proteins, i_source, mzml, n_peak=50):
   peptide_by_scan_id = {}
   for protein in proteins.values():
     source = protein['sources'][i_source]
-    for peptide in source['peptides']:
+    for peptide in source['matches']:
       scan_id = peptide['attr']['scan_id']
       peptide_by_scan_id[scan_id] = peptide
   for spectrum in pymzml.run.Reader(mzml):

@@ -1,8 +1,8 @@
 
 
 
-// ProteinBarWidget draws a simple distribution of peptides in a
-// protein using data.mask to mask certain peptides
+// ProteinBarWidget draws a simple distribution of matches in a
+// protein using data.mask to mask certain matches
 function ProteinBarWidget(canvas, data, seqid) {
   this.canvas = canvas;
   this.seqid = seqid;
@@ -28,9 +28,9 @@ function ProteinBarWidget(canvas, data, seqid) {
     this.canvas.solid_box(this.x, this.y, this.width, this.height, bg_color);
     this.canvas.solid_box(this.x, this.y + this.height/2, this.width, 1, '#333');
     for (var j=0; j<this.protein.sources.length; j++) {
-      var peptides = this.protein.sources[j].peptides;
-      for (var i=0; i<peptides.length; i++) {
-        var peptide = peptides[i];
+      var matches = this.protein.sources[j].matches;
+      for (var i=0; i<matches.length; i++) {
+        var peptide = matches[i];
         if (this.data.mask >= peptide.mask) {
           var x = this.x_from_i(peptide.i);
           var w = this.x_from_i(peptide.j) - x;
@@ -71,7 +71,7 @@ function ProteinList(control_div, column1_div, data) {
       var option = $('<option>');
       option.attr('value', key);
       option.text(key);
-      if (key == 'n_peptide') {
+      if (key == 'n_match') {
         option.attr('selected', true);
       }
       this.attr_select.append(option);

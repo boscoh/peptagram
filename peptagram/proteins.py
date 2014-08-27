@@ -28,11 +28,11 @@ def new_protein(seqid):
     'attr': { 'seqid':seqid, 'other_seqids':[] },
     'description': '',
     'sequence': '',
-    'sources': [{'peptides': [], }],
+    'sources': [{'matches': [], }],
   }
 
 
-def new_peptide(peptide_sequence):
+def new_match(peptide_sequence):
   return {
     'sequence': peptide_sequence,
     'intensity': 1.0,
@@ -41,62 +41,62 @@ def new_peptide(peptide_sequence):
   }
 
 
-def peptide_iter(proteins):
+def match_iterator(proteins):
   for seqid in proteins:
     protein = proteins[seqid]
     for source in protein['sources']:
-      for peptide in source['peptides']:
-        yield seqid, peptide
+      for match in source['matches']:
+        yield seqid, match
 
 
-def determine_unique_peptides(proteins):
+def determine_unique_matches(proteins):
   seqids_by_seq = {}
-  for seqid, peptide in peptide_iter(proteins):
-    seq = peptide['sequence']
+  for seqid, match in match_iterator(proteins):
+    seq = match['sequence']
     if seq not in seqids_by_seq:
       seqids_by_seq[seq] = set()
     seqids_by_seq[seq].add(seqid)
-  for seqid, peptide in peptide_iter(proteins):
-    seq = peptide['sequence']
+  for seqid, match in match_iterator(proteins):
+    seq = match['sequence']
     n_seqid = len(seqids_by_seq[seq])
-    peptide['attr']['is_unique'] = (n_seqid == 1)
+    match['attr']['is_unique'] = (n_seqid == 1)
 
 
 def check_missing_fields(proteins):
-  for seqid, peptide in peptide_iter(proteins):
-    if 'modifications' not in peptide['attr']:
-      peptide['attr']['modifications'] = []
-    if 'intensity' not in peptide:
-      peptide['intensity'] = 1
-    if 'mask' not in peptide:
-      peptide['mask'] = 0.0
+  for seqid, match in match_iterator(proteins):
+    if 'modifications' not in match['attr']:
+      match['attr']['modifications'] = []
+    if 'intensity' not in match:
+      match['intensity'] = 1
+    if 'mask' not in match:
+      match['mask'] = 0.0
 
 
-def count_peptides(proteins):
+def count_matches(proteins):
   for seqid in proteins.keys():
     protein = proteins[seqid]
-    n_peptide = 0
+    n_match = 0
     n_slice_populated = 0
-    n_unique_peptide = 0
+    n_unique_match = 0
     for source in protein['sources']:
-      peptides = source['peptides']
-      unique_peptides = [p for p in peptides if p['attr']['is_unique']]
-      n_unique_peptide += len(unique_peptides)
-      n_peptide += len(peptides)
-      if len(peptides) > 0:
+      matches = source['matches']
+      unique_matches = [p for p in matches if p['attr']['is_unique']]
+      n_unique_match += len(unique_matches)
+      n_match += len(matches)
+      if len(matches) > 0:
         n_slice_populated += 1
     protein['attr']['n_slice_populated'] = n_slice_populated
-    protein['attr']['n_unique_peptide'] = n_unique_peptide
-    protein['attr']['n_peptide'] = n_peptide
+    protein['attr']['n_unique_match'] = n_unique_match
+    protein['attr']['n_match'] = n_match
 
 
 def delete_empty_proteins(proteins):
   for seqid in proteins.keys():
     protein = proteins[seqid]
-    n_peptide = 0
+    n_match = 0
     for source in protein['sources']:
-      n_peptide += len(source['peptides'])
-    if n_peptide == 0:
+      n_match += len(source['matches'])
+    if n_match == 0:
       del proteins[seqid]
 
 
@@ -110,9 +110,9 @@ def find_peptide_positions_in_proteins(proteins):
     protein = proteins[seqid]
     for i_source in range(n_source):
       source = protein['sources'][i_source]
-      peptides = source['peptides']
-      for peptide in peptides:
-        sequence = peptide['sequence']
+      matches = source['matches']
+      for match in matches:
+        sequence = match['sequence']
         if sequence not in seqids_by_sequence:
           seqids_by_sequence[sequence] = set()
         seqids_by_sequence[sequence].add(seqid)
@@ -121,14 +121,14 @@ def find_peptide_positions_in_proteins(proteins):
     for i_source in range(n_source):
       protein = proteins[seqid]
       source = protein['sources'][i_source]
-      peptides = source['peptides']
-      for peptide in peptides:
-        sequence = peptide['sequence']
+      matches = source['matches']
+      for match in matches:
+        sequence = match['sequence']
         for test_seqid in seqids_by_sequence[sequence]:
           if seqid != test_seqid:
-            if 'other_seqids' not in peptide['attr']:
-              peptide['attr']['other_seqids'] = []
-            peptide['attr']['other_seqids'].append(test_seqid)
+            if 'other_seqids' not in match['attr']:
+              match['attr']['other_seqids'] = []
+            match['attr']['other_seqids'].append(test_seqid)
 
 
 def change_seqids_in_proteins(proteins, clean_seqid):
@@ -154,21 +154,21 @@ def calculate_peptide_positions(proteins, iso_leu_isomerism=False):
     if iso_leu_isomerism:
       protein_sequence = protein_sequence.replace("L", "I")
     for source in protein['sources']:
-      peptides = source['peptides']
-      for i_peptide in reversed(range(len(peptides))):
-        peptide = peptides[i_peptide]
-        peptide_sequence = peptide['sequence']
+      matches = source['matches']
+      for i_match in reversed(range(len(matches))):
+        match = matches[i_match]
+        peptide_sequence = match['sequence']
         if iso_leu_isomerism:
           peptide_sequence = peptide_sequence.replace("L", "I")
         i = protein_sequence.find(peptide_sequence)
         if i < 0:
           logger.debug("'{}' not found in {}".format(peptide_sequence, seqid))
-          del peptides[i_peptide]
+          del matches[i_match]
           continue
-        peptide['i'] = i 
-      for peptide in peptides:
-        if 'i' not in peptide:
-          pprint(peptide)
+        match['i'] = i 
+      for match in matches:
+        if 'i' not in match:
+          pprint(match)
           raise ValueError
 
 
@@ -229,14 +229,14 @@ def merge_two_proteins(proteins1, proteins2):
       protein1 = proteins1[seqid]
       protein1['sources'].extend(sources2)
     else:
-      sources1 = [{'peptides': []} for i in range(n_source1)]
+      sources1 = [{'matches': []} for i in range(n_source1)]
       combined_sources = sources1 + sources2
       proteins1[seqid] = protein2
       proteins1[seqid]['sources'] = combined_sources
   for seqid in proteins1:
-    peptides = proteins1[seqid]['sources']
-    if len(peptides) == n_source1:
-      peptides.extend([{'peptides': []} for i in range(n_source2)])
+    matches = proteins1[seqid]['sources']
+    if len(matches) == n_source1:
+      matches.extend([{'matches': []} for i in range(n_source2)])
   return proteins1
 
 
@@ -258,16 +258,16 @@ def transfer_files(in_dir, out_dir):
 def make_graphical_comparison_visualisation(data, out_dir):
   # sanity checks
   proteins = data['proteins']
-  determine_unique_peptides(proteins)
-  count_peptides(proteins)
+  determine_unique_matches(proteins)
+  count_matches(proteins)
   delete_empty_proteins(proteins)
   check_missing_fields(proteins)
   find_peptide_positions_in_proteins(proteins)
   for seqid, protein in proteins.items():
     for source in protein['sources']:
-      peptides = source['peptides']
-      peptides.sort(key=lambda peptide: len(peptide['sequence']))
-      peptides.sort(key=lambda peptide: peptide['i'])
+      matches = source['matches']
+      matches.sort(key=lambda match: len(match['sequence']))
+      matches.sort(key=lambda match: match['i'])
   if 'source_labels' not in data:
     data['source_labels'] = []
   if 'color_names' not in data:
@@ -288,16 +288,16 @@ def make_graphical_comparison_visualisation(data, out_dir):
 def make_sequence_overview_visualisation(data, out_dir):
   # sanity checks
   proteins = data['proteins']
-  determine_unique_peptides(proteins)
-  count_peptides(proteins)
+  determine_unique_matches(proteins)
+  count_matches(proteins)
   delete_empty_proteins(proteins)
   check_missing_fields(proteins)
   find_peptide_positions_in_proteins(proteins)
   for seqid, protein in proteins.items():
     for source in protein['sources']:
-      peptides = source['peptides']
-      peptides.sort(key=lambda peptide: len(peptide['sequence']))
-      peptides.sort(key=lambda peptide: peptide['i'])
+      matches = source['matches']
+      matches.sort(key=lambda match: len(match['sequence']))
+      matches.sort(key=lambda match: match['i'])
   if 'source_labels' not in data:
     data['source_labels'] = []
   if 'color_names' not in data:

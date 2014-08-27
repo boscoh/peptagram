@@ -34,16 +34,16 @@ var SequenceView = function(div, data) {
   }
 
   this.is_peptides_intersect = function(i1, i2) {
-    var pep1 = this.peptides[i1];
-    var pep2 = this.peptides[i2];
+    var pep1 = this.matches[i1];
+    var pep2 = this.matches[i2];
     var not_intersect = ((pep1.j <= pep2.i) || (pep2.j <= pep1.i));
     return !not_intersect;
   }
 
   this.get_i_peptide = function(i_res) {
-    for (var i_peptide=0; i_peptide<this.peptides.length; i_peptide++) {
-      if ((this.peptides[i_peptide].i <= i_res) && 
-          (i_res < this.peptides[i_peptide].j)) {
+    for (var i_peptide=0; i_peptide<this.matches.length; i_peptide++) {
+      if ((this.matches[i_peptide].i <= i_res) && 
+          (i_res < this.matches[i_peptide].j)) {
         return i_peptide;
       }
     }
@@ -52,7 +52,7 @@ var SequenceView = function(div, data) {
 
   this.make_link = function(i_peptide) {
     var peptide_link = $("<a>");
-    if (this.i_peptide_selected < this.peptides.length) {
+    if (this.i_peptide_selected < this.matches.length) {
       if (this.is_peptides_intersect(i_peptide, this.i_peptide_selected)) {
         peptide_link.addClass('highlight_peptide');
       }
@@ -74,7 +74,7 @@ var SequenceView = function(div, data) {
     var pre = $('<pre>')
     this.div.append(pre);
 
-    this.peptides = this.protein.sources[this.i_source].peptides;
+    this.matches = this.protein.sources[this.i_source].matches;
     var sequence = this.protein.sequence;
     var n_res = sequence.length;
 
@@ -87,7 +87,7 @@ var SequenceView = function(div, data) {
       // }
       var i_peptide = this.get_i_peptide(i_res);
       if ((i_peptide >= 0) && (i_peptide != current_i_peptide)) {
-        var peptide = this.peptides[i_peptide];
+        var peptide = this.matches[i_peptide];
         var peptide_link = this.make_link(i_peptide);
         pre.append(peptide_link);
         target = peptide_link;
