@@ -130,9 +130,15 @@ function ProteinList(control_div, column1_div, data) {
     }
     this.data.selected_seqid = this.data.sorted_seqids[this.i_protein];
     if (this.i_old_protein != null) {
+      if (this.i_old_protein >= this.protein_divs.length) {
+        return;
+      }
       this.protein_divs[this.i_old_protein].css('color', '#666');
       this.protein_canvases[this.i_old_protein].draw();
     }
+      if (this.i_protein >= this.protein_divs.length) {
+        return;
+      }
     this.protein_divs[this.i_protein].css({'color':'#333'});
     this.protein_canvases[this.i_protein].draw();
     this.i_old_protein = this.i_protein;
@@ -221,6 +227,7 @@ function ProteinList(control_div, column1_div, data) {
 
   this.redraw_mask = function() {
     var val = $("input[name=mask]:checked").attr('value');
+    console.log('draw');
     this.data.mask = parseFloat(val);
     this.build_list();
     this.data.observer();

@@ -196,7 +196,6 @@ def create_proteins_from_xtandem(
         'mask': mask,
         'spectrum': ions[:n_peak],
         'attr': {
-          'mask': mask,
           'scan_id': scan['id'],
           'charge': scan['charge'],
           'expect': expect,

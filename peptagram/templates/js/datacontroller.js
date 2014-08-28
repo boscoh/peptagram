@@ -29,33 +29,6 @@ function DataController(data) {
     };
   }
 
-  this.count_peptides = function() {
-    for (var seqid in this.data.proteins) {
-      var protein = this.data.proteins[seqid];
-      protein.attr.n_match = 0;
-      protein.attr.n_match_unique = 0;
-      protein.attr.n_slice_populated = 0;
-      var sources = protein.sources;
-      for (var j=0; j<sources.length; j++) {
-        var matches = sources[j].matches;
-        var n_match_in_slice = 0;
-        for (var i=0; i<matches.length; i++) {
-          var peptide = matches[i];
-          if (this.data.mask >= peptide.mask) {
-            if (matches[i].attr.is_unique) {
-              protein.attr.n_match_unique += 1;
-            }
-            protein.attr.n_match += 1;
-            n_match_in_slice += 1;
-          }
-        }
-        if (n_match_in_slice > 0) {
-          protein.attr.n_slice_populated += 1;
-        }
-      }
-    }    
-  }
-
   this.check_data = function() {
     for (var seqid in this.data.proteins) {
       if (this.data.selected_seqid == null) {
@@ -369,7 +342,6 @@ function DataController(data) {
   }
 
   this.init();
-  this.count_peptides();
   this.check_data();
   this.check_location_hash();
 }

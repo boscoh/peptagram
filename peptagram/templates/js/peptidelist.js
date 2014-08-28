@@ -1,8 +1,37 @@
+function count_peptides_in_source(source, mask) {
+  source.attr = {}
+  source.attr.n_match = 0;
+  source.attr.n_match_unique = 0;
+  var matches = source.matches;
+  var n_match_in_slice = 0;
+  for (var i=0; i<matches.length; i++) {
+    var peptide = matches[i];
+    if (mask <= peptide.mask) {
+      if (matches[i].attr.is_unique) {
+        source.attr.n_match_unique += 1;
+      }
+      source.attr.n_match += 1;
+    }
+  }
+}
+
+
 function build_peptides_panel(data, div) {
   div.empty();
   var protein = data.controller.get_current_protein();
   var i_source = protein.i_source_selected;
-  var matches = protein.sources[i_source].matches;
+  var source = protein.sources[i_source];
+  count_peptides_in_source(source, data.mask);
+
+  div.append('n_match: ' + source.attr.n_match + '<br>');
+  div.append('<br>');
+
+  var matches = source.matches;
+
+  if (matches.length == 0) {
+    return;
+  }
+  
   var table = $('<table>');
   table.css('text-align', 'left');
   div.append(table);
@@ -16,6 +45,10 @@ function build_peptides_panel(data, div) {
 
   for (i_peptide=0; i_peptide<matches.length; i_peptide++) {
     var peptide = matches[i_peptide];
+
+    if (peptide.mask < data.mask) {
+      continue;
+    }
 
     var tr = $('<tr>')
     table.append(tr);

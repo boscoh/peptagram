@@ -5,9 +5,36 @@
 // (c) 2013 Bosco Ho
 
 
+
+function count_peptides(protein, mask) {
+  protein.attr.n_match = 0;
+  protein.attr.n_match_unique = 0;
+  protein.attr.n_slice_populated = 0;
+  var sources = protein.sources;
+  for (var j=0; j<sources.length; j++) {
+    var matches = sources[j].matches;
+    var n_match_in_slice = 0;
+    for (var i=0; i<matches.length; i++) {
+      var peptide = matches[i];
+      if (mask <= peptide.mask) {
+        if (matches[i].attr.is_unique) {
+          protein.attr.n_match_unique += 1;
+        }
+        protein.attr.n_match += 1;
+        n_match_in_slice += 1;
+      }
+    }
+    if (n_match_in_slice > 0) {
+      protein.attr.n_slice_populated += 1;
+    }
+  }
+}
+
+
 function build_protein_info_panel(data, div) {
   div.empty();
   var protein = this.data.controller.get_current_protein();
+  count_peptides(protein, this.data.mask);
   div.append(protein['description']);
   div.append("<br>----<br>");
   div.append(dict_html(protein['attr']));
