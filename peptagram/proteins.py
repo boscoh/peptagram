@@ -262,6 +262,7 @@ def make_graphical_comparison_visualisation(data, out_dir):
   determine_unique_matches(proteins)
   delete_empty_proteins(proteins)
   check_missing_fields(proteins)
+  count_matches(proteins)
   find_peptide_positions_in_proteins(proteins)
   for seqid, protein in proteins.items():
     for source in protein['sources']:
