@@ -233,7 +233,7 @@ function PeptographWidget(canvas, data, color_bar) {
       var matches = sources[j].matches;
       for (var i=0; i<matches.length; i++) {
         var peptide = matches[i];
-        if (this.data.mask >= peptide.mask) {
+        if (this.data.mask <= peptide.mask) {
           if (peptide.intensity === "") {
             var color = "lightyellow";
           } else {
@@ -367,7 +367,7 @@ var SequenceView = function(div, data) {
     i_res = 0;
     for (var i_peptide=0; i_peptide<matches.length; i_peptide++) {
       peptide = matches[i_peptide];
-      if (this.data.mask < peptide.mask) {
+      if (this.data.mask > peptide.mask) {
         continue;
       }
       if (i_res < peptide.i) {

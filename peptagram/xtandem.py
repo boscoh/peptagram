@@ -144,8 +144,8 @@ def load_xtandem_into_proteins(proteins, xtandem_fname, i_source, n_peak=50):
 
 
 def create_proteins_from_xtandem(
-    xtandem_fname, n_peak=50, good_expect=None,
-    poor_expect=None, cutoff_expect=None, 
+    xtandem_fname, n_peak=50, good_expect=1E-8,
+    poor_expect=1E-4, cutoff_expect=1E-2, 
     excluded_seqids=[], include_seqids=[]):
   proteins = {}
   i_source = 0
@@ -160,16 +160,18 @@ def create_proteins_from_xtandem(
     for match in scan['matches']:
 
       expect = match['expect']
-      if cutoff_expect is not None:
-        if expect > cutoff_expect:
-          continue
-      if good_expect is None:
-        intensity = 1.0
-      else:
-        x = -math.log(expect)
-        high = -math.log(good_expect)
-        low = -math.log(cutoff_expect)
-        intensity = (x-low)/(high-low)*.8 + .2
+      if expect <= poor_expect:
+        mask = 1
+      elif poor_expect < expect <= cutoff_expect:
+        mask = 0
+      elif cutoff_expect < expect:
+        continue
+
+      x = -math.log(expect)
+      high = -math.log(good_expect)
+      low = -math.log(cutoff_expect)
+      intensity = (x-low)/(high-low)*.8 + .2
+
 
       seqid = match['seqid']
       if seqid in excluded_seqids:
@@ -191,9 +193,10 @@ def create_proteins_from_xtandem(
       peptide = {
         'sequence': match['seq'],
         'intensity': intensity,
-        'mask': '',
+        'mask': mask,
         'spectrum': ions[:n_peak],
         'attr': {
+          'mask': mask,
           'scan_id': scan['id'],
           'charge': scan['charge'],
           'expect': expect,

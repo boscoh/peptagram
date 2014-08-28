@@ -31,7 +31,7 @@ function ProteinBarWidget(canvas, data, seqid) {
       var matches = this.protein.sources[j].matches;
       for (var i=0; i<matches.length; i++) {
         var peptide = matches[i];
-        if (this.data.mask >= peptide.mask) {
+        if (this.data.mask <= peptide.mask) {
           var x = this.x_from_i(peptide.i);
           var w = this.x_from_i(peptide.j) - x;
           this.canvas.solid_box(x, this.y, w, this.height, this.color);
@@ -96,7 +96,7 @@ function ProteinList(control_div, column1_div, data) {
 
     // radio buttons for masking
     if (this.data.mask_labels.length > 0) {
-      this.control_div.append('FPE: ');
+      this.control_div.append('quality: ');
       for (var i=0; i<this.data.mask_labels.length; i++) {
         var button = $("<input>");
         button.attr('name', 'mask');
