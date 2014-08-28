@@ -44,8 +44,8 @@ function DataController(data) {
         var matches = protein.sources[i].matches;
         for (var j=0; j<matches.length; j++) {
           var peptide = matches[j];
-          if (('modifications' in peptide.attr) && (peptide.attr.modifications.length == 0)) {
-            delete peptide.attr.modifications;
+          if (('modifications' in peptide) && (peptide.modifications.length == 0)) {
+            delete peptide.modifications;
           }
           if (!('j' in peptide)) {
             peptide.j = peptide.i + peptide.sequence.length;
@@ -237,8 +237,8 @@ function DataController(data) {
       for (ion_type in this.data.ion_types) {
         if (this.data.ion_types[ion_type]) {
           var modifications = [];
-          if ('modifications' in peptide.attr) {
-             modifications = peptide.attr.modifications;
+          if ('modifications' in peptide) {
+             modifications = peptide.modifications;
           }
           var matched = map_matched_ions(
             ion_type,

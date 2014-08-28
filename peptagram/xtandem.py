@@ -193,13 +193,13 @@ def create_proteins_from_xtandem(
       peptide = {
         'sequence': match['seq'],
         'intensity': intensity,
+        'modifications': [],
         'mask': mask,
         'spectrum': ions[:n_peak],
         'attr': {
           'scan_id': scan['id'],
           'charge': scan['charge'],
           'expect': expect,
-          'modifications': [],
           'missed_cleavages': match['missed_cleavages'],
           'mass': scan['mass'],
           'source': parse.basename(xtandem_fname),
@@ -215,7 +215,7 @@ def create_proteins_from_xtandem(
             mass = peptidemass.aa_monoisotopic_mass[aa]
           else:
             mass = 0.0
-          peptide['attr']['modifications'].append({
+          peptide['modifications'].append({
             'i': i_mod_in_full_seq - i_pep_seq,
             'mass': mod['modified'] + mass,
           })

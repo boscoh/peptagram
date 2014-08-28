@@ -36,6 +36,7 @@ def new_match(peptide_sequence):
   return {
     'sequence': peptide_sequence,
     'intensity': 1.0,
+    'modifications': [],
     'mask': 0.0,
     'attr': {}
   }
@@ -64,8 +65,8 @@ def determine_unique_matches(proteins):
 
 def check_missing_fields(proteins):
   for seqid, match in match_iterator(proteins):
-    if 'modifications' not in match['attr']:
-      match['attr']['modifications'] = []
+    if 'modifications' not in match:
+      match['modifications'] = []
     if 'intensity' not in match:
       match['intensity'] = 1
     if 'mask' not in match:
@@ -86,7 +87,7 @@ def count_matches(proteins):
       if len(matches) > 0:
         n_slice_populated += 1
     protein['attr']['n_slice_populated'] = n_slice_populated
-    protein['attr']['n_unique_match'] = n_unique_match
+    protein['attr']['n_match_unique'] = n_unique_match
     protein['attr']['n_match'] = n_match
 
 
@@ -259,7 +260,6 @@ def make_graphical_comparison_visualisation(data, out_dir):
   # sanity checks
   proteins = data['proteins']
   determine_unique_matches(proteins)
-  count_matches(proteins)
   delete_empty_proteins(proteins)
   check_missing_fields(proteins)
   find_peptide_positions_in_proteins(proteins)
@@ -289,7 +289,6 @@ def make_sequence_overview_visualisation(data, out_dir):
   # sanity checks
   proteins = data['proteins']
   determine_unique_matches(proteins)
-  count_matches(proteins)
   delete_empty_proteins(proteins)
   check_missing_fields(proteins)
   find_peptide_positions_in_proteins(proteins)

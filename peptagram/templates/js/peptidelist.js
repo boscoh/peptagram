@@ -72,8 +72,8 @@ function build_peptides_panel(data, div) {
     var modified = [];
     var is_nterminal = false;
     var is_cterminal = false;
-    if ('modifications' in peptide.attr) {
-      var modifications = peptide.attr.modifications;
+    if ('modifications' in peptide) {
+      var modifications = peptide.modifications;
       for (var i=0; i<seq.length; i++) {
         modified.push(false);
       }

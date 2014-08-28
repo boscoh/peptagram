@@ -8,6 +8,7 @@ import traceback
 import webbrowser
 import os
 import re
+from pprint import pprint
 
 import Tkinter as tk
 import tkFileDialog
@@ -288,6 +289,48 @@ def fix_list(tcl_list):
   return [re.sub("^{|}$", "", i) for i in tokens]
 
 
+def delete_peptides(proteins, is_deleteable_fn):
+  for protein in proteins.values():
+    for i_source, source in enumerate(protein['sources']):
+      matches = source['matches']
+      n_peptide = len(matches)
+      for i_peptide in reversed(range(n_peptide)):
+        if is_deleteable_fn(matches[i_peptide]):
+          del matches[i_peptide]
+  peptagram.proteins.delete_empty_proteins(proteins)
+
+
+
+def do_peptides(proteins, peptide_fn):
+  for protein in proteins.values():
+    for source in protein['sources']:
+      for match in source['matches']:
+        peptide_fn(match)
+
+
+aa2res = {  '<': 'NME', '>': 'ACE', 'A': 'ALA', 'C': 'CYS', 'D': 'ASP', 'E':
+'GLU', 'F': 'PHE', 'G': 'GLY', 'H': 'HIS', 'I': 'ILE', 'K': 'LYS', 'L': 'LEU',
+'M': 'MET', 'N': 'ASN', 'P': 'PRO', 'Q': 'GLN', 'R': 'ARG', 'S': 'SER', 'T':
+'THR', 'V': 'VAL', 'W': 'TRP', 'Y': 'TYR'}
+
+
+def mod_str(peptide):
+  s = ''
+  if 'modifications' not in peptide:
+    return 
+  for mod in peptide['modifications']:
+    i_peptide = mod['i']
+    aa = peptide['sequence'][i_peptide]
+    res = aa2res[aa]
+    i_protein = peptide['i'] + i_peptide
+    s += "<br>&nbsp; %s-%d(%d) M=%.2f" % (
+        res,
+        i_protein + 1,
+        i_peptide + 1,
+        mod['mass'])
+  peptide['attr']['modifications'] = s
+
+
 class PeptagramLoaderApp(tk.Tk):
   """
   Application window for Tkinter.
@@ -315,17 +358,33 @@ class PeptagramLoaderApp(tk.Tk):
     self.n_peak_entry = LabeledEntry(
         self.interior, 'number of peaks for each PSM', '50')
     self.good_expect_entry = LabeledEntry(
-        self.interior, '(optional) good expect (eg 1E-10)')
+        self.interior, 'good expect', '1E-8')
     self.poor_expect_entry = LabeledEntry(
-        self.interior, '(optional) poor expect (eg 1E-5)')
+        self.interior, 'poor expect', '1E-4')
     self.cutoff_expect_entry = LabeledEntry(
-        self.interior, '(optional) cutoff expect (eg 0.01)')
+        self.interior, 'cutoff expect', '0.01')
     self.exclude_entry = LabeledEntry(
         self.interior, '(optional) filename of seqids to exclude',
         load_file_text='select')
     self.include_entry = LabeledEntry(
         self.interior, '(optional) filename of seqids to include',
         load_file_text='select')
+
+    self.msms = tk.IntVar()
+    self.msms_check = tk.Checkbutton(
+        self.interior, text='include MS/MS', variable=self.msms)
+    self.msms.set(1)
+
+    self.filter = tk.IntVar()
+    self.filter_button0 = tk.Radiobutton(
+        self.interior, text='all peptides', value=1, variable=self.filter)
+    self.filter_button1 = tk.Radiobutton(
+        self.interior, text='tryptic peptides', value=2, variable=self.filter)
+    self.filter_button2 = tk.Radiobutton(
+        self.interior, text='semi-tryptic peptides', value=3, variable=self.filter)
+    self.filter_button3 = tk.Radiobutton(
+        self.interior, text='modified peptides', value=4, variable=self.filter)
+    self.filter.set('1')
 
     self.submit_button = tk.Button(
         self.interior,  text='submit', command=self.make_peptagram)
@@ -373,8 +432,19 @@ class PeptagramLoaderApp(tk.Tk):
     self.push_row(self.good_expect_entry)
     self.push_row(self.poor_expect_entry)
     self.push_row(self.cutoff_expect_entry)
+
+    self.push_row(spacer(height=1))
+    self.push_row(line())
+    self.push_row(spacer(height=1))
+
+    self.push_row(heading("FILTERS", 20))
     self.push_row(self.exclude_entry)
     self.push_row(self.include_entry)
+    self.push_row(self.msms_check)
+    self.push_row(self.filter_button0)
+    self.push_row(self.filter_button1)
+    self.push_row(self.filter_button2)
+    self.push_row(self.filter_button3)
 
     self.push_row(spacer(height=1))
     self.push_row(line())
@@ -402,6 +472,8 @@ class PeptagramLoaderApp(tk.Tk):
       'excluded_seqids': [],
       'include_seqids': [],
       'n_peak': 50,
+      'include_msms': self.msms.get(),
+      'peptide_filter': self.filter.get(),      
     }
     if len(params['tandems']) == 0:
       raise ValueError('No .tandem files were selected.')
@@ -446,12 +518,37 @@ class PeptagramLoaderApp(tk.Tk):
           excluded_seqids=params['excluded_seqids'])
       proteins = peptagram.proteins.merge_two_proteins(
           proteins, these_proteins)
+    do_peptides(proteins, mod_str)
+    if not params['include_msms'] == 1:
+      def delete_msms(peptide):
+        del peptide['spectrum']
+      do_peptides(proteins, delete_msms)
+    if params['peptide_filter'] == 2: # tryptic
+      def delete_fn(peptide):
+        if 'missed_cleavages' in peptide['attr'] and peptide['attr']['missed_cleavages'] > 0:
+          return True
+        return False
+      delete_peptides(proteins, delete_fn)
+    if params['peptide_filter'] == 3: # semitryptic
+      def delete_fn(peptide):
+        if 'missed_cleavages' not in peptide['attr']:
+          return True
+        return peptide['attr']['missed_cleavages'] == 0
+      delete_peptides(proteins, delete_fn)
+    if params['peptide_filter'] == 4: # modified
+      def delete_fn(peptide):
+        if 'modifications' not in peptide:
+          return True
+        if len(peptide['modifications']) == 0:
+          return True
+        return False
+      delete_peptides(proteins, delete_fn)
     data = {
       'title': params['title'],
       'proteins': proteins,
       'source_labels': params['labels'],
-      'color_names': ['P=1', 'P=0', ''],
-      'mask_labels': [],
+      'color_names': [params['good_expect'], params['cutoff_expect']],
+      'mask_labels': [0, 1],
     }
     peptagram.proteins.make_graphical_comparison_visualisation(
         data, params['out_dir'])
