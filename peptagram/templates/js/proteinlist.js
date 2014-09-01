@@ -182,6 +182,12 @@ function ProteinList(control_div, column1_div, data) {
     this.build_sorting_msg();
     this.sort_key = this.attr_select.val();
     this.sort_direction = $("input[name=direction]:checked").attr('value');
+
+    for (var seqid in this.data.proteins) {
+      var protein = this.data.proteins[seqid];
+      count_matches(protein, this.data.mask);
+    }
+
     this.data.controller.calc_sorted_seqids(
         this.sort_key, this.sort_direction);
 
@@ -203,7 +209,6 @@ function ProteinList(control_div, column1_div, data) {
       for (; i_seqid<j_seqid; i_seqid++) {
         var seqid = _this.data.sorted_seqids[i_seqid];
         var protein = _this.data.proteins[seqid];
-        count_matches(protein, this.data.mask);
         var val = protein.attr[_this.sort_key];
         var description = "" + (i_seqid+1) + ":";
         description += "[" + val + "] ";
