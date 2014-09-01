@@ -30,10 +30,10 @@ function ProteinBarWidget(canvas, data, seqid) {
     for (var j=0; j<this.protein.sources.length; j++) {
       var matches = this.protein.sources[j].matches;
       for (var i=0; i<matches.length; i++) {
-        var peptide = matches[i];
-        if (this.data.mask <= peptide.mask) {
-          var x = this.x_from_i(peptide.i);
-          var w = this.x_from_i(peptide.j) - x;
+        var match = matches[i];
+        if (this.data.mask <= match.mask) {
+          var x = this.x_from_i(match.i);
+          var w = this.x_from_i(match.j) - x;
           this.canvas.solid_box(x, this.y, w, this.height, this.color);
         }
       }
@@ -46,6 +46,31 @@ function ProteinBarWidget(canvas, data, seqid) {
         this.data.controller.pick_protein(this.seqid);
         this.data.observer();
       }  
+    }
+  }
+}
+
+
+function count_matches(protein, mask) {
+  protein.attr.n_match = 0;
+  protein.attr.n_match_unique = 0;
+  protein.attr.n_slice_populated = 0;
+  var sources = protein.sources;
+  for (var j=0; j<sources.length; j++) {
+    var matches = sources[j].matches;
+    var n_match_in_slice = 0;
+    for (var i=0; i<matches.length; i++) {
+      var match = matches[i];
+      if (mask <= match.mask) {
+        if (matches[i].attr.is_unique) {
+          protein.attr.n_match_unique += 1;
+        }
+        protein.attr.n_match += 1;
+        n_match_in_slice += 1;
+      }
+    }
+    if (n_match_in_slice > 0) {
+      protein.attr.n_slice_populated += 1;
     }
   }
 }
@@ -144,7 +169,6 @@ function ProteinList(control_div, column1_div, data) {
     this.i_old_protein = this.i_protein;
   }
 
-
   this.build_list = function() {
     this.main_div.empty();
     while (this.protein_canvases.length > 0) {
@@ -179,6 +203,7 @@ function ProteinList(control_div, column1_div, data) {
       for (; i_seqid<j_seqid; i_seqid++) {
         var seqid = _this.data.sorted_seqids[i_seqid];
         var protein = _this.data.proteins[seqid];
+        count_matches(protein, this.data.mask);
         var val = protein.attr[_this.sort_key];
         var description = "" + (i_seqid+1) + ":";
         description += "[" + val + "] ";

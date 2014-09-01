@@ -6,35 +6,9 @@
 
 
 
-function count_peptides(protein, mask) {
-  protein.attr.n_match = 0;
-  protein.attr.n_match_unique = 0;
-  protein.attr.n_slice_populated = 0;
-  var sources = protein.sources;
-  for (var j=0; j<sources.length; j++) {
-    var matches = sources[j].matches;
-    var n_match_in_slice = 0;
-    for (var i=0; i<matches.length; i++) {
-      var peptide = matches[i];
-      if (mask <= peptide.mask) {
-        if (matches[i].attr.is_unique) {
-          protein.attr.n_match_unique += 1;
-        }
-        protein.attr.n_match += 1;
-        n_match_in_slice += 1;
-      }
-    }
-    if (n_match_in_slice > 0) {
-      protein.attr.n_slice_populated += 1;
-    }
-  }
-}
-
-
 function build_protein_info_panel(data, div) {
   div.empty();
   var protein = this.data.controller.get_current_protein();
-  count_peptides(protein, this.data.mask);
   div.append(protein['description']);
   div.append("<br>----<br>");
   div.append(dict_html(protein['attr']));
@@ -235,7 +209,7 @@ function PeptographWidget(canvas, data, color_bar) {
     // draw selected row background
     this.canvas.solid_box(
         this.x, 
-        this.y_from_j(this.protein.i_source_view),
+        this.y_from_j(this.protein.i_source_selected),
         this.draw_width, 
         slice_height, 
         this.data.select_bg_color);
@@ -259,17 +233,17 @@ function PeptographWidget(canvas, data, color_bar) {
     for (var j=0; j<sources.length; j++) {
       var matches = sources[j].matches;
       for (var i=0; i<matches.length; i++) {
-        var peptide = matches[i];
-        if (this.data.mask <= peptide.mask) {
-          if (peptide.intensity === "") {
+        var match = matches[i];
+        if (this.data.mask <= match.mask) {
+          if (match.intensity === "") {
             var color = "lightyellow";
           } else {
-            var color = this.color_bar.palette.str(peptide.intensity);
+            var color = this.color_bar.palette.str(match.intensity);
           }
           this.canvas.solid_box(
-              this.x_from_i(peptide.i), 
+              this.x_from_i(match.i), 
               this.y_from_j(j), 
-              this.get_diff_width(peptide.i, peptide.j), 
+              this.get_diff_width(match.i, match.j), 
               slice_height, 
               color);
         }
@@ -280,22 +254,22 @@ function PeptographWidget(canvas, data, color_bar) {
     draw_highlight_box(
         this.canvas, 
         this.x_from_i(this.protein.i_res_view), 
-        this.y_from_j(this.protein.i_source_view), 
+        this.y_from_j(this.protein.i_source_selected), 
         this.get_diff_width(0, this.data.n_res_in_view), 
         slice_height,
         "#AAA");
 
-    //  highlight selected peptide
+    //  highlight selected match
     var i_source_selected = this.protein.i_source_selected;
     var matches = sources[i_source_selected].matches;
     if (matches.length > 0) {
-      if (this.protein.i_peptide_selected >= 0) {
-        peptide = matches[this.protein.i_peptide_selected];
+      if (this.protein.i_match_selected >= 0) {
+        match = matches[this.protein.i_match_selected];
         draw_highlight_box(
             this.canvas, 
-            this.x_from_i(peptide.i),
+            this.x_from_i(match.i),
             this.y_from_j(i_source_selected),
-            this.get_diff_width(peptide.i, peptide.j),
+            this.get_diff_width(match.i, match.j),
             slice_height,
             "#3F3");
       }
@@ -319,12 +293,12 @@ function PeptographWidget(canvas, data, color_bar) {
     var i_source = this.j_from_y(y);
     this.data.controller.pick_source_view(this.protein, i_source);
 
-    // if click over peptide: select it
+    // if click over match: select it
     var source = this.protein.sources[i_source];
     for (var i=0; i<source.matches.length; i++) {
-      var peptide = source.matches[i];
-      if ((peptide.i<=i_res) && (i_res<peptide.j)) {
-        this.data.controller.pick_peptide(this.protein, i_source, i);
+      var match = source.matches[i];
+      if ((match.i<=i_res) && (i_res<match.j)) {
+        this.data.controller.pick_match(this.protein, i_source, i);
         break;
       }
     }
@@ -368,8 +342,8 @@ var SequenceView = function(div, data) {
   this.build = function() {
     this.seqid = this.data.selected_seqid;
     this.protein = this.data.controller.get_current_protein();
-    this.i_source = this.protein.i_source_view;
-    this.i_peptide_selected = this.protein.i_peptide_selected;
+    this.i_source = this.protein.i_source_selected;
+    this.i_match_selected = this.protein.i_match_selected;
    
     var matches = this.protein.sources[this.i_source].matches;
     var sequence = this.protein.sequence;
@@ -392,29 +366,29 @@ var SequenceView = function(div, data) {
     pre.append('<br>');
 
     i_res = 0;
-    for (var i_peptide=0; i_peptide<matches.length; i_peptide++) {
-      peptide = matches[i_peptide];
-      if (this.data.mask > peptide.mask) {
+    for (var i_match=0; i_match<matches.length; i_match++) {
+      match = matches[i_match];
+      if (this.data.mask > match.mask) {
         continue;
       }
-      if (i_res < peptide.i) {
-        pre.append(sequence.slice(i_res, peptide.i));
-        i_res = peptide.i;
+      if (i_res < match.i) {
+        pre.append(sequence.slice(i_res, match.i));
+        i_res = match.i;
       }
       var peptide_link = $("<a>");
-      if (this.i_peptide_selected >= 0) {
-        if (this.i_peptide_selected < matches.length) {
-          if (is_peptides_intersect(i_peptide, this.i_peptide_selected)) {
+      if (this.i_match_selected >= 0) {
+        if (this.i_match_selected < matches.length) {
+          if (is_peptides_intersect(i_match, this.i_match_selected)) {
             peptide_link.addClass('highlight_peptide');
           }
         }
       }
       peptide_link.attr('href', '#');
       peptide_link.addClass('link');
-      peptide_link.text(sequence.slice(i_res, peptide.j));
-      peptide_link.click(this.data.controller.pick_peptide_callback(this.protein, this.i_source, i_peptide));
+      peptide_link.text(sequence.slice(i_res, match.j));
+      peptide_link.click(this.data.controller.pick_match_callback(this.protein, this.i_source, i_match));
       pre.append(peptide_link);
-      i_res = peptide.j;
+      i_res = match.j;
     }
     if (i_res < n_res) {
       pre.append(sequence.slice(i_res, n_res));
@@ -424,8 +398,8 @@ var SequenceView = function(div, data) {
 
   this.update_panel = function() {
     if ((this.seqid !== this.data.selected_seqid) ||
-        (this.i_source !== this.protein.i_source_view) ||
-        (this.i_peptide_selected != this.protein.i_peptide_selected)) {
+        (this.i_source !== this.protein.i_source_selected) ||
+        (this.i_match_selected != this.protein.i_match_selected)) {
       this.build();
     }
     var i_res = this.protein.i_res_view;
@@ -450,11 +424,11 @@ var SequenceView = function(div, data) {
 }
 
 
-function build_peptide_info(data, div) {
+function build_match_info(data, div) {
   div.empty();
-  var peptide = data.controller.get_selected_peptide();
-  if (peptide != null) {
-    div.append(dict_html(peptide['attr']));
+  var match = data.controller.get_selected_match();
+  if (match != null) {
+    div.append(dict_html(match['attr']));
     div.append("<br>");
   }
 }
@@ -601,8 +575,8 @@ function Pepto(data) {
     this.spectrum_widget.update();
     this.sequence_view.update_panel();
     build_protein_info_panel(this.data, this.protein_info_div);  
-    build_peptides_panel(this.data, this.peptide_list_div);
-    build_peptide_info(this.data, this.peptide_info_div);
+    build_matches_panel(this.data, this.peptide_list_div);
+    build_match_info(this.data, this.peptide_info_div);
     this.ion_table.update();
   }
 

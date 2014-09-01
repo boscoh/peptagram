@@ -1,12 +1,12 @@
-function count_peptides_in_source(source, mask) {
+function count_matches_in_source(source, mask) {
   source.attr = {}
   source.attr.n_match = 0;
   source.attr.n_match_unique = 0;
   var matches = source.matches;
   var n_match_in_slice = 0;
   for (var i=0; i<matches.length; i++) {
-    var peptide = matches[i];
-    if (mask <= peptide.mask) {
+    var match = matches[i];
+    if (mask <= match.mask) {
       if (matches[i].attr.is_unique) {
         source.attr.n_match_unique += 1;
       }
@@ -16,12 +16,12 @@ function count_peptides_in_source(source, mask) {
 }
 
 
-function build_peptides_panel(data, div) {
+function build_matches_panel(data, div) {
   div.empty();
   var protein = data.controller.get_current_protein();
   var i_source = protein.i_source_selected;
   var source = protein.sources[i_source];
-  count_peptides_in_source(source, data.mask);
+  count_matches_in_source(source, data.mask);
 
   div.append('n_match: ' + source.attr.n_match + '<br>');
   div.append('<br>');
@@ -43,10 +43,10 @@ function build_peptides_panel(data, div) {
   tr.append($('<td>').text('i'));
   tr.append($('<td>').text('seq'));
 
-  for (i_peptide=0; i_peptide<matches.length; i_peptide++) {
-    var peptide = matches[i_peptide];
+  for (i_match=0; i_match<matches.length; i_match++) {
+    var match = matches[i_match];
 
-    if (peptide.mask < data.mask) {
+    if (match.mask < data.mask) {
       continue;
     }
 
@@ -54,26 +54,26 @@ function build_peptides_panel(data, div) {
     table.append(tr);
 
     var td = $('<td>');
-    td.append(i_peptide+1);
+    td.append(i_match+1);
     tr.append(td);
 
     var td = $('<td>');
-    td.append(peptide.i+1);
+    td.append(match.i+1);
     tr.append(td);
 
     var td = $('<td>');
     var peptide_link = $("<a>");
-    if ((i_peptide == protein.i_peptide_selected)) {
+    if ((i_match == protein.i_match_selected)) {
       peptide_link.addClass('highlight_peptide');
     }
     peptide_link.attr('href', '#');
     peptide_link.addClass('link');
-    var seq = peptide['sequence'];
+    var seq = match['sequence'];
     var modified = [];
     var is_nterminal = false;
     var is_cterminal = false;
-    if ('modifications' in peptide) {
-      var modifications = peptide.modifications;
+    if ('modifications' in match) {
+      var modifications = match.modifications;
       for (var i=0; i<seq.length; i++) {
         modified.push(false);
       }
@@ -101,7 +101,7 @@ function build_peptides_panel(data, div) {
     if (is_cterminal) {
       peptide_link.append($('<span>').append('<').addClass('modification'));
     }
-    peptide_link.click(data.controller.pick_peptide_callback(protein, i_source, i_peptide));
+    peptide_link.click(data.controller.pick_match_callback(protein, i_source, i_match));
     td.append(peptide_link);
     tr.append(td);
   }

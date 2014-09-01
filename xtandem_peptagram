@@ -355,8 +355,7 @@ class PeptagramLoaderApp(tk.Tk):
         self.interior, 'peptagram title', 'X!Tandem peptagram')
     self.outdir_entry = LabeledEntry(
         self.interior, 'output directory', 'peptagram', load_dir_text='select')
-    self.n_peak_entry = LabeledEntry(
-        self.interior, 'number of peaks for each PSM', '50')
+
     self.good_expect_entry = LabeledEntry(
         self.interior, 'good expect', '1E-8')
     self.poor_expect_entry = LabeledEntry(
@@ -364,16 +363,18 @@ class PeptagramLoaderApp(tk.Tk):
     self.cutoff_expect_entry = LabeledEntry(
         self.interior, 'cutoff expect', '0.01')
     self.exclude_entry = LabeledEntry(
-        self.interior, '(optional) filename of seqids to exclude',
+        self.interior, 'filename of seqids to exclude',
         load_file_text='select')
     self.include_entry = LabeledEntry(
-        self.interior, '(optional) filename of seqids to include',
+        self.interior, 'filename of seqids to include',
         load_file_text='select')
 
     self.msms = tk.IntVar()
     self.msms_check = tk.Checkbutton(
         self.interior, text='include MS/MS', variable=self.msms)
     self.msms.set(1)
+    self.n_peak_entry = LabeledEntry(
+        self.interior, 'number of peaks for each MS/MS', '50')
 
     self.filter = tk.IntVar()
     self.filter_button0 = tk.Radiobutton(
@@ -428,7 +429,6 @@ class PeptagramLoaderApp(tk.Tk):
     self.push_row(heading("PARAMETERS", 20))
     self.push_row(self.job_entry)
     self.push_row(self.outdir_entry)
-    self.push_row(self.n_peak_entry)
     self.push_row(self.good_expect_entry)
     self.push_row(self.poor_expect_entry)
     self.push_row(self.cutoff_expect_entry)
@@ -441,6 +441,8 @@ class PeptagramLoaderApp(tk.Tk):
     self.push_row(self.exclude_entry)
     self.push_row(self.include_entry)
     self.push_row(self.msms_check)
+    self.push_row(self.n_peak_entry)
+    self.push_row(heading("include:"))
     self.push_row(self.filter_button0)
     self.push_row(self.filter_button1)
     self.push_row(self.filter_button2)
