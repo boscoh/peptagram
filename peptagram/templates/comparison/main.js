@@ -234,7 +234,7 @@ function PeptographWidget(canvas, data, color_bar) {
       var matches = sources[j].matches;
       for (var i=0; i<matches.length; i++) {
         var match = matches[i];
-        if (this.data.mask <= match.mask) {
+        if (this.data.match_filter(match)) {
           if (match.intensity === "") {
             var color = "lightyellow";
           } else {
@@ -297,9 +297,11 @@ function PeptographWidget(canvas, data, color_bar) {
     var source = this.protein.sources[i_source];
     for (var i=0; i<source.matches.length; i++) {
       var match = source.matches[i];
-      if ((match.i<=i_res) && (i_res<match.j)) {
-        this.data.controller.pick_match(this.protein, i_source, i);
-        break;
+      if (this.data.match_filter(match)) {
+        if ((match.i<=i_res) && (i_res<match.j)) {
+          this.data.controller.pick_match(this.protein, i_source, i);
+          break;
+        }
       }
     }
 
@@ -368,7 +370,7 @@ var SequenceView = function(div, data) {
     i_res = 0;
     for (var i_match=0; i_match<matches.length; i_match++) {
       match = matches[i_match];
-      if (this.data.mask > match.mask) {
+      if (!this.data.match_filter(match)) {
         continue;
       }
       if (i_res < match.i) {

@@ -1,4 +1,4 @@
-function count_matches_in_source(source, mask) {
+function count_matches_in_source(source, match_filter) {
   source.attr = {}
   source.attr.n_match = 0;
   source.attr.n_match_unique = 0;
@@ -6,7 +6,7 @@ function count_matches_in_source(source, mask) {
   var n_match_in_slice = 0;
   for (var i=0; i<matches.length; i++) {
     var match = matches[i];
-    if (mask <= match.mask) {
+    if (match_filter(match)) {
       if (matches[i].attr.is_unique) {
         source.attr.n_match_unique += 1;
       }
@@ -21,7 +21,7 @@ function build_matches_panel(data, div) {
   var protein = data.controller.get_current_protein();
   var i_source = protein.i_source_selected;
   var source = protein.sources[i_source];
-  count_matches_in_source(source, data.mask);
+  count_matches_in_source(source, data.match_filter);
 
   div.append('n_match: ' + source.attr.n_match + '<br>');
   div.append('<br>');
@@ -46,7 +46,7 @@ function build_matches_panel(data, div) {
   for (i_match=0; i_match<matches.length; i_match++) {
     var match = matches[i_match];
 
-    if (match.mask < data.mask) {
+    if (!data.match_filter(match)) {
       continue;
     }
 

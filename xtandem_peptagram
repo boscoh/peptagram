@@ -357,9 +357,9 @@ class PeptagramLoaderApp(tk.Tk):
         self.interior, 'output directory', 'peptagram', load_dir_text='select')
 
     self.good_expect_entry = LabeledEntry(
-        self.interior, 'good expect', '1E-8')
+        self.interior, 'great expect', '1E-8')
     self.poor_expect_entry = LabeledEntry(
-        self.interior, 'poor expect', '1E-4')
+        self.interior, 'okay expect', '1E-4')
     self.cutoff_expect_entry = LabeledEntry(
         self.interior, 'cutoff expect', '0.01')
     self.exclude_entry = LabeledEntry(

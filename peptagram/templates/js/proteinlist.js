@@ -31,7 +31,7 @@ function ProteinBarWidget(canvas, data, seqid) {
       var matches = this.protein.sources[j].matches;
       for (var i=0; i<matches.length; i++) {
         var match = matches[i];
-        if (this.data.mask <= match.mask) {
+        if (this.data.match_filter(match)) {
           var x = this.x_from_i(match.i);
           var w = this.x_from_i(match.j) - x;
           this.canvas.solid_box(x, this.y, w, this.height, this.color);
@@ -51,7 +51,7 @@ function ProteinBarWidget(canvas, data, seqid) {
 }
 
 
-function count_matches(protein, mask) {
+function count_matches(protein, match_filter) {
   protein.attr.n_match = 0;
   protein.attr.n_match_unique = 0;
   protein.attr.n_slice_populated = 0;
@@ -61,7 +61,7 @@ function count_matches(protein, mask) {
     var n_match_in_slice = 0;
     for (var i=0; i<matches.length; i++) {
       var match = matches[i];
-      if (mask <= match.mask) {
+      if (match_filter(match)) {
         if (matches[i].attr.is_unique) {
           protein.attr.n_match_unique += 1;
         }
@@ -185,7 +185,7 @@ function ProteinList(control_div, column1_div, data) {
 
     for (var seqid in this.data.proteins) {
       var protein = this.data.proteins[seqid];
-      count_matches(protein, this.data.mask);
+      count_matches(protein, this.data.match_filter);
     }
 
     this.data.controller.calc_sorted_seqids(
