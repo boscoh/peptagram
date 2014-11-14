@@ -34,7 +34,7 @@ float_regex = re.compile(float_regex_pattern, re.VERBOSE)
 def round_decimal(f, n):
     '''Truncates/pads a float f to n decimal places without rounding'''
     slen = len('%.*f' % (n, f))
-    return str(f)[:slen]
+    return float(str(f)[:slen])
     
     
 def basename(fname):

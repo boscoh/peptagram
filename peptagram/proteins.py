@@ -256,6 +256,39 @@ def transfer_files(in_dir, out_dir):
     shutil.copy(src, dst)
 
 
+
+def do_peptides(proteins, peptide_fn):
+  for protein in proteins.values():
+    for source in protein['sources']:
+      for match in source['matches']:
+        peptide_fn(match)
+
+
+
+aa2res = {  '<': 'NME', '>': 'ACE', 'A': 'ALA', 'C': 'CYS', 'D': 'ASP', 'E':
+'GLU', 'F': 'PHE', 'G': 'GLY', 'H': 'HIS', 'I': 'ILE', 'K': 'LYS', 'L': 'LEU',
+'M': 'MET', 'N': 'ASN', 'P': 'PRO', 'Q': 'GLN', 'R': 'ARG', 'S': 'SER', 'T':
+'THR', 'V': 'VAL', 'W': 'TRP', 'Y': 'TYR'}
+
+
+
+def mod_str(peptide):
+  s = ''
+  if 'modifications' not in peptide:
+    return 
+  for mod in peptide['modifications']:
+    i_peptide = mod['i']
+    aa = peptide['sequence'][i_peptide]
+    res = aa2res[aa]
+    i_protein = peptide['i'] + i_peptide
+    s += "<br>&nbsp; %s-%d(%d) M=%.2f" % (
+        res,
+        i_protein + 1,
+        i_peptide + 1,
+        float(mod['mass']))
+  peptide['attr']['modifications'] = s
+
+
 def make_graphical_comparison_visualisation(data, out_dir):
   # sanity checks
   proteins = data['proteins']
@@ -263,12 +296,15 @@ def make_graphical_comparison_visualisation(data, out_dir):
   delete_empty_proteins(proteins)
   check_missing_fields(proteins)
   count_matches(proteins)
+  do_peptides(proteins, mod_str)
+
   find_peptide_positions_in_proteins(proteins)
   for seqid, protein in proteins.items():
     for source in protein['sources']:
       matches = source['matches']
       matches.sort(key=lambda match: len(match['sequence']))
       matches.sort(key=lambda match: match['i'])
+
   if 'source_labels' not in data:
     data['source_labels'] = []
   if 'color_names' not in data:

@@ -13,6 +13,7 @@ weighted averages of the different isotypes of each atom.
 
 atom_mass = {
   'H': 1.007825032,
+  'H+': 1.007276,
   'O': 15.994914622,
 }
 
@@ -79,14 +80,21 @@ aa_average_mass = {
   'Z': 110
 }
 
+# the atoms here artifically suppress a H+ atom so that
+# the algorithms to incoporate the charge can be calculated
+# as m/z = (mass+H+*charge)/charge
 ion_type_props = {
   'b': { 
-    'atoms_to_add': [], # Cterm O+ loses electron to form triple bond to C
+    # neutral: nterm (NH)-, electron is lost to form cterm CO(+) 
+    # charged: gain a H to neutralize nterm NH2, cterm triple CO(+) bond
+    'atoms_to_add': [], 
     'atoms_to_sub': [],
     'is_nterm': True, 
   },
   'y': { 
-    'atoms_to_add': ['H', 'H', 'O'], # H+ on Nterm NH, OH on Cterm CO
+    # netural: nterm NH2, neutral cterm COOH
+    # charged: gain a H+ on the nterm to form NH3(+)
+    'atoms_to_add': ['H', 'H', 'O'], 
     'atoms_to_sub': [],
     'is_nterm': False,
   },
@@ -116,7 +124,7 @@ def calculate_neutral_mass(aa_masses, ion_type):
 
 def calculate_mz(aa_masses, charge, ion_type):
   charged_mass = calculate_neutral_mass(aa_masses, ion_type)
-  charged_mass += atom_mass['H']*charge 
+  charged_mass += atom_mass['H+']*charge 
   if charge == 1:
     return charged_mass
   else:
@@ -144,7 +152,7 @@ def map_matched_ions(
   aa_masses = parse_aa_masses(sequence, aa_mass, modified_aa_masses)
   ion = ion_type[0]
   pieces = ion_type.split('(')
-  charge = pieces[1][0] if len(pieces) > 1 else 1
+  charge = int(pieces[1][0]) if len(pieces) > 1 else 1
   theory_peaks = calculate_peaks(aa_masses, charge, ion)
   matched = []
   for theory_mz, label in theory_peaks:
@@ -221,4 +229,3 @@ if __name__ == "__main__":
   matched = map_matched_ions('y', seq, spectrum, delta_mass, modified_aa_masses, aa_monoisotopic_mass)
   matched = map_matched_ions('b', seq, spectrum, delta_mass, modified_aa_masses, aa_monoisotopic_mass)
   pprint(matched);
-

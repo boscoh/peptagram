@@ -38,7 +38,6 @@ def read_tsv_iter(tsv_txt):
 def read_modification_dict(modifications_tsv):
   result = {}
   for entry in parse.read_tsv(modifications_tsv):
-    # pprint(entry)
     key = entry['description']
     mass = float(entry['monoisotopic mass shift (da)'])
     if 'residue' in entry:
@@ -65,11 +64,11 @@ def parse_peptide(text, modification_dict):
         in_modification = False
         i = len(chars) - 1
         if mod_str not in modification_dict:
-          log.debug('Warning: modification {} unknown'.format(mod_str))
+          logger.debug('Warning: modification {} unknown'.format(mod_str))
           continue
         modification = {
             'i':i, 
-            'mass': modification_dict[mod_str],
+            'mass': float(modification_dict[mod_str]),
         }
         modifications.append(modification)
       else:
@@ -111,8 +110,12 @@ class DictListWriter():
       self.file.close()
 
 
-def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
+def get_proteins(
+      protein_groups_fname, psm_fname, modifications_fname=None,
+      q_okay=0.5, q_cutoff=0.75):
+
   is_debug = logger.root.level <= logging.DEBUG
+
   dump_dir = os.path.dirname(protein_groups_fname)
 
   if modifications_fname is not None:
@@ -164,28 +167,39 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
   for src_peptide in read_tsv_iter(psm_fname):
     dict_dump_writer.dump_dict(src_peptide)
     descriptions = src_peptide['protein description'].split(' / ')
-    peptide_seqids = [d.split()[0] for d in descriptions]
-    protein = None
-    for peptide_seqid in peptide_seqids:
-      if peptide_seqid in protein_by_seqid:
-        protein = protein_by_seqid[peptide_seqid]
-        break
-    n_match += 1
-    if protein is None:
-      continue
-    n_match_assigned += 1
-    sequence = protein['sequence']
     extracted_peptide_sequence, modifications = parse_peptide(
         src_peptide['peptide sequence'],
         modification_table)
     peptide_sequence = src_peptide['base peptide sequence']
     if extracted_peptide_sequence != peptide_sequence:
       logger.warning("Peptide sequences don't match: " + src_peptide['peptide sequence'] + " " + extracted_peptide_sequence + " " + peptide_sequence)
-    i = sequence.find(peptide_sequence)
-    if i < 0:
-      logger.warning(peptide_sequence + ' not found in ' + protein['attr']['seqid'])
+
+    protein = None
+    peptide_seqids = [d.split()[0] for d in descriptions]
+    for peptide_seqid in peptide_seqids:
+      if peptide_seqid in protein_by_seqid:
+        test_protein = protein_by_seqid[peptide_seqid]
+        sequence = test_protein['sequence']
+        i = sequence.find(peptide_sequence)
+        if i < 0:
+          continue
+        else:
+          protein = test_protein
+        break
+    if protein is None:
       continue
+
+    n_match += 1
+    n_match_assigned += 1
+
     q_value = float(src_peptide['q-value (%)'])
+    if q_value > q_cutoff:
+      continue
+    intensity = (1.0 - q_value/q_cutoff)*0.8 + 0.2
+    mask = 0
+    if q_value < q_okay:
+      mask = 1
+
     if 'scan number' in src_peptide:
       scan_id = src_peptide['scan number']
     elif 'spectrum number' in src_peptide:
@@ -211,13 +225,16 @@ def get_proteins(protein_groups_fname, psm_fname, modifications_fname=None):
         'source': parse.basename(src_peptide['filename']),
         'q_value': q_value,
       },
-      'intensity': 1.0 - q_value/100.0,
+      'intensity': intensity,
+      'mask': mask,
       'i': i,
     }
     if modifications:
       for modification in modifications:
         modification['mass'] = parse.round_decimal(modification['mass'], 4)
-      peptide['attr']['modifications'] = modifications
+      peptide['modifications'] = modifications
+      modified_sequence = src_peptide['peptide sequence'].split('.')[1]
+      peptide['attr']['modified_sequence'] = modified_sequence
 
     protein['sources'][0]['matches'].append(peptide)
 

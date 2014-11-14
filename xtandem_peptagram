@@ -308,29 +308,6 @@ def do_peptides(proteins, peptide_fn):
         peptide_fn(match)
 
 
-aa2res = {  '<': 'NME', '>': 'ACE', 'A': 'ALA', 'C': 'CYS', 'D': 'ASP', 'E':
-'GLU', 'F': 'PHE', 'G': 'GLY', 'H': 'HIS', 'I': 'ILE', 'K': 'LYS', 'L': 'LEU',
-'M': 'MET', 'N': 'ASN', 'P': 'PRO', 'Q': 'GLN', 'R': 'ARG', 'S': 'SER', 'T':
-'THR', 'V': 'VAL', 'W': 'TRP', 'Y': 'TYR'}
-
-
-def mod_str(peptide):
-  s = ''
-  if 'modifications' not in peptide:
-    return 
-  for mod in peptide['modifications']:
-    i_peptide = mod['i']
-    aa = peptide['sequence'][i_peptide]
-    res = aa2res[aa]
-    i_protein = peptide['i'] + i_peptide
-    s += "<br>&nbsp; %s-%d(%d) M=%.2f" % (
-        res,
-        i_protein + 1,
-        i_peptide + 1,
-        mod['mass'])
-  peptide['attr']['modifications'] = s
-
-
 class PeptagramLoaderApp(tk.Tk):
   """
   Application window for Tkinter.
@@ -520,7 +497,6 @@ class PeptagramLoaderApp(tk.Tk):
           excluded_seqids=params['excluded_seqids'])
       proteins = peptagram.proteins.merge_two_proteins(
           proteins, these_proteins)
-    do_peptides(proteins, mod_str)
     if not params['include_msms'] == 1:
       def delete_msms(peptide):
         del peptide['spectrum']
