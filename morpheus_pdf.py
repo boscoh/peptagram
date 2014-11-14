@@ -15,6 +15,7 @@ import peptagram.pdf
 protein_group = 'output/2010-12-05_Yeast_Trypsin_FT_HCD_Rep3.protein_groups.tsv'
 psm = 'output/2010-12-05_Yeast_Trypsin_FT_HCD_Rep3.PSMs.tsv'
 modificiations = 'modifications.tsv'
+mzml = '2010-12-05_Yeast_Trypsin_FT_HCD_Rep3.mzML'
 pdf = 'modified_peptides.pdf'
 title = "Morpheus Search Results for Modified Peptides: 2010-12-05_Yeast_Trypsin_FT_HCD_Rep3"
 author = "Craig Wenger"
@@ -35,9 +36,7 @@ proteins = peptagram.morpheus.get_proteins(
 print("Reading mzml...")
 i_source = 0
 peptagram.mzml.load_mzml(
-    proteins, i_source, 
-    '2010-12-05_Yeast_Trypsin_FT_HCD_Rep3.mzML',
-    n_peak)
+    proteins, i_source, mzml, n_peak)
 
 sorted_matches = []
 for seqid, protein in proteins.items():
