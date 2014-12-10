@@ -106,7 +106,6 @@ class ReportLabDoc():
         self.page_templates = OrderedDict()
         self.build_page_templates()
         self.toc = TableOfContents()
-        self.labels = ['b(3+)', 'b(2+)', 'b', '>', 'aa', '<', 'y', 'y(2+)', 'y(3+)']
 
     def add_toc(self):
         self.elements.append(self.toc)
@@ -446,9 +445,11 @@ if __name__=="__main__":
         "test_set",
         50,
         0.1,
-        ['modified_sequence', 'modifications', 'source', 
+        [
+            'modified_sequence', 'modifications', 'source', 
             'scan_id', 'retention_time', 'm/z', 'mass', 
-            'mass_diff', 'morpheus_score', 'q_value'])
+            'mass_diff', 'morpheus_score', 'q_value'
+        ])
     doc.add_match_page(match)
     doc.build()
     os.system('open out.pdf')

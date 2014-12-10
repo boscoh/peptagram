@@ -403,7 +403,7 @@ def count_tpp_indep_spectra(proteins):
     unique_sequence_set = set()
     for source in protein['sources']:
       for peptide in source['matches']:
-        sequence = str(peptide['attr']['charge']) + peptide['modified_sequence']
+        sequence = str(peptide['attr']['charge']) + peptide['attr']['modified_sequence']
         if 'is_contributing_evidence' in peptide['attr'] and peptide['attr']['is_contributing_evidence'] == 'Y':
           n_unique_spectrum += 1
           unique_sequence_set.add(sequence)

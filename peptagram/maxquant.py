@@ -191,7 +191,7 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
       i_source = i_sources[evidence['raw file']]
       protein['sources'][i_source]['matches'].append(new_peptide)
 
-  parse_proteins.count_peptides(proteins)
+  parse_proteins.count_matches(proteins)
   parse_proteins.delete_empty_proteins(proteins)
   
   return proteins, sources

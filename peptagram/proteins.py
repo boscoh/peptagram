@@ -23,6 +23,13 @@ logger = logging.getLogger('proteins')
 this_dir = os.path.abspath(os.path.dirname(__file__))
 
 
+def clean_seqid(seqid):
+  if '|' in seqid:
+    return seqid.split('|')[1]
+  else:
+    return seqid
+
+
 def new_protein(seqid):
   return {
     'attr': { 'seqid':seqid, 'other_seqids':[] },
@@ -48,6 +55,13 @@ def match_iterator(proteins):
     for source in protein['sources']:
       for match in source['matches']:
         yield seqid, match
+
+
+def do_matches(proteins, do_match_fn):
+  for protein in proteins.values():
+    for source in protein['sources']:
+      for match in source['matches']:
+        do_match_fn(match)
 
 
 def determine_unique_matches(proteins):
@@ -99,6 +113,42 @@ def delete_empty_proteins(proteins):
       n_match += len(source['matches'])
     if n_match == 0:
       del proteins[seqid]
+
+
+def delete_spectrum(match):
+  del match['spectrum']
+
+
+def delete_matches(proteins, is_deleteable_fn):
+  for protein in proteins.values():
+    for source in protein['sources']:
+      matches = source['matches']
+      n_match = len(matches)
+      for i_match in reversed(range(n_match)):
+        if is_deleteable_fn(matches[i_match]):
+          del matches[i_match]
+  proteins.delete_empty_proteins(proteins)
+
+
+def is_missed_cleavage(match):
+  if 'missed_cleavages' in match['attr'] and \
+      match['attr']['missed_cleavages'] > 0:
+    return True
+  return False
+
+
+def is_tryptic(match):
+  if 'missed_cleavages' not in match['attr']:
+    return True
+  return match['attr']['missed_cleavages'] == 0
+
+
+def is_modified_peptide(match):
+  if 'modifications' not in match:
+    return True
+  if len(match['modifications']) == 0:
+    return True
+  return False
 
 
 def find_peptide_positions_in_proteins(proteins):
