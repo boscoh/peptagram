@@ -5,6 +5,7 @@ from pprint import pprint
 import re
 import os
 import json
+import glob
 import ntpath, posixpath, macpath
 
 
@@ -134,5 +135,32 @@ def memoize(fn, fname, force=False):
     pprint(result, stream=open(fname, 'w'), width=80)
     return result
 
+
+def size_of_fnames(*fnames):
+  size = 0
+  for fname in fnames:
+    if os.path.isdir(fname):
+      sub_fnames = glob.glob(os.path.join(fname, '*'))
+      size += size_of_fnames(*sub_fnames)
+    else:
+      size += os.path.getsize(fname)
+  return size
+
+
+def size_str(*fnames):
+  size = size_of_fnames(*fnames)
+  if size < 1E6:
+    return "%.3f MB" % (size/1E6)
+  else:
+    return "%.f MB" % (size/1E6)
+
+
+def read_word_file(fname):
+  if not fname:
+    return []
+  if not os.path.isfile(fname):
+    raise IOError("Couldn't find file: " + fname)
+  text = open(fname).read()
+  return text.split()
 
 
