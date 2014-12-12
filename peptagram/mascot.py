@@ -8,7 +8,7 @@ import logging
 
 
 from parse import parse_string, save_data_dict
-
+import proteins as parse_proteins
 
 logger = logging.getLogger('mascot')
 
@@ -167,7 +167,7 @@ def read_mascot_dat(fname, max_peptide_rank=1):
       if section == "summary":
         process_line = \
             lambda l: process_summary(l, scans)
-      if section == 'matches':
+      if section == 'matches' or section == 'peptides':
         process_line = \
             lambda l: process_matches(l, scans, max_peptide_rank)
       if section == "proteins":
@@ -203,6 +203,7 @@ def load_mascot_dat_to_proteins(proteins, i_source, mascot_dat):
                peptide['sequence'])
           peptide_by_match_id[match_id] = peptide
   scans, mascot_proteins = read_mascot_dat(mascot_dat)
+  open('test.txt', 'w').write(json.dumps(scans, indent=1))
   n_match = 0
   for scan in scans.values():
     for match in scan['matches']:
@@ -217,6 +218,34 @@ def load_mascot_dat_to_proteins(proteins, i_source, mascot_dat):
         peptide['spectrum'] = split_mascot_ion_str(scan['Ions1'])
   logger.info('%s: matched %d pepXML to %d mascot PSM' % \
       (mascot_dat, len(peptide_by_match_id), n_match))
+
+
+def get_proteins(mascot_dat):
+  scans, mascot_proteins = read_mascot_dat(mascot_dat)
+
+  proteins = {}
+  for scan_id, scan in scans.items():
+    for mascot_match in scan['matches']:
+      match_id = "%.2f%.2f%.2f%s" % \
+          (mascot_match['score'],
+           scan['identity'],
+           scan['homology'],
+           mascot_match['sequence'])
+      peptide_sequence = mascot_match['sequence']
+      match = parse_proteins.new_match(peptide_sequence)
+      match['attr']['missed_cleavages'] = mascot_match['skip']
+      match['spectrum'] = split_mascot_ion_str(scan['Ions1'])
+      for key in scan:
+        if key not in ["Ions1", "matches"]:
+          match['attr'][key] = scan[key]
+      for match_protein in mascot_match['proteins']:
+        seqid = match_protein['seqid']
+        if seqid not in proteins:
+          proteins[seqid] = parse_proteins.new_protein(seqid)
+        protein = proteins[seqid]
+        protein['sources'][0]['matches'].append(match)
+
+  return proteins
 
 
 if __name__ == '__main__':
