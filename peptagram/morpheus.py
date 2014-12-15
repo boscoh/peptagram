@@ -223,6 +223,7 @@ def get_proteins(
         'mass_diff': parse.round_decimal(src_peptide['precursor mass error (da)'], 4),
         'm/z': parse.round_decimal(src_peptide['precursor m/z'], 4),
         'source': parse.basename(src_peptide['filename']),
+        'missed_cleavages': int(src_peptide['missed cleavages']),
         'q_value': q_value,
       },
       'intensity': intensity,
