@@ -116,7 +116,8 @@ def delete_empty_proteins(proteins):
 
 
 def delete_spectrum(match):
-  del match['spectrum']
+  if 'spectrum' in match:
+    del match['spectrum']
 
 
 def delete_matches(proteins, is_deleteable_fn):
@@ -127,7 +128,7 @@ def delete_matches(proteins, is_deleteable_fn):
       for i_match in reversed(range(n_match)):
         if is_deleteable_fn(matches[i_match]):
           del matches[i_match]
-  proteins.delete_empty_proteins(proteins)
+  delete_empty_proteins(proteins)
 
 
 def is_missed_cleavage(match):
@@ -328,14 +329,23 @@ def mod_str(peptide):
     return 
   for mod in peptide['modifications']:
     i_peptide = mod['i']
-    aa = peptide['sequence'][i_peptide]
-    res = aa2res[aa]
+    if i_peptide < 0:
+      res = 'NTR'
+    elif i_peptide >= len(peptide['sequence']):
+      res = 'CTR'
+    else:
+      aa = peptide['sequence'][i_peptide]
+      if aa in aa2res:
+        res = aa2res[aa]
+      else:
+        res = 'XXX'
     i_protein = peptide['i'] + i_peptide
-    s += "<br>&nbsp; %s-%d(%d) M=%.2f" % (
+    s += "<br>&nbsp; %s-%d(%d)" % (
         res,
         i_protein + 1,
-        i_peptide + 1,
-        float(mod['mass']))
+        i_peptide + 1)
+    if 'mass' in mod:
+      s += " M=%.2f" % float(mod['mass'])
   peptide['attr']['modifications'] = s
 
 
