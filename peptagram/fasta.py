@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from pprint import pprint
 
 
+"""
+Common .fasta reading function.
+"""
+
+
 def read_fasta(fasta_db):
   """
-  Returns a lsit of seqids encountered, and a dictionary
-  of sequences for each seqid.
+  Returns list of seqids and a dictionary of
+  proteins sequences as an attribute dictionary.
   """
   seqids = []
   seqid = None

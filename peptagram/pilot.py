@@ -1,17 +1,26 @@
  # -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from pprint import pprint
 
 import csv
-import logging
 
+import logging
 logger = logging.getLogger('pilot')
 
 import proteins as parse_proteins
 
 
 """
-Parser for AB/X peptide results from Protein Pilot
+Parser for AB/X Protein Pilot search results saved as CSV text file
+
+Main API entry:
+
+  get_proteins(fname)
+
+  returns a dictionary that organizes peptide-spectrum-matches
+  around proteins.
+
 """
 
 
@@ -22,7 +31,7 @@ def get_delimiter(fname):
     return '\t'
 
 
-def read_peptides(pilot_summary):
+def read_matches(pilot_summary):
   delimiter = get_delimiter(pilot_summary)
   with open(pilot_summary, 'Ur') as f:
     for entry in csv.DictReader(f, delimiter=delimiter):
@@ -48,35 +57,56 @@ def parse_modifications(s, len_seq):
     return []
   modifications = []
   for piece in s.split(';'):
-    l, r = piece.split('@')
-    if r == 'N-term': 
+    mod_type, position = piece.split('@')
+    if position == 'N-term': 
       i = -1
-    elif r == 'C-term':
+    elif position == 'C-term':
       i = len_seq
     else:
-      i = int(r) - 1
-    modification = { 'i':i }
+      i = int(position) - 1
+    modification = { 'i':i, 'type':mod_type }
     modifications.append(modification)
   return modifications
   
 
 def get_proteins(fname):
   proteins = {}
-  print(read_headers(fname))
-  for peptide in read_peptides(fname):
-    seqid = parse_proteins.clean_seqid(peptide['Accessions'])
+
+  for pilot_match in read_matches(fname):
+
+    seqids = map(
+      parse_proteins.clean_seqid,
+      pilot_match['Accessions'].split(';'))
+
+    seqid = seqids[0]
     if seqid not in proteins:
       protein = parse_proteins.new_protein(seqid)
       proteins[seqid] = protein
+      protein['attr']['other_seqids'] = seqids[1:]
+      protein['attr']['seqid'] = seqid
     else:
       protein = proteins[seqid]
-    peptide_sequence = peptide['Sequence']
-    match = parse_proteins.new_match(peptide_sequence)
+
+    match_sequence = pilot_match['Sequence']
+    match = parse_proteins.new_match(match_sequence)
     match['attr']['missed_cleavages'] = \
-        parse_cleavages(peptide['Cleavages'])
+        parse_cleavages(pilot_match['Cleavages'])
     match['modifications'] = \
-        parse_modifications(peptide['Modifications'], len(peptide_sequence))
+        parse_modifications(
+            pilot_match['Modifications'], len(match_sequence))
+
+    if 'Sc' in pilot_match:
+      match['attr']['score'] = pilot_match['Sc']
+    elif 'Score' in pilot_match:
+      match['attr']['score'] = pilot_match['Score']
+    if 'Acq Time' in pilot_match:
+      match['attr']['retention_time'] = pilot_match['Acq Time']
+    elif 'Time' in pilot_match:
+      match['attr']['retention_time'] = pilot_match['Time']
+    match['attr']
+
     protein['sources'][0]['matches'].append(match)
+
   return proteins
 
 

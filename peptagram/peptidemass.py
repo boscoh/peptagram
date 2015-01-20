@@ -1,15 +1,13 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# (c) 2013 Bosco Ho
+
 from __future__ import print_function
 from pprint import pprint
 
+
 """
-A peptide mass calculation library.
-Given sequences in terms of strings, generates all
-the different masses of the peptide depending on the
-weighted averages of the different isotypes of each atom.
+Routines to calculate mass-spectra of peptide sequences.
 """
+
 
 atom_mass = {
   'H': 1.007825032,
@@ -102,6 +100,12 @@ ion_type_props = {
 
 
 def parse_aa_masses(sequence, aa_mass, modified_masses=[]):
+  """
+  Returns a list of masses for a given sequence.
+
+  aa_mass is a dictionary of amino-acid masses.
+  modified_masses is a dictionary of positions and modified masses,
+  """
   masses = [aa_mass[aa] for aa in sequence]
   for modified in modified_masses:
     masses[modified['i']] = modified['mass']
@@ -132,6 +136,9 @@ def calculate_mz(aa_masses, charge, ion_type):
 
 
 def calculate_peaks(aa_masses, charge, ion_type):
+  """
+  Returns a list of theoretical mz peaks [mz, label]
+  """
   peaks = []
   for i in range(len(aa_masses)):
     if ion_type_props[ion_type]['is_nterm']:
@@ -147,20 +154,28 @@ def calculate_peaks(aa_masses, charge, ion_type):
 
 
 def map_matched_ions(
-    ion_type, sequence, peaks, mz_delta=0.8, modified_aa_masses=[],
+    ion_type, sequence, peaks, mz_delta_max=0.8, modified_aa_masses=[],
     aa_mass=aa_monoisotopic_mass):
+  """
+  Returns a list of matched peaks between sequence and mz peaks.
+  A peak is [mz, intensity, label, mz_delta, mz_error].
+
+  mz_error = mz_delta/mz_theory*1E6
+  peaks is a list of [mz, intensity].
+  aa_mass is a dictionary of masses for amino acids
+  """
   aa_masses = parse_aa_masses(sequence, aa_mass, modified_aa_masses)
   ion = ion_type[0]
   pieces = ion_type.split('(')
   charge = int(pieces[1][0]) if len(pieces) > 1 else 1
   theory_peaks = calculate_peaks(aa_masses, charge, ion)
   matched = []
-  for theory_mz, label in theory_peaks:
+  for mz_theory, label in theory_peaks:
     for mz, intensity in peaks:
-      diff = theory_mz - mz
-      error = int(diff/theory_mz*1E6)
-      if abs(diff) <= mz_delta:
-        matched.append([mz, intensity, label, diff, error])
+      mz_delta = mz_theory - mz
+      mz_error = int(mz_delta/mz_theory*1E6)
+      if abs(mz_delta) <= mz_delta_max:
+        matched.append([mz, intensity, label, mz_delta, mz_error])
         break
   return matched
 

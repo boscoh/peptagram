@@ -1,20 +1,30 @@
  # -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from pprint import pprint
+
 import os
-import json
-import math
+
 import logging
-
 logger = logging.getLogger('maxquant')
-
-import numpy 
 
 import parse
 import proteins as parse_proteins
 
+
 """
-Parser for Maxquant summary text files
+Parser for Maxquant search-results text files in the summary directory
+
+Main API entry:
+
+  get_proteins_and_sources(
+      in_dir,
+      great_expect=1E-8, 
+      cutoff_expect=1E-2)
+
+  returns a dictionary that organizes peptide-spectrum-matches
+  around proteins, and a list of sources.
+
 """
 
 
@@ -28,7 +38,8 @@ def get_labeled_spectrum(scan):
 def transfer_attrs(source_dict, target_dict, parse_list):
   for key, convert_fn in parse_list:
     if key in source_dict:
-      target_dict[key] = convert_fn(source_dict[key])
+      new_key = key.replace(' ', '_')
+      target_dict[new_key] = convert_fn(source_dict[key])
 
 
 def float_or_none(float_str):
@@ -39,20 +50,22 @@ def float_or_none(float_str):
 
 evidence_parse_list = [
   ('intensity', float_or_none),
-  ('experiment', lambda s: s.lower()),
-  ('ratio h/l', float_or_none),
-  ('ratio h/l normalized', float_or_none),
+  # ('experiment', lambda s: s.lower()),
+  # ('ratio h/l', float_or_none),
+  # ('ratio h/l normalized', float_or_none),
 ]
 
-peptide_parse_list = [
-  ('ratio h/l variability [%]', float_or_none),
-]
+peptide_parse_list = []
+# [
+#   ('ratio h/l variability [%]', float_or_none),
+# ]
 
-protein_parse_list = [
-  ('ratio h/l', float),
-  ('ratio h/l normalized', float),
-  ('ratio h/l variability [%]', float),
-]
+protein_parse_list = []
+# [
+#   ('ratio h/l', float),
+#   ('ratio h/l normalized', float),
+#   ('ratio h/l variability [%]', float),
+# ]
 
 scan_parse_list = [
   ('scan number', int),
@@ -60,6 +73,7 @@ scan_parse_list = [
   ('labeling state', int),
   ('retention time', float),
   ('pep', float),
+  ('missed cleavages', int),
 ]
 
 
@@ -70,53 +84,62 @@ def change_key(data, old_key, new_key):
   del data[old_key]
 
 
-def read_tsv(tsv_txt):
-  """
-  Reads a title top TSV file, converts all keys to lower case
-  and returns a list of dictionaries.
-  """
-  f = open(tsv_txt, "UR")
-  titles = [w.lower() for w in split_tab(f.readline())]
-  results = []
-  for line in f.readlines():
-    group = {}
-    for key, val in zip(titles, split_tab(line)):
-      group[key] = parse_string(val)
-    results.append(group)
-  return results
+def get_modifications(scan):
+  if scan['modifications'] == 'Unmodified':
+    return []
 
+  modifications = []
 
-def get_modifications(mod_seq):
+  mod_seq = scan['modified sequence']
   if mod_seq.startswith("_"):
     mod_seq = mod_seq[1:]
   if mod_seq.endswith("_"):
     mod_seq = mod_seq[:-1]
+
   i_seq = -1
   seq = ""
-  is_mod = False
-  modifications = []
-  mod = ""
-  for c in mod_seq:
-    if c == "(":
-      is_mod = True
-      mod = ""
+  is_next_ch_is_mod = False
+  mod_types = []
+  mod_type = ""
+  for ch in mod_seq:
+    if ch == "(":
+      is_next_ch_is_mod = True
+      mod_type = ""
       continue
-    if c == ")":
-      is_mod = False
+    if ch == ")":
+      is_next_ch_is_mod = False
       modifications.append({
         'i': i_seq,
-        'type': mod
+        'type': mod_type
       })
+      if mod_type not in mod_types:
+        mod_types.append(mod_type)
       continue
-    if is_mod:
-      mod += c
+    if is_next_ch_is_mod:
+      mod_type += ch
       continue
-    seq += c
+    seq += ch
     i_seq += 1
+
+  descriptions = []
+  for mod_str in scan['modifications'].split(','):
+    words = mod_str.split()
+    if words[0].isdigit():
+      mod_str = ' '.join(words[1:])
+    descriptions.append(mod_str)
+
+  to_description = dict(zip(mod_types, descriptions))
+  for modification in modifications:
+    mod_type = modification['type']
+    modification['type'] = to_description[mod_type]
+
   return modifications
 
 
-def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
+def get_proteins_and_sources(
+    in_dir,
+    great_expect=1E-8, 
+    cutoff_expect=1E-2):
 
   evidence_fname = os.path.join(in_dir, 'evidence.txt')
   logger.info('Loading evidence file: ' + evidence_fname)
@@ -170,26 +193,30 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
     peptide_id = int(scan['peptide id'])
     peptide = peptides[peptide_id]
     for group_id in parse.splitter(str(scan['protein group ids'])):
-      new_peptide = {
+      match = {
         'sequence': scan['sequence'],
         'spectrum': get_labeled_spectrum(scan),
+        'modifications': get_modifications(scan),
         'attr' : {
           'modified_sequence': mod_seq,
-          'modifications': get_modifications(mod_seq),
           'mq_scan_id': scan_id,
           'evidence_id': evidence_id,
           'is_unique': peptide['unique (groups)'] == 'yes',
         }
       }
-      transfer_attrs(scan, new_peptide['attr'], scan_parse_list)
-      transfer_attrs(evidence, new_peptide['attr'], evidence_parse_list)
-      transfer_attrs(peptide, new_peptide['attr'], peptide_parse_list)
-      change_key(new_peptide['attr'], 'scan number', 'scan_id')
-      change_key(new_peptide['attr'], 'retention time', 'retention_time')
+
+      match['intensity'] = parse_proteins.calc_minus_log_intensity(
+        scan['pep'], great_expect, cutoff_expect)
+
+      transfer_attrs(scan, match['attr'], scan_parse_list)
+      transfer_attrs(evidence, match['attr'], evidence_parse_list)
+      transfer_attrs(peptide, match['attr'], peptide_parse_list)
+      change_key(match['attr'], 'scan number', 'scan_id')
+      change_key(match['attr'], 'retention time', 'retention_time')
       
       protein = protein_by_group_id[int(group_id)]
       i_source = i_sources[evidence['raw file']]
-      protein['sources'][i_source]['matches'].append(new_peptide)
+      protein['sources'][i_source]['matches'].append(match)
 
   parse_proteins.count_matches(proteins)
   parse_proteins.delete_empty_proteins(proteins)
@@ -197,84 +224,88 @@ def get_proteins_and_sources(in_dir, is_leu_ile_isomeric=False,):
   return proteins, sources
 
 
-def scale_log(r, max_v):
-  v = math.log(r)
-  scale_v = v/max_v
-  if scale_v > 1.0:
-    scale_v = 1.0
-  if scale_v < -1.0:
-    scale_v = -1.0
-  return scale_v
+
+# import numpy 
 
 
-def calculate_ratio_intensities(
-    proteins, max_ratio=2.0, ratio_key='ratio h/l normalized haha'):
-  for seqid in proteins.keys():
-    for source in proteins[seqid]['sources']:
-       for peptide in source['matches']:
-        peptide['intensity'] = ""
-        if ratio_key in peptide['attr']:
-          ratio = peptide['attr'][ratio_key]
-          if ratio is None or math.isnan(ratio) or ratio < 0:
-            peptide['intensity'] = scale_log(ratio, max_ratio)
+# def scale_log(r, max_v):
+#   v = math.log(r)
+#   scale_v = v/max_v
+#   if scale_v > 1.0:
+#     scale_v = 1.0
+#   if scale_v < -1.0:
+#     scale_v = -1.0
+#   return scale_v
 
 
-def calculate_lfq_ratio_intensities(
-    proteins, experiment1, experiment2, max_ratio=2.0):
-  for seqid in proteins:
-    protein = proteins[seqid]
-    peptide_intensities1 = []
-    peptide_intensities2 = []
-    for source in protein['sources']:
-      peptides_by_seq = {}
-      for peptide in source['matches']:
-        seq = peptide['sequence']
-        peptides_by_seq.setdefault(seq, []).append(peptide)
-      for seq, peptides in peptides_by_seq.items():
-        intensities = {}
-        for peptide in peptides:
-          experiment = peptide['attr']['experiment']
-          if not peptide['attr']['intensity']: 
-            continue
-          if experiment not in intensities:
-            intensities[experiment] = []
-          intensities[experiment].append(float(peptide['attr']['intensity']))
-        if experiment1 in intensities and experiment2 in intensities:
-          intensity1 = numpy.mean(intensities[experiment1])
-          intensity2 = numpy.mean(intensities[experiment2])
-          std1 = numpy.std(intensities[experiment1])
-          std2 = numpy.std(intensities[experiment2])
-          ratio = intensity1/intensity2
-          std = ratio*numpy.sqrt((std1/intensity1)**2 + (std2/intensity2)**2)
-          intensity = scale_log(ratio, max_ratio)
-          std = numpy.round(std, 4)
-          ratio = numpy.round(ratio, 4)
-          peptide_intensities1.extend(intensities[experiment1])
-          peptide_intensities2.extend(intensities[experiment2])
-        elif experiment1 in intensities:
-          ratio = float("inf")
-          intensity = 2*max_ratio
-          std = 0
-          peptide_intensities1.extend(intensities[experiment1])
-        elif experiment2 in intensities:
-          ratio = 0.0
-          intensity = -2*max_ratio
-          std = 0
-          peptide_intensities2.extend(intensities[experiment2])
-        else:
-          # neither experiment1 or experiment2 found in experiment column
-          ratio = None
-        for peptide in peptides:
-          peptide['attr']['ratio'] = ratio
-          peptide['intensity'] = intensity
-          peptide['attr']['ratio_var'] = std
-    sum2 = numpy.sum(peptide_intensities2)
-    sum1 = numpy.sum(peptide_intensities1)
-    if sum2 > 0.0:
-      group_ratio = sum1/sum2
-    else:
-      group_ratio = float('inf')
-    protein['attr']['ratio'] = group_ratio
+# def calculate_ratio_intensities(
+#     proteins, max_ratio=2.0, ratio_key='ratio h/l normalized haha'):
+#   for seqid in proteins.keys():
+#     for source in proteins[seqid]['sources']:
+#        for peptide in source['matches']:
+#         peptide['intensity'] = ""
+#         if ratio_key in peptide['attr']:
+#           ratio = peptide['attr'][ratio_key]
+#           if ratio is None or math.isnan(ratio) or ratio < 0:
+#             peptide['intensity'] = scale_log(ratio, max_ratio)
+
+
+# def calculate_lfq_ratio_intensities(
+#     proteins, experiment1, experiment2, max_ratio=2.0):
+#   for seqid in proteins:
+#     protein = proteins[seqid]
+#     peptide_intensities1 = []
+#     peptide_intensities2 = []
+#     for source in protein['sources']:
+#       peptides_by_seq = {}
+#       for peptide in source['matches']:
+#         seq = peptide['sequence']
+#         peptides_by_seq.setdefault(seq, []).append(peptide)
+#       for seq, peptides in peptides_by_seq.items():
+#         intensities = {}
+#         for peptide in peptides:
+#           experiment = peptide['attr']['experiment']
+#           if not peptide['attr']['intensity']: 
+#             continue
+#           if experiment not in intensities:
+#             intensities[experiment] = []
+#           intensities[experiment].append(float(peptide['attr']['intensity']))
+#         if experiment1 in intensities and experiment2 in intensities:
+#           intensity1 = numpy.mean(intensities[experiment1])
+#           intensity2 = numpy.mean(intensities[experiment2])
+#           std1 = numpy.std(intensities[experiment1])
+#           std2 = numpy.std(intensities[experiment2])
+#           ratio = intensity1/intensity2
+#           std = ratio*numpy.sqrt((std1/intensity1)**2 + (std2/intensity2)**2)
+#           intensity = scale_log(ratio, max_ratio)
+#           std = numpy.round(std, 4)
+#           ratio = numpy.round(ratio, 4)
+#           peptide_intensities1.extend(intensities[experiment1])
+#           peptide_intensities2.extend(intensities[experiment2])
+#         elif experiment1 in intensities:
+#           ratio = float("inf")
+#           intensity = 2*max_ratio
+#           std = 0
+#           peptide_intensities1.extend(intensities[experiment1])
+#         elif experiment2 in intensities:
+#           ratio = 0.0
+#           intensity = -2*max_ratio
+#           std = 0
+#           peptide_intensities2.extend(intensities[experiment2])
+#         else:
+#           # neither experiment1 or experiment2 found in experiment column
+#           ratio = None
+#         for peptide in peptides:
+#           peptide['attr']['ratio'] = ratio
+#           peptide['intensity'] = intensity
+#           peptide['attr']['ratio_var'] = std
+#     sum2 = numpy.sum(peptide_intensities2)
+#     sum1 = numpy.sum(peptide_intensities1)
+#     if sum2 > 0.0:
+#       group_ratio = sum1/sum2
+#     else:
+#       group_ratio = float('inf')
+#     protein['attr']['ratio'] = group_ratio
 
 
 

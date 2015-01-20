@@ -1,19 +1,34 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from pprint import pprint
+
 import xml.etree.ElementTree as etree
-import json
+
 import logging
-import os
+logger = logging.getLogger('prophet')
 
 import parse
 import proteins as parse_proteins
 
-"""
-Parsers to read TPP output files: PEPXML and PROTXML.
-"""
 
-logger = logging.getLogger('tpp')
+"""
+Parsers for ProteinProphet and PeptideProphet XML search results.
+
+Main API entry:
+
+  get_proteins_and_sources(
+      protxml, 
+      pepxmls, 
+      peptide_error=0.01, 
+      protein_error=0.01,
+      good_expect=1E-8,
+      cutoff_expect=1E-2)
+  
+  returns a dictionary that organizes peptide-spectrum-matches
+  around proteins; and a list of sources.
+
+"""
 
 
 def parse_scan(scan_elem, nsmap):
@@ -130,6 +145,7 @@ def make_peptide(pepxml_match, pepxml_scan, source):
   peptide = {
     'sequence': pepxml_match['peptide'],
     'intensity': pepxml_match['probability'],
+    'modifications': pepxml_match['modifications'],
     'mask': pepxml_match['fpe'],
     'attr': {
       'modified_sequence': pepxml_match['modified_sequence'],
@@ -305,7 +321,15 @@ def add_source(proteins):
     protein['sources'].append({'matches': []})
 
 
-def load_pepxml(proteins, pepxml_fname, prob_cutoff=None, error_cutoff=None, source_names=[]):
+def load_pepxml(
+    proteins, 
+    pepxml_fname, 
+    prob_cutoff=None, 
+    error_cutoff=None, 
+    source_names=[],
+    good_expect=1E-8,
+    cutoff_expect=1E-2):
+
   logging.debug('Peptide error cutoff: {}'.format(error_cutoff))
   protein_by_seqid = get_protein_by_seqid(proteins)
   n_source = len(proteins.values()[0]['sources'])
@@ -331,6 +355,7 @@ def load_pepxml(proteins, pepxml_fname, prob_cutoff=None, error_cutoff=None, sou
         peptides = protein['sources'][i_source]['matches']
         scan_id = scan['start_scan']
         scan_ids = [p['attr']['scan_id'] for p in peptides]
+
         if scan_id not in scan_ids:
           peptide = make_peptide(match, scan, scan['source'])
           for protxml_peptide in protein['protxml_peptides']:
@@ -338,6 +363,11 @@ def load_pepxml(proteins, pepxml_fname, prob_cutoff=None, error_cutoff=None, sou
                 protxml_peptide['modified_sequence'] == match['modified_sequence']:  
               peptide['attr']['probability_protxml'] = protxml_peptide['nsp_adjusted_probability']
               peptide['attr']['is_contributing_evidence'] = protxml_peptide['is_contributing_evidence']
+
+          peptide['intensity'] = \
+              parse_proteins.calc_minus_log_intensity(
+                  match['expect'], good_expect, cutoff_expect)
+
           peptides.append(peptide)
   source_names.extend(pepxml_reader.source_names)
 
@@ -380,22 +410,7 @@ def probability_to_error(distribution, prob):
   return None
 
 
-def filter_peptides(proteins, probability):
-  seqids = proteins.keys()
-  for seqid in seqids:
-    n_match = 0
-    for source in proteins[seqid]['sources']:
-      peptides = source['matches']
-      for i_peptide in reversed(range(len(peptides))):
-        if peptides[i_peptide]['attr']['probability'] < probability:
-          del peptides[i_peptide]
-        else:
-          n_match += 1
-    if n_match == 0:
-      del proteins[seqid]
-
-
-def count_tpp_indep_spectra(proteins):
+def count_independent_spectra(proteins):
   for seqid in proteins:
     protein = proteins[seqid]
     n_unique_peptide = 0
@@ -409,6 +424,7 @@ def count_tpp_indep_spectra(proteins):
           unique_sequence_set.add(sequence)
     n_unique_peptide = len(unique_sequence_set)
     protein['attr']['n_indep_spectra'] = n_unique_spectrum 
+
   # calculate percentages of scans
   n_unique_spectrum_total = 0
   for seqid in proteins:
@@ -424,19 +440,31 @@ def count_tpp_indep_spectra(proteins):
 
 
 def get_proteins_and_sources(
-    protxml, pepxmls, peptide_error=0.01, protein_error=0.01):
+    protxml, 
+    pepxmls, 
+    peptide_error=0.01, 
+    protein_error=0.01,
+    good_expect=1E-8,
+    cutoff_expect=1E-2):
   """
   Returns a proteins dictionary and list of source names.
   """
+
   logger.info('Loading protxml ' + protxml)
   proteins, protein_probs = generate_proteins_from_protxml(protxml)
 
   source_names = []
   for pepxml in pepxmls:
     logger.info('Loading pepxml ' + pepxml)
-    load_pepxml(proteins, pepxml, error_cutoff=peptide_error, source_names=source_names)
+    load_pepxml(
+      proteins, 
+      pepxml, 
+      error_cutoff=peptide_error, 
+      source_names=source_names,
+      good_expect=good_expect,
+      cutoff_expect=cutoff_expect)
     
-  count_tpp_indep_spectra(proteins)
+  count_independent_spectra(proteins)
 
   probability = error_to_probability(protein_probs, protein_error)
   filter_proteins(proteins, probability)

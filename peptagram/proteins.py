@@ -1,4 +1,5 @@
  # -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from pprint import pprint
 
@@ -9,15 +10,26 @@ import copy
 import glob
 import shutil
 from pprint import pprint
+
 import logging
-
-
-import fasta
+logger = logging.getLogger('proteins')
 
 import uniprot
 
+import fasta
 
-logger = logging.getLogger('proteins')
+
+"""
+Data structure manipulation routines for the key protein dictionary
+created with all the different parsers. 
+
+The protein dictionary is used to collect peptide-spectrum-matches
+organized around protein sequences. Routines have been provided
+to filter and manipulate this dictionary.
+
+The protein dictionary is then processed to generate peptatgram
+visualizations.
+"""
 
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
@@ -150,6 +162,17 @@ def is_modified_peptide(match):
   if len(match['modifications']) == 0:
     return True
   return False
+
+
+def calc_intensity(x, high, low):
+  return (x-low)/(high-low)*.8 + .2
+
+
+def calc_minus_log_intensity(x, high, low):
+  return calc_intensity(
+    -math.log(x), 
+    -math.log(high), 
+    -math.log(low))
 
 
 def find_peptide_positions_in_proteins(proteins):
@@ -346,10 +369,44 @@ def mod_str(peptide):
         i_peptide + 1)
     if 'mass' in mod:
       s += " M=%.2f" % float(mod['mass'])
+    if 'type' in mod:
+      s += " %s" % mod['type']
   peptide['attr']['modifications'] = s
 
 
-def make_graphical_comparison_visualisation(data, out_dir):
+def filter_proteins(proteins, params):
+  """
+  Filters protein entries, for use with the GUI. Namely
+  params is a dictionary describing potential filtering.
+  """
+  if 'include_seqids' in params and params['include_seqids']:
+    seqids = parse.read_word_file(params['include_seqids'])
+    for seqid in proteins:
+      if seqid not in seqids:
+        del proteins[seqid]
+
+  if 'exculde_seqids' in params and params['exclude_seqids']:
+    for seqid in parse.read_word_file(params['exclude_seqids']):
+      if seqid in proteins:
+        del proteins[seqid]
+
+  if 'fasta' in params and params['fasta']:
+    load_fasta_db_into_proteins(
+        proteins, params['fasta'], clean_seqid=clean_seqid)
+
+  if 'include_msms' in params and params['include_msms'] == 0:
+    do_matches(proteins, delete_spectrum)
+
+  if 'match_filter'in params:
+    if params['match_filter'] == 1: # tryptic
+      delete_matches(proteins, is_missed_cleavage)
+    elif params['match_filter'] == 2: # semitryptic
+      delete_matches(proteins, is_tryptic)
+    elif params['match_filter'] == 3: # modified
+      delete_matches(proteins, is_modified_peptide)
+
+
+def make_graphical_comparison_visualisation(data, out_dir=None):
   # sanity checks
   proteins = data['proteins']
   determine_unique_matches(proteins)
@@ -372,6 +429,10 @@ def make_graphical_comparison_visualisation(data, out_dir):
   if 'mask_labels' not in data:
     data['mask_labels'] = []
 
+  if out_dir is None and 'out_dir' in data:
+    out_dir = data['out_dir']
+    data = data.copy()
+    del data['out_dir']
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 
@@ -382,7 +443,7 @@ def make_graphical_comparison_visualisation(data, out_dir):
   logger.info('Made peptograph in "' + index_html + '"')
 
 
-def make_sequence_overview_visualisation(data, out_dir):
+def make_sequence_overview_visualisation(data, out_dir=None):
   # sanity checks
   proteins = data['proteins']
   determine_unique_matches(proteins)
@@ -401,6 +462,10 @@ def make_sequence_overview_visualisation(data, out_dir):
   if 'mask_labels' not in data:
     data['mask_labels'] = []
 
+  if out_dir is None and 'out_dir' in data:
+    out_dir = data['out_dir']
+    data = data.copy()
+    del data['out_dir']
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 

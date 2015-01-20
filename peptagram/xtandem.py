@@ -2,12 +2,13 @@
 
 from __future__ import print_function
 from pprint import pprint
-import xml.etree.ElementTree as etree
-import json
-import os
+
 import re
-import logging
 import math
+import xml.etree.ElementTree as etree
+
+import logging
+logger = logging.getLogger('xtandem')
 
 import parse
 import proteins as proteins_module
@@ -15,11 +16,19 @@ import peptidemass
 
 
 """
-Parser for X!Tandem XML output.
+Parser for X!Tandem XML mass-spec search results.
+
+Main API entry:
+
+  get_proteins(
+    xtandem_fname, n_peak=50, good_expect=1E-8,
+    poor_expect=1E-4, cutoff_expect=1E-2, 
+    excluded_seqids=[], include_seqids=[])
+
+  returns a dictionary that organizes peptide-spectrum-matches
+  around proteins.
+
 """
-
-
-logger = logging.getLogger('xtandem')
 
 
 def strip_whitespace(txt):
@@ -143,7 +152,7 @@ def load_xtandem_into_proteins(proteins, xtandem_fname, i_source, n_peak=50):
   # proteins_module.calculate_peptide_positions(proteins)
 
 
-def create_proteins_from_xtandem(
+def get_proteins(
     xtandem_fname, n_peak=50, good_expect=1E-8,
     poor_expect=1E-4, cutoff_expect=1E-2, 
     excluded_seqids=[], include_seqids=[]):

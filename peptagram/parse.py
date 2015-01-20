@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 from pprint import pprint
+
 import re
 import os
 import json
@@ -10,8 +11,7 @@ import ntpath, posixpath, macpath
 
 
 """
-Utility parsing functions that is useful for
-different proteomics data parsers.
+Utility parsing functions for strings and files.
 """
 
 
@@ -33,12 +33,13 @@ float_regex = re.compile(float_regex_pattern, re.VERBOSE)
 
 
 def round_decimal(f, n):
-    '''Truncates/pads a float f to n decimal places without rounding'''
-    slen = len('%.*f' % (n, f))
-    return float(str(f)[:slen])
+  "Truncates/pads a float f to n decimal places without rounding"
+  slen = len('%.*f' % (n, f))
+  return float(str(f)[:slen])
     
     
 def basename(fname):
+  "Returns the fname with the directory part removed"
   for m in ntpath, posixpath, macpath:
     if m.sep in fname:
       return m.basename(fname)
@@ -46,6 +47,7 @@ def basename(fname):
 
 
 def parse_string(s):
+  "Converts a string to a float or int if matches numerical pattern"
   if re.search(r'^[-+]?\d+$', s):
     return int(s)
   elif float_regex.match(s):
@@ -95,6 +97,7 @@ def fixtag(ns, tag, nsmap):
 
 
 def parse_attrib(elem):
+  "Returns a Python dictionary from an xml attrib dict"
   result = {}
   for key, value in elem.attrib.items():
     result[key] = parse_string(value)
@@ -107,6 +110,7 @@ def parse_name_value(elem):
 
 
 def save_data_dict(data, fname):
+  "Prints out a Python dictionary to a formatted text file"
   with open(fname, 'w') as f:
     pprint(data, stream=f, indent=2)
 
@@ -137,6 +141,7 @@ def memoize(fn, fname, force=False):
 
 
 def size_of_fnames(*fnames):
+  "Returns the size of the fnames that are the arguments of the fn"
   size = 0
   for fname in fnames:
     if os.path.isdir(fname):
@@ -148,6 +153,7 @@ def size_of_fnames(*fnames):
 
 
 def size_str(*fnames):
+  "Formated size string that is more human readable"
   size = size_of_fnames(*fnames)
   if size < 1E6:
     return "%.3f MB" % (size/1E6)

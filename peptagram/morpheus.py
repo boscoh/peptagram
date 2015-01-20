@@ -1,22 +1,34 @@
  # -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from pprint import pprint
+
 import os
 import json
 import csv
+
 import logging
-import math
+logger = logging.getLogger('morpheus')
 
 import parse
 import proteins as parse_proteins
 import peptidemass
 
-"""
-Parser for Morpheus files
-"""
 
+"""
+Parser for Morpheus .TSV files for mass-spec search results
 
-logger = logging.getLogger('morpheus')
+Main API entry:
+
+  get_proteins(
+        protein_groups_fname, 
+        psm_fname, 
+        modifications_fname=None,
+        q_okay=0.5, q_cutoff=0.75)
+
+  returns a dictionary that organizes peptide-spectrum-matches
+  around proteins.
+"""
 
 
 def read_tsv_iter(tsv_txt):
@@ -69,6 +81,7 @@ def parse_peptide(text, modification_dict):
         modification = {
             'i':i, 
             'mass': float(modification_dict[mod_str]),
+            'type': mod_str,
         }
         modifications.append(modification)
       else:
@@ -111,7 +124,9 @@ class DictListWriter():
 
 
 def get_proteins(
-      protein_groups_fname, psm_fname, modifications_fname=None,
+      protein_groups_fname, 
+      psm_fname, 
+      modifications_fname=None,
       q_okay=0.5, q_cutoff=0.75):
 
   is_debug = logger.root.level <= logging.DEBUG

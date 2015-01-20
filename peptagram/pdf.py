@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
 
-import sys, copy, os, re, datetime
-
+import sys
+import os
+import re
+import datetime
 from collections import OrderedDict
 
 
@@ -111,7 +114,7 @@ class ReportLabDoc():
         self.elements.append(self.toc)
 
     def build_page_templates(self):
-        # normal frame as for SimpleFlowDocument
+        # normal frame that as Single Column
         frameT = Frame(
             self.doc.leftMargin, self.doc.bottomMargin, self.doc.width, 
             self.doc.height, id='normal')
@@ -122,7 +125,7 @@ class ReportLabDoc():
             PageTemplate(
                 id='OneCol', frames=frameT, onPage=numbered_page_draw)
 
-        # Two Columns
+        # A common Two-Column Frame
         frame1 = Frame(
             self.doc.leftMargin, self.doc.bottomMargin, 
             self.doc.width/2-6,  self.doc.height, 
@@ -404,7 +407,7 @@ class PeptagramDoc(ReportLabDoc):
                         ion_type, 
                         sequence, 
                         spectrum[:self.n_peak], 
-                        mz_delta=self.mz_delta,
+                        mz_delta_max=self.mz_delta,
                         modified_aa_masses=modifications)
 
         # write out metadata
