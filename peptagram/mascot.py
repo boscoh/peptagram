@@ -47,16 +47,17 @@ class MascotReader():
     self.mascot_dat = mascot_dat
     self.scans = {}
     self.proteins = {}
-    self.masses = {}
+    self.aa_mass = {}
+    self.modifications = {}
     self.max_peptide_rank = max_peptide_rank
     self.unimod_lines = []
     self.unimod = None
-    self.scan_id = None
 
+    self.scan_id = None
     self.section = None
     self.boundary_id = None
-
     self.process_line = None
+
     self.read_mascot_dat()
 
   def read_mascot_dat(self):
@@ -199,9 +200,12 @@ class MascotReader():
   def process_unimod(self, l):
     if l.startswith("<?xml"):
       self.unimod_lines = []
+
     self.unimod_lines.append(l)
+
     if not l.startswith("</umod:unimod>"):
       return
+
     unimod_text = '\n'.join(self.unimod_lines)
     self.unimod = etree.fromstring(unimod_text)
     
@@ -210,14 +214,14 @@ class MascotReader():
       return
     l, r = l.split('=')
     if l.startswith('delta'):
-      num = l.replace('delta', '')
+      i_mod_type = l.replace('delta', '')
       delta_mass, name = r.split(',')
-      self.masses[num] = {
+      self.modifications[i_mod_type] = {
         'delta_mass': float(delta_mass),
         'type': name
       }
     elif len(l) == 1:
-      self.masses[l] = float(r)
+      self.aa_mass[l] = float(r)
 
   def process_query(self, l):
     lhs, rhs = l.split("=")
@@ -234,11 +238,13 @@ class MascotReader():
       self.scans[self.scan_id][lhs] = parse_string(rhs)
 
 
+
 def get_proteins(mascot_dat, great_score=80, cutoff_score=0):
   mascot_reader = MascotReader(mascot_dat)
   scans = mascot_reader.scans
   mascot_proteins = mascot_reader.proteins
-  masses = mascot_reader.masses
+  aa_mass = mascot_reader.aa_mass
+  modifications = mascot_reader.modifications
 
   proteins = {}
   for scan_id, scan in scans.items():
@@ -258,17 +264,17 @@ def get_proteins(mascot_dat, great_score=80, cutoff_score=0):
           match['attr'][key] = scan[key]
       n = len(peptide_sequence)
       match['modifications'] = []
-      for i_peptide in range(-1, n+1):
-        num = mascot_match['mod_mask_str'][i_peptide+1]
-        if num in masses:
-          delta_mass = masses[num]['delta_mass']
-          mass = masses[peptide_sequence[i_peptide]] + delta_mass
-          modification = {
-            'i': i_peptide,
+      for i_res_in_pep in range(-1, n+1):
+        i_mod_type = mascot_match['mod_mask_str'][i_res_in_pep+1]
+        if i_mod_type in modifications:
+          modification = modifications[i_mod_type]
+          aa = peptide_sequence[i_res_in_pep]
+          mass = aa_mass[aa] + modification['delta_mass']
+          match['modifications'].append({
+            'i': i_res_in_pep,
             'mass': mass,
-            'type': masses[num]['type']
-          }
-          match['modifications'].append(modification)
+            'type': modification['type']
+          })
       for match_protein in mascot_match['proteins']:
         seqid = match_protein['seqid']
         if seqid not in proteins:
