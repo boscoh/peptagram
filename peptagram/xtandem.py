@@ -179,12 +179,4 @@ def get_proteins(
 
 
 
-if __name__ == "__main__":
-  scans, fastas = read('../example/xtandem/Seq23282_E1O1.tandem')
-  parse.save_data_dict(scans, '../example/xtandem/scans.dump')
-  parse.save_data_dict(fastas, '../example/xtandem/fastas.dump')
-
-
-
-
 

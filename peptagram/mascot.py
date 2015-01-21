@@ -21,6 +21,7 @@ Some useful formulae:
  - identity_score = -10*Math.log10(1/qmatch)
  - qplughole = homology_score
  - significant if identity_score > homology_score
+ - total score = identity, homology, score
 
 Main API entry:
 
@@ -283,31 +284,3 @@ def get_proteins(mascot_dat, great_score=80, cutoff_score=0):
   return proteins
 
 
-# def load_mascot_dat_to_proteins(proteins, i_source, mascot_dat):
-#   peptide_by_match_id = {}
-#   for seqid in proteins:
-#     protein = proteins[seqid]
-#     for source in protein['sources']:
-#       for peptide in source['matches']:
-#         if 'identity' in peptide['attr']:
-#           match_id = "%.2f%.2f%.2f%s" % \
-#               (peptide['attr']['score'],
-#                peptide['attr']['identity'],
-#                peptide['attr']['homology'],
-#                peptide['sequence'])
-#           peptide_by_match_id[match_id] = peptide
-#   scans, mascot_proteins, masses = read_mascot_dat(mascot_dat)
-#   n_match = 0
-#   for scan in scans.values():
-#     for match in scan['matches']:
-#       match_id = "%.2f%.2f%.2f%s" % \
-#           (match['score'],
-#            scan['identity'],
-#            scan['homology'],
-#            match['sequence'])
-#       if match_id in peptide_by_match_id:
-#         n_match += 1
-#         peptide = peptide_by_match_id[match_id]
-#         peptide['spectrum'] = split_mascot_ion_str(scan['Ions1'])
-#   logger.info('%s: matched %d pepXML to %d mascot PSM' % \
-#       (mascot_dat, len(peptide_by_match_id), n_match))

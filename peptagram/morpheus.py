@@ -234,11 +234,3 @@ def get_proteins(
   return proteins
 
 
-if __name__ == '__main__':
-  logging.basicConfig(level=logging.DEBUG)
-  proteins = get_proteins(
-      '../example/morpheus/OK20130822_MPProtomap_KO1.protein_groups.tsv',
-      '../example/morpheus/OK20130822_MPProtomap_KO1.PSMs.tsv',
-      '../example/morpheus/modifications.tsv')
-
-

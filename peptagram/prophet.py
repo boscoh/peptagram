@@ -302,7 +302,7 @@ def make_protein(protxml_protein):
   return protein
 
 
-def generate_proteins_from_protxml(protxml):
+def make_proteins_from_protxml(protxml):
   proteins = {}
   protxml_reader = ProtxmlReader(protxml)
   for protein_group in protxml_reader:
@@ -315,14 +315,6 @@ def generate_proteins_from_protxml(protxml):
   return proteins, protein_probs
 
 
-def filter_proteins(proteins, prob_cutoff):
-  for seqid in proteins.keys():
-    protein = proteins[seqid]
-    if protein['attr']['probability'] < prob_cutoff:
-      del proteins[seqid]
-      continue
-
-
 def get_protein_by_seqid(proteins):
   protein_by_seqid = {}
   for seqid in proteins:
@@ -332,11 +324,6 @@ def get_protein_by_seqid(proteins):
     for alt_seqid in protein['attr']['other_seqids']:
       protein_by_seqid[alt_seqid] = protein
   return protein_by_seqid
-
-
-def add_source(proteins):
-  for protein in proteins.values():
-    protein['sources'].append({'matches': []})
 
 
 def make_match(pepxml_match, pepxml_scan, source):
@@ -401,7 +388,8 @@ def load_pepxml_into_proteins(
         if scan['source'] in source_name_indices:
           i_source = source_name_indices[scan['source']]
         else:
-          add_source(proteins)
+          for protein in proteins.values():
+            protein['sources'].append({'matches': []})
           n_source += 1
           i_source = n_source-1
           source_name_indices[scan['source']] = i_source
@@ -466,7 +454,7 @@ def get_proteins_and_sources(
   """
 
   logger.info('Loading protxml ' + protxml)
-  proteins, protein_probs = generate_proteins_from_protxml(protxml)
+  proteins, protein_probs = make_proteins_from_protxml(protxml)
 
   source_names = []
   for pepxml in pepxmls:
@@ -481,8 +469,10 @@ def get_proteins_and_sources(
     
   count_independent_spectra(proteins)
 
-  probability = error_to_probability(protein_probs, protein_error)
-  filter_proteins(proteins, probability)
+  prob_cutoff = error_to_probability(protein_probs, protein_error)
+  for seqid in proteins.keys():
+    if proteins[seqid]['attr']['probability'] < prob_cutoff:
+      del proteins[seqid]
 
   if logger.root.level <= logging.DEBUG:
     dump = protxml.replace('prot.xml', 'proteins.dump')
@@ -492,9 +482,4 @@ def get_proteins_and_sources(
   return proteins, source_names
 
 
-if __name__ == '__main__':
-  logging.basicConfig(level=logging.DEBUG)
-  proteins, sources = get_proteins_and_sources(
-    '../example/tpp/hca-lysate-16.prot.xml', 
-    ['../example/tpp/hca-lysate-16.pep.xml'])
   

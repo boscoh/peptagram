@@ -107,6 +107,4 @@ def get_proteins(fname):
   return proteins
 
 
-if __name__ == "__main__":
-  logging.basicConfig(level=logging.INFO)
 
