@@ -78,14 +78,13 @@ def get_proteins(fname):
       parse_proteins.clean_seqid,
       pilot_match['Accessions'].split(';'))
 
-    seqid = seqids[0]
-    if seqid not in proteins:
-      protein = parse_proteins.new_protein(seqid)
-      proteins[seqid] = protein
-      protein['attr']['other_seqids'] = seqids[1:]
-      protein['attr']['seqid'] = seqid
-    else:
-      protein = proteins[seqid]
+    for seqid in seqids:
+      if seqid not in proteins:
+        protein = parse_proteins.new_protein(seqid)
+        protein['attr']['seqid'] = seqid
+        proteins[seqid] = protein
+      else:
+        protein = proteins[seqid]
 
     match_sequence = pilot_match['Sequence']
     match = parse_proteins.new_match(match_sequence)
@@ -95,15 +94,13 @@ def get_proteins(fname):
         parse_modifications(
             pilot_match['Modifications'], len(match_sequence))
 
-    if 'Sc' in pilot_match:
-      match['attr']['score'] = pilot_match['Sc']
-    elif 'Score' in pilot_match:
-      match['attr']['score'] = pilot_match['Score']
-    if 'Acq Time' in pilot_match:
-      match['attr']['retention_time'] = pilot_match['Acq Time']
-    elif 'Time' in pilot_match:
-      match['attr']['retention_time'] = pilot_match['Time']
-    match['attr']
+    def set_attr(pilot_key, attr_key):
+      if pilot_key in pilot_match:
+        match['attr'][attr_key] = pilot_match[pilot_key]
+    set_attr('Sc', 'score')
+    set_attr('Score', 'score')
+    set_attr('Acq Time', 'retention_time')
+    set_attr('Time', 'retention_time')
 
     protein['sources'][0]['matches'].append(match)
 

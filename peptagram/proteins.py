@@ -15,8 +15,7 @@ import logging
 logger = logging.getLogger('proteins')
 
 import uniprot
-
-import fasta
+import parse
 
 
 """
@@ -281,7 +280,7 @@ def load_sequences_from_uniprot(proteins, clean_seqid=None, cache_basename=None)
 
 def load_fasta_db_into_proteins(
     proteins, fasta_db, clean_seqid=None, iso_leu_isomerism=False):
-  seqids, fastas = fasta.read_fasta(fasta_db)
+  seqids, fastas = parse.read_fasta(fasta_db)
   load_fastas_into_proteins(proteins, fastas, clean_seqid, iso_leu_isomerism)
 
 

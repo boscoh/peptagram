@@ -87,6 +87,7 @@ def read_tsv(tsv_txt):
     for key, val in zip(titles, split_tab(line)):
       group[key] = parse_string(val)
     yield group
+    del group
 
 
 # XML helper functions
@@ -168,5 +169,57 @@ def read_word_file(fname):
     raise IOError("Couldn't find file: " + fname)
   text = open(fname).read()
   return text.split()
+
+
+def read_fasta(fasta_db):
+  """
+  Returns list of seqids and a dictionary of
+  proteins sequences as an attribute dictionary.
+  """
+  seqids = []
+  seqid = None
+  proteins = {}
+  for line in open(fasta_db):
+    if line.startswith(">"):
+      words = line.split()
+      seqid = words[0][1:]
+      description = line[len(words[0]):].lstrip()
+      seqids.append(seqid)
+      proteins[seqid] = {
+        'sequence': '',
+        'description': description,
+      }
+      continue
+    if seqid is not None:
+      words = line.split()
+      if words:
+        proteins[seqid]['sequence'] += words[0]
+  return seqids, proteins
+  
+
+class DictListWriter():
+  """
+  Writes a list of pprint-formatted dictionaries for debugging.
+  Can be switched on/off by the is_debug flag.
+  """
+  def __init__(self, is_debug, fname):
+    self.fname = fname
+    self.is_debug = is_debug
+    if self.is_debug:
+      logger.debug('Dumping dict list to ' + self.fname)
+      self.file = open(self.fname, 'w')
+      self.file.write('[\n')
+
+  def dump_dict(self, data_dict):
+    if self.is_debug:
+      pprint(data_dict, stream=self.file)
+      self.file.write(',\n')
+
+  def close(self):
+    if self.is_debug:
+      self.file.write(']\n')
+      self.file.close()
+
+
 
 

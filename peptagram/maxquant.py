@@ -25,6 +25,7 @@ Main API entry:
   returns a dictionary that organizes peptide-spectrum-matches
   around proteins, and a list of sources.
 
+Maxquant provides provide protein groupings.
 """
 
 
@@ -97,17 +98,16 @@ def get_modifications(scan):
     mod_seq = mod_seq[:-1]
 
   i_seq = -1
-  seq = ""
-  is_next_ch_is_mod = False
+  is_ch_in_mod_type = False
   mod_types = []
   mod_type = ""
   for ch in mod_seq:
     if ch == "(":
-      is_next_ch_is_mod = True
+      is_ch_in_mod_type = True
       mod_type = ""
       continue
     if ch == ")":
-      is_next_ch_is_mod = False
+      is_ch_in_mod_type = False
       modifications.append({
         'i': i_seq,
         'type': mod_type
@@ -115,10 +115,9 @@ def get_modifications(scan):
       if mod_type not in mod_types:
         mod_types.append(mod_type)
       continue
-    if is_next_ch_is_mod:
+    if is_ch_in_mod_type:
       mod_type += ch
       continue
-    seq += ch
     i_seq += 1
 
   descriptions = []
@@ -179,6 +178,7 @@ def get_proteins_and_sources(
 
   scans_fname = os.path.join(in_dir, 'msms.txt')
   logger.info('Loading scans and matching: ' + scans_fname)
+
   i_scan = 0
   for scan in parse.read_tsv(scans_fname):
     scan_id = int(scan['id'])

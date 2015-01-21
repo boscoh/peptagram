@@ -31,22 +31,6 @@ Main API entry:
 """
 
 
-def read_tsv_iter(tsv_txt):
-  """
-  Reads a title top TSV file, converts all keys to lower case
-  and returns a list of dictionaries.
-  """
-  f = open(tsv_txt, "UR")
-  titles = [w.lower() for w in parse.split_tab(f.readline())]
-  results = []
-  for line in f:
-    group = {}
-    for key, val in zip(titles, parse.split_tab(line)):
-      group[key] = parse.parse_string(val)
-    yield group
-    del group
-
-
 def read_modification_dict(modifications_tsv):
   result = {}
   for entry in parse.read_tsv(modifications_tsv):
@@ -103,26 +87,6 @@ def get_first(s, delimiter='/'):
   return s.split(delimiter)[0].strip()
 
 
-class DictListWriter():
-  def __init__(self, is_debug, fname):
-    self.fname = fname
-    self.is_debug = is_debug
-    if self.is_debug:
-      logger.debug('Dumping dict list to ' + self.fname)
-      self.file = open(self.fname, 'w')
-      self.file.write('[\n')
-
-  def dump_dict(self, data_dict):
-    if self.is_debug:
-      pprint(data_dict, stream=self.file)
-      self.file.write(',\n')
-
-  def close(self):
-    if self.is_debug:
-      self.file.write(']\n')
-      self.file.close()
-
-
 def get_proteins(
       protein_groups_fname, 
       psm_fname, 
@@ -139,8 +103,8 @@ def get_proteins(
     modification_table = {}
   
   proteins = {}
-  dict_dump_writer = DictListWriter(is_debug, os.path.join(dump_dir, 'protein_groups.dump'))
-  for i_group, protein_group in enumerate(read_tsv_iter(protein_groups_fname)):
+  dict_dump_writer = parse.DictListWriter(is_debug, os.path.join(dump_dir, 'protein_groups.dump'))
+  for i_group, protein_group in enumerate(parse.read_tsv(protein_groups_fname)):
     descriptions = protein_group['protein description'].split(' / ')
     coverage_str = str(protein_group['protein sequence coverage (%)'])
     if ';' in coverage_str:
@@ -176,18 +140,19 @@ def get_proteins(
     for alt_seqid in protein['attr']['other_seqids']:
       protein_by_seqid[alt_seqid] = protein
 
-  dict_dump_writer = DictListWriter(is_debug, os.path.join(dump_dir, 'peptides.dump'))
+  dict_dump_writer = parse.DictListWriter(is_debug, os.path.join(dump_dir, 'peptides.dump'))
   n_match = 0
   n_match_assigned = 0
-  for src_peptide in read_tsv_iter(psm_fname):
-    dict_dump_writer.dump_dict(src_peptide)
-    descriptions = src_peptide['protein description'].split(' / ')
+
+  for psm in parse.read_tsv(psm_fname):
+
+    dict_dump_writer.dump_dict(psm)
+    descriptions = psm['protein description'].split(' / ')
     extracted_peptide_sequence, modifications = parse_peptide(
-        src_peptide['peptide sequence'],
-        modification_table)
-    peptide_sequence = src_peptide['base peptide sequence']
+        psm['peptide sequence'], modification_table)
+    peptide_sequence = psm['base peptide sequence']
     if extracted_peptide_sequence != peptide_sequence:
-      logger.warning("Peptide sequences don't match: " + src_peptide['peptide sequence'] + " " + extracted_peptide_sequence + " " + peptide_sequence)
+      logger.warning("Peptide sequences don't match: " + psm['peptide sequence'] + " " + extracted_peptide_sequence + " " + peptide_sequence)
 
     protein = None
     peptide_seqids = [d.split()[0] for d in descriptions]
@@ -207,38 +172,41 @@ def get_proteins(
     n_match += 1
     n_match_assigned += 1
 
-    q_value = float(src_peptide['q-value (%)'])
+    q_value = float(psm['q-value (%)'])
     if q_value > q_cutoff:
       continue
-    intensity = (1.0 - q_value/q_cutoff)*0.8 + 0.2
+
+    intensity = parse_proteins.calc_intensity(
+       q_value, 0.0, q_cutoff)
+
     mask = 0
     if q_value < q_okay:
       mask = 1
 
-    if 'scan number' in src_peptide:
-      scan_id = src_peptide['scan number']
-    elif 'spectrum number' in src_peptide:
-      scan_id = src_peptide['spectrum number']
+    if 'scan number' in psm:
+      scan_id = psm['scan number']
+    elif 'spectrum number' in psm:
+      scan_id = psm['spectrum number']
     else:
       scan_id = ''
-    if 'retention time (min)' in src_peptide:
-      time = parse.round_decimal(src_peptide['retention time (min)'], 4)
-    elif 'retention time (minutes)' in src_peptide:
-      time = parse.round_decimal(src_peptide['retention time (minutes)'], 4)
+    if 'retention time (min)' in psm:
+      time = parse.round_decimal(psm['retention time (min)'], 4)
+    elif 'retention time (minutes)' in psm:
+      time = parse.round_decimal(psm['retention time (minutes)'], 4)
     else:
       time = ''
 
-    peptide = {
+    match = {
       'sequence': peptide_sequence,
       'attr': {
         'scan_id': scan_id, 
         'retention_time': time,
-        'morpheus_score': parse.round_decimal(src_peptide['morpheus score'], 4),
-        'mass': parse.round_decimal(src_peptide['precursor mass (da)'], 4),
-        'mass_diff': parse.round_decimal(src_peptide['precursor mass error (da)'], 4),
-        'm/z': parse.round_decimal(src_peptide['precursor m/z'], 4),
-        'source': parse.basename(src_peptide['filename']),
-        'missed_cleavages': int(src_peptide['missed cleavages']),
+        'morpheus_score': parse.round_decimal(psm['morpheus score'], 4),
+        'mass': parse.round_decimal(psm['precursor mass (da)'], 4),
+        'mass_diff': parse.round_decimal(psm['precursor mass error (da)'], 4),
+        'm/z': parse.round_decimal(psm['precursor m/z'], 4),
+        'source': parse.basename(psm['filename']),
+        'missed_cleavages': int(psm['missed cleavages']),
         'q_value': q_value,
       },
       'intensity': intensity,
@@ -248,11 +216,11 @@ def get_proteins(
     if modifications:
       for modification in modifications:
         modification['mass'] = parse.round_decimal(modification['mass'], 4)
-      peptide['modifications'] = modifications
-      modified_sequence = src_peptide['peptide sequence'].split('.')[1]
-      peptide['attr']['modified_sequence'] = modified_sequence
+      match['modifications'] = modifications
+      modified_sequence = psm['peptide sequence'].split('.')[1]
+      match['attr']['modified_sequence'] = modified_sequence
 
-    protein['sources'][0]['matches'].append(peptide)
+    protein['sources'][0]['matches'].append(match)
 
   dict_dump_writer.close()
 

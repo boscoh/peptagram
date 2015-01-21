@@ -241,13 +241,11 @@ class MascotReader():
 
 def get_proteins(mascot_dat, great_score=80, cutoff_score=0):
   mascot_reader = MascotReader(mascot_dat)
-  scans = mascot_reader.scans
-  mascot_proteins = mascot_reader.proteins
   aa_mass = mascot_reader.aa_mass
   modifications = mascot_reader.modifications
 
   proteins = {}
-  for scan_id, scan in scans.items():
+  for scan_id, scan in mascot_reader.scans.items():
     for mascot_match in scan['matches']:
       peptide_sequence = mascot_match['sequence']
       match = parse_proteins.new_match(peptide_sequence)
@@ -264,14 +262,14 @@ def get_proteins(mascot_dat, great_score=80, cutoff_score=0):
           match['attr'][key] = scan[key]
       n = len(peptide_sequence)
       match['modifications'] = []
-      for i_res_in_pep in range(-1, n+1):
-        i_mod_type = mascot_match['mod_mask_str'][i_res_in_pep+1]
+      for i_res in range(-1, n+1):
+        i_mod_type = mascot_match['mod_mask_str'][i_res+1]
         if i_mod_type in modifications:
           modification = modifications[i_mod_type]
-          aa = peptide_sequence[i_res_in_pep]
+          aa = peptide_sequence[i_res]
           mass = aa_mass[aa] + modification['delta_mass']
           match['modifications'].append({
-            'i': i_res_in_pep,
+            'i': i_res,
             'mass': mass,
             'type': modification['type']
           })
