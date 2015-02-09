@@ -162,11 +162,13 @@ def get_proteins(
         sequence = test_protein['sequence']
         i = sequence.find(peptide_sequence)
         if i < 0:
+          logger.warning("Couldn't find %s in protein %s" % (peptide_sequence, seqid))
           continue
         else:
           protein = test_protein
         break
     if protein is None:
+      logger.warning("Couldn't find protein for %s" % (peptide_sequence))
       continue
 
     n_match += 1

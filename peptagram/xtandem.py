@@ -21,9 +21,12 @@ Parser for X!Tandem XML mass-spec search results.
 Main API entry:
 
   get_proteins(
-    xtandem_fname, n_peak=50, good_expect=1E-8,
-    poor_expect=1E-4, cutoff_expect=1E-2, 
-    excluded_seqids=[], include_seqids=[])
+    xtandem_fname, 
+    n_peak=50, 
+    good_expect=1E-8,
+    cutoff_expect=1E-2, 
+    excluded_seqids=[], 
+    include_seqids=[])
 
   returns a dictionary that organizes peptide-spectrum-matches
   around proteins.
@@ -103,8 +106,10 @@ def read_xtandem(xtandem_xml):
 
 
 def get_proteins(
-    xtandem_fname, n_peak=50, good_expect=1E-8,
-    poor_expect=1E-4, cutoff_expect=1E-2):
+    xtandem_fname, 
+    n_peak=50, 
+    good_expect=1E-8,
+    cutoff_expect=1E-2):
   proteins = {}
   i_source = 0
   print_scan = True
@@ -118,11 +123,7 @@ def get_proteins(
     for xtandem_match in scan['matches']:
 
       expect = xtandem_match['expect']
-      if expect <= poor_expect:
-        mask = 1
-      elif poor_expect < expect <= cutoff_expect:
-        mask = 0
-      elif cutoff_expect < expect:
+      if cutoff_expect < expect:
         continue
 
       intensity = proteins_module.calc_minus_log_intensity(

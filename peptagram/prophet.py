@@ -282,37 +282,32 @@ class ProtxmlReader(object):
     return group
 
 
-def make_protein(protxml_protein):
-  protein = {
-    'description': protxml_protein['description'],
-    'attr': { 
-      'group_id': protxml_protein['group_number'],
-      'length': protxml_protein['prot_length'],
-      'seqid': protxml_protein['protein_name'],
-      'sibling': protxml_protein['group_sibling_id'],
-      'other_seqids': protxml_protein['other_seqids'],
-      'probability': protxml_protein['probability'],
-      'percent_coverage': '-',
-    },
-    'sources': [],
-  }
-  if 'percent_coverage' in protxml_protein:
-    protein['attr']['percent_coverage'] = protxml_protein['percent_coverage']
-  protein['protxml_peptides'] = protxml_protein['peptides']
-  return protein
-
-
 def make_proteins_from_protxml(protxml):
-  proteins = {}
   protxml_reader = ProtxmlReader(protxml)
+  proteins = {}
   for protein_group in protxml_reader:
     for protxml_protein in protein_group['proteins']:
       seqid = protxml_protein['protein_name']
       if seqid in proteins:
         logger.warning("%s found in multiple protein groups" % seqid)
-      proteins[seqid] = make_protein(protxml_protein)
-  protein_probs = protxml_reader.distribution
-  return proteins, protein_probs
+      protein = {
+        'description': protxml_protein['description'],
+        'attr': { 
+          'group_id': protxml_protein['group_number'],
+          'length': protxml_protein['prot_length'],
+          'seqid': protxml_protein['protein_name'],
+          'sibling': protxml_protein['group_sibling_id'],
+          'other_seqids': protxml_protein['other_seqids'],
+          'probability': protxml_protein['probability'],
+          'percent_coverage': '-',
+        },
+        'sources': [],
+      }
+      if 'percent_coverage' in protxml_protein:
+        protein['attr']['percent_coverage'] = protxml_protein['percent_coverage']
+      protein['protxml_peptides'] = protxml_protein['peptides']
+      proteins[seqid] = protein
+  return proteins, protxml_reader.distribution
 
 
 def get_protein_by_seqid(proteins):

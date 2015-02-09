@@ -201,12 +201,9 @@ class MascotReader():
   def process_unimod(self, l):
     if l.startswith("<?xml"):
       self.unimod_lines = []
-
     self.unimod_lines.append(l)
-
     if not l.startswith("</umod:unimod>"):
       return
-
     unimod_text = '\n'.join(self.unimod_lines)
     self.unimod = etree.fromstring(unimod_text)
     
