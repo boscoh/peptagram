@@ -146,7 +146,6 @@ def get_proteins(
         'sequence': xtandem_match['seq'],
         'intensity': intensity,
         'modifications': [],
-        'mask': mask,
         'spectrum': ions[:n_peak],
         'attr': {
           'scan_id': scan['id'],

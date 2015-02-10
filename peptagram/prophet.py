@@ -400,6 +400,8 @@ def load_pepxml_into_proteins(
                 protxml_peptide['modified_sequence'] == pepxml_match['modified_sequence']:  
               match['attr']['probability_protxml'] = protxml_peptide['nsp_adjusted_probability']
               match['attr']['is_contributing_evidence'] = protxml_peptide['is_contributing_evidence']
+          if pepxml_match['expect'] > cutoff_expect:
+            continue
           match['intensity'] = \
               parse_proteins.calc_minus_log_intensity(
                   pepxml_match['expect'], good_expect, cutoff_expect)

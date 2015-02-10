@@ -251,6 +251,8 @@ def get_proteins(mascot_dat, great_score=80, cutoff_score=0):
       match['ionscore'] = mascot_match['score']
       match['spectrum'] = scan['Ions1']
       score = match['ionscore']
+      if score < cutoff_score:
+        continue
       intensity = \
           parse_proteins.calc_intensity(
               score, great_score, cutoff_score)
