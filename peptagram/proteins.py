@@ -168,6 +168,8 @@ def calc_intensity(x, high, low):
 
 
 def calc_minus_log_intensity(x, high, low):
+  if x == 0:
+    return 1.0
   return calc_intensity(
     -math.log(x), 
     -math.log(high), 

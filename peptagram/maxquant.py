@@ -205,6 +205,9 @@ def get_proteins_and_sources(
         }
       }
 
+      if scan['pep'] > cutoff_expect:
+        continue
+        
       match['intensity'] = parse_proteins.calc_minus_log_intensity(
         scan['pep'], great_expect, cutoff_expect)
 
