@@ -87,7 +87,12 @@ def get_first(s, delimiter='/'):
   return s.split(delimiter)[0].strip()
 
 
-def get_proteins(
+def add_source_to_proteins(proteins):
+  for seqid, protein in proteins.items():
+    protein['sources'].append({ 'matches':[] })
+
+
+def get_proteins_and_sources(
       protein_groups_fname, 
       psm_fname, 
       modifications_fname=None,
@@ -144,7 +149,19 @@ def get_proteins(
   n_match = 0
   n_match_assigned = 0
 
+  i_source_from_source = {}
+  sources = []
+
   for psm in parse.read_tsv(psm_fname):
+
+    source = psm['filename']
+    if source not in i_source_from_source:
+      i = len(i_source_from_source)
+      i_source_from_source[source] = i
+      if i > 0:
+        add_source_to_proteins(proteins)
+      sources.append(source)
+    i_source = i_source_from_source[source]
 
     dict_dump_writer.dump_dict(psm)
     descriptions = psm['protein description'].split(' / ')
@@ -222,7 +239,7 @@ def get_proteins(
       modified_sequence = psm['peptide sequence'].split('.')[1]
       match['attr']['modified_sequence'] = modified_sequence
 
-    protein['sources'][0]['matches'].append(match)
+    protein['sources'][i_source]['matches'].append(match)
 
   dict_dump_writer.close()
 
@@ -233,6 +250,6 @@ def get_proteins(
 
   logger.info("Assigned {}/{} of PSMs.tsv to protein_groups.tsv".format(n_match_assigned, n_match))
 
-  return proteins
+  return proteins, sources
 
 
