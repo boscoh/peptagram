@@ -148,13 +148,26 @@ def size_of_fnames(*fnames):
     if os.path.isdir(fname):
       sub_fnames = glob.glob(os.path.join(fname, '*'))
       size += size_of_fnames(*sub_fnames)
-    else:
+    elif os.path.isfile(fname):
       size += os.path.getsize(fname)
   return size
 
 
+def check_fnames(*fnames):
+  for fname in fnames:
+    fname = os.path.abspath(fname)
+    if os.path.isfile(fname):
+      continue
+    elif os.path.isdir(fname):
+      continue
+    else:
+      raise IOError(
+          "%s does not exist" % fname)
+
+
 def size_str(*fnames):
   "Formated size string that is more human readable"
+  check_fnames(*fnames)
   size = size_of_fnames(*fnames)
   if size < 1E6:
     return "%.3f MB" % (size/1E6)
