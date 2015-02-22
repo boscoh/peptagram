@@ -11,22 +11,24 @@ Loads specific MS-MS spectra from an mzML file into
 an existing proteins data structure.
 """
 
-
-def load_mzml(proteins, i_source, mzml, n_peak=50):
-
-  # Get  scan_ids from the proteins data structure
-  peptide_by_scan_id = {}
-  for protein in proteins.values():
-    source = protein['sources'][i_source]
-    for peptide in source['matches']:
-      scan_id = peptide['attr']['scan_id']
-      peptide_by_scan_id[scan_id] = peptide
+def load_mzml_into_matches(matches, mzml, n_peak=50):
+  match_by_scan_id = {}
+  for match in matches:
+    scan_id = match['attr']['scan_id']
+    match_by_scan_id[scan_id] = match
 
   for spectrum in pymzml.run.Reader(mzml):
-    if spectrum['id'] in peptide_by_scan_id:
-      peptide = peptide_by_scan_id[spectrum['id']]
+    if spectrum['id'] in match_by_scan_id:
+      match = match_by_scan_id[spectrum['id']]
       ions = [(mz, i) for mz, i in spectrum.peaks]
       ions.sort(key=lambda i:-i[1])
-      peptide['spectrum'] = ions[:n_peak]
+      match['spectrum'] = ions[:n_peak]
+
+
+def load_mzml(proteins, i_source, mzml, n_peak=50):
+  matches = []
+  for protein in proteins.values():
+    matches.extend(protein['sources'][i_source]['matches'])
+  load_mzml_into_matches(matches, mzml, n_peak)
 
 

@@ -13,8 +13,8 @@ setup(
     license='BSD',
     include_package_data = True,
     install_requires=[
-        'uniprot',
         'pymzml',
+        'tkform',
     ],
     packages=['peptagram',],
     scripts=['xtandem_peptagram'],

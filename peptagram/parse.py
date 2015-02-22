@@ -7,6 +7,7 @@ import re
 import os
 import json
 import glob
+import logging
 import ntpath, posixpath, macpath
 
 
@@ -219,7 +220,7 @@ class DictListWriter():
     self.fname = fname
     self.is_debug = is_debug
     if self.is_debug:
-      logger.debug('Dumping dict list to ' + self.fname)
+      logging.debug('Dumping dict list to ' + self.fname)
       self.file = open(self.fname, 'w')
       self.file.write('[\n')
 
