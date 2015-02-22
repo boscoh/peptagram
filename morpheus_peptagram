@@ -30,7 +30,7 @@ test_params = {
   'include_msms': 1,
   'match_filter': 3,
   'n_peak': 50,
-  'q_cutoff': 50,
+  'q_cutoff': 30,
   'q_good': 0,
 }
 
@@ -113,7 +113,7 @@ class PeptagramForm(tkform.Form):
     self.push_file_list_param('mzmls_and_labels', '+ .mzML')
     self.push_checkbox_param('include_msms', 'Include MS/MS')
     self.push_labeled_param(
-        'n_peak', 'Number of peaks for spectrum', '50')
+        'n_peak', 'Number of peaks for spectrum', '30')
     self.push_spacer()
     self.push_line()
     self.push_spacer()
@@ -126,7 +126,7 @@ class PeptagramForm(tkform.Form):
         'include_seqids', 'Text file of included seqids',
          load_file_text='select')
     self.push_labeled_param('q_good', 'Good Q', '0')
-    self.push_labeled_param('q_cutoff', 'Cutoff Q', '0.75')
+    self.push_labeled_param('q_cutoff', 'Cutoff Q', '50')
     self.push_text("Include matches:")
     self.push_radio_param(
         'match_filter',
