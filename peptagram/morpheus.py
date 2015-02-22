@@ -24,8 +24,8 @@ Main API entry:
         protein_groups_fname, 
         psm_fname, 
         modifications_fname=None,
-        q_good=0.5, 
-        q_cutoff=0.75)
+        q_good=0, 
+        q_cutoff=50)
 
   returns a dictionary that organizes peptide-spectrum-matches
   around proteins.
@@ -181,7 +181,7 @@ def get_proteins_and_sources(
       psm_fname, 
       modifications_fname=None,
       q_good=0.0, 
-      q_cutoff=0.75):
+      q_cutoff=75):
 
   is_debug = logger.root.level <= logging.DEBUG
 

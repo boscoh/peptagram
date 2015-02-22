@@ -30,8 +30,8 @@ test_params = {
   'include_msms': 1,
   'match_filter': 3,
   'n_peak': 50,
-  'q_cutoff': 0.75,
-  'q_okay': 0.5,
+  'q_cutoff': 50,
+  'q_good': 0,
 }
 
 
@@ -40,7 +40,7 @@ def convert_morpheus_to_peptagram(params, print_fn=sys.stdout.write):
   if len(params['files_and_labels']) == 0:
     raise ValueError('No files were selected.')
 
-  q_okay = float(params['q_okay'])
+  q_good = float(params['q_good'])
   q_cutoff = float(params['q_cutoff'])
 
   modifications = params['modifications']
@@ -53,7 +53,7 @@ def convert_morpheus_to_peptagram(params, print_fn=sys.stdout.write):
     print_fn("Inferring protein group: %s\n" % protein_group)
     these_proteins, these_sources = \
         peptagram.morpheus.get_proteins_and_sources(
-            protein_group, fname, modifications, q_okay, q_cutoff)
+            protein_group, fname, modifications, q_good, q_cutoff)
     proteins = peptagram.proteins.merge_two_proteins(
         proteins, these_proteins)
     labels.extend(map(parse.basename, these_sources))
@@ -69,7 +69,7 @@ def convert_morpheus_to_peptagram(params, print_fn=sys.stdout.write):
       'title': params['title'],
       'proteins': proteins,
       'source_labels': labels,
-      'color_names': ['Q=%s' % q_okay, 'Q=%s' % q_cutoff],
+      'color_names': ['Q=%s' % q_good, 'Q=%s' % q_cutoff],
       'mask_labels': [],
       'out_dir': params['out_dir'],
   })
@@ -125,7 +125,7 @@ class PeptagramForm(tkform.Form):
     self.push_labeled_param(
         'include_seqids', 'Text file of included seqids',
          load_file_text='select')
-    self.push_labeled_param('q_okay', 'Good Q', '0')
+    self.push_labeled_param('q_good', 'Good Q', '0')
     self.push_labeled_param('q_cutoff', 'Cutoff Q', '0.75')
     self.push_text("Include matches:")
     self.push_radio_param(
