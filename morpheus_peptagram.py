@@ -110,7 +110,7 @@ class PeptagramForm(tkform.Form):
     self.push_file_list_param('mzmls_and_labels', '+ .mzML')
     self.push_labeled_param(
         'n_peak', 'Number of peaks for spectrum', '50')
-    self.push_text('To show matched peaks of modifications, select "Modifications.tsv":')
+    self.push_text('To show matched peaks of modified peptides, select "Modifications.tsv":')
     self.push_labeled_param(
         'modifications', '', '', load_file_text='select file')
     self.push_spacer()

@@ -9,7 +9,13 @@ python %s %%1 %%2 %%3
 shell_template = """\
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd $DIR
-python %s $*
+
+python %(py_script)s $*
+
+if [ "$(uname)" == "Darwin" ]; then
+  echo -n -e "\033]0;%(window_name)s\007"
+  osascript -e 'tell application "Terminal" to close (every window whose name contains "%(window_name)s")' &
+fi
 """
 
 [os.remove(s) for s in glob.glob('*_peptagram')]
@@ -22,6 +28,7 @@ for py_script in glob.glob('*_peptagram.py'):
     print batch
 
     shell = py_script.replace('.py', '.command')
-    open(shell, 'w').write(shell_template % py_script)
+    sub = { 'py_script': py_script, 'window_name': shell }
+    open(shell, 'w').write(shell_template % sub)
     os.system('chmod +x ' + shell)
     print shell
