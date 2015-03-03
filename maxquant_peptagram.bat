@@ -1,1 +1,1 @@
-python maxquant_peptagram %1 %2 %3
+python maxquant_peptagram.py %1 %2 %3

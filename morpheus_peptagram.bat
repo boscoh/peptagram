@@ -1,1 +1,1 @@
-python morpheus_peptagram %1 %2 %3
+python morpheus_peptagram.py %1 %2 %3

@@ -1,1 +1,1 @@
-python qc_peptagram %1 %2 %3
+python qc_peptagram.py %1 %2 %3

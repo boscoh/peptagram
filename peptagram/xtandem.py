@@ -24,9 +24,7 @@ Main API entry:
     xtandem_fname, 
     n_peak=50, 
     good_expect=1E-8,
-    cutoff_expect=1E-2, 
-    excluded_seqids=[], 
-    include_seqids=[])
+    cutoff_expect=1E-2)
 
   returns a dictionary that organizes peptide-spectrum-matches
   around proteins.

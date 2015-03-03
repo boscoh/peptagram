@@ -12,10 +12,8 @@ an existing proteins data structure.
 """
 
 def load_mzml_into_matches(matches, mzml, n_peak=50):
-  match_by_scan_id = {}
-  for match in matches:
-    scan_id = match['attr']['scan_id']
-    match_by_scan_id[scan_id] = match
+  get_scan_id = lambda match: match['attr']['scan_id']
+  match_by_scan_id = {get_scan_id(m): m for m in matches}
 
   for spectrum in pymzml.run.Reader(mzml):
     if spectrum['id'] in match_by_scan_id:

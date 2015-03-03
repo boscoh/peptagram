@@ -237,7 +237,11 @@ class MascotReader():
 
 
 
-def get_proteins(mascot_dat, great_score=80, cutoff_score=0):
+def get_proteins(
+    mascot_dat, 
+    great_score=80, 
+    cutoff_score=0):
+
   mascot_reader = MascotReader(mascot_dat)
   aa_mass = mascot_reader.aa_mass
   modifications = mascot_reader.modifications

@@ -1,1 +1,1 @@
-python xtandem_peptagram %1 %2 %3
+python xtandem_peptagram.py %1 %2 %3

@@ -25,7 +25,7 @@ Main API entry:
         psm_fname, 
         modifications_fname=None,
         q_good=0, 
-        q_cutoff=50)
+        q_cutoff=10)
 
   returns a dictionary that organizes peptide-spectrum-matches
   around proteins.
@@ -181,14 +181,14 @@ def get_proteins_and_sources(
       psm_fname, 
       modifications_fname=None,
       q_good=0.0, 
-      q_cutoff=75):
+      q_cutoff=10):
 
   is_debug = logger.root.level <= logging.DEBUG
 
   dump_dir = os.path.dirname(protein_groups_fname)
 
   modification_table = {}
-  if modifications_fname is not None:
+  if modifications_fname:
     modification_table = read_modification_dict(modifications_fname)
   
   proteins = {}

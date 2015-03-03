@@ -1,1 +1,1 @@
-python reorder_peptagram %1 %2 %3
+python reorder_peptagram.py %1 %2 %3

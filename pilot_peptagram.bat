@@ -1,1 +1,1 @@
-python pilot_peptagram %1 %2 %3
+python pilot_peptagram.py %1 %2 %3
