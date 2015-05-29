@@ -14,9 +14,6 @@ from peptagram import parse
 import peptagram.mascot
 
 
-
-
-
 test_params = {
   'files_and_labels': [('example_data/mascot/F022043.dat', 'F022043')],
   'exclude_seqids': '',
@@ -38,6 +35,7 @@ def convert_mascot_to_peptagram(params, print_fn=sys.stdout.write):
   cutoff_ionscore = float(params['cutoff_ionscore'])
   proteins = {}
   labels = []
+  size = parse.size_str(params['fasta'])
   for fname, label in params['files_and_labels']:
     labels.append(label)
     size = parse.size_str(fname)

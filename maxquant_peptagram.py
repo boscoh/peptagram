@@ -19,7 +19,7 @@ from peptagram import parse
 
 
 test_params = {
-  'files_and_labels': [('example_data/maxquant/summary', 'summary')],
+  'files_and_labels': [('example_data/maxquant/txt', 'txt')],
   'fasta': 'example_data/maxquant/yeast_orf_trans_all_05-Jan-2010.fasta',
   'exclude_seqids': '',
   'include_seqids': '',
@@ -37,6 +37,8 @@ def convert_maxquant_to_peptagram(params, print_fn=sys.stdout.write):
   if len(params['files_and_labels']) == 0:
     raise ValueError('No files were selected.')
 
+  parse.check_fnames(params['fasta'])
+
   great_expect = float(params['great_expect'])
   cutoff_expect = float(params['cutoff_expect'])
 
@@ -45,10 +47,10 @@ def convert_maxquant_to_peptagram(params, print_fn=sys.stdout.write):
   for fname, label in params['files_and_labels']:
     size = parse.size_str(fname)
     print_fn("Processing %s (%s)...\n" % (fname, size))
+    labels.extend(label)
     these_proteins, sources = \
         peptagram.maxquant.get_proteins_and_sources(
             fname, great_expect=great_expect, cutoff_expect=cutoff_expect)
-    labels.extend(map(parse.basename, sources))
     proteins = peptagram.proteins.merge_two_proteins(
         proteins, these_proteins)
 
@@ -88,7 +90,7 @@ class PeptagramForm(tkform.Form):
     self.push_text("Maxquant summary txt directory; drag arrow to reorder; edit labels for peptagram")
 
     self.push_dir_list_param(
-        'files_and_labels', '+ txt directory', is_label=False)
+        'files_and_labels', '+ txt directory')
     self.push_labeled_param(
         'fasta', 'Protein sequences', 'fasta', load_file_text='select .fasta')
     self.push_labeled_param(

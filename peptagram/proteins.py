@@ -317,14 +317,6 @@ def transfer_files(in_dir, out_dir):
 
 
 
-def do_peptides(proteins, peptide_fn):
-  for protein in proteins.values():
-    for source in protein['sources']:
-      for match in source['matches']:
-        peptide_fn(match)
-
-
-
 aa2res = {  '<': 'NME', '>': 'ACE', 'A': 'ALA', 'C': 'CYS', 'D': 'ASP', 'E':
 'GLU', 'F': 'PHE', 'G': 'GLY', 'H': 'HIS', 'I': 'ILE', 'K': 'LYS', 'L': 'LEU',
 'M': 'MET', 'N': 'ASN', 'P': 'PRO', 'Q': 'GLN', 'R': 'ARG', 'S': 'SER', 'T':
@@ -400,7 +392,7 @@ def make_graphical_comparison_visualisation(data, out_dir=None):
   delete_empty_proteins(proteins)
   check_missing_fields(proteins)
   count_matches(proteins)
-  do_peptides(proteins, mod_str)
+  do_matches(proteins, mod_str)
 
   find_peptide_positions_in_proteins(proteins)
   for seqid, protein in proteins.items():

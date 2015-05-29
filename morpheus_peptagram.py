@@ -54,7 +54,7 @@ def convert_morpheus_to_peptagram(params, print_fn=sys.stdout.write):
             protein_group, fname, modifications, q_good, q_cutoff)
     proteins = peptagram.proteins.merge_two_proteins(
         proteins, these_proteins)
-    labels.extend(map(parse.basename, these_sources))
+    labels.append(label)
 
   n_peak = int(params['n_peak'])
   for i_source, (mzml, label) in enumerate(params['mzmls_and_labels']):
@@ -95,7 +95,7 @@ class PeptagramForm(tkform.Form):
     self.push_text("Morpheus .PSMs.tsv files; drag arrow to reorder; edit labels for peptagram")
 
     self.push_file_list_param(
-        'files_and_labels', '+ .PSMs.tsv files', is_label=False)
+        'files_and_labels', '+ .PSMs.tsv files')
     self.push_labeled_param(
         'title', 'Peptagram Title', 'Morpheus Peptagram')
     self.push_labeled_param(

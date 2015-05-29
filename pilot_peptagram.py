@@ -38,6 +38,7 @@ test_params = {
 def convert_pilot_to_peptagram(params, print_fn=sys.stdout.write):
   if len(params['files_and_labels']) == 0:
     raise ValueError('No files were selected.')
+  parse.check_fnames(params['fasta'])
 
   proteins = {}
   labels = []

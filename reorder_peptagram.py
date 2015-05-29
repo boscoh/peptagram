@@ -71,7 +71,7 @@ class ResortPeptagramForm(tkform.Form):
     return a-1, b-1
 
   def push_peptagram_loader(self, param_id, load_dir_text):
-    self.file_list_loader = tkform.ReorderableLabeledList(self.interior)
+    self.file_list_loader = tkform.ReorderableList(self.interior)
     self.datas = []
 
     def load_peptagram():

@@ -148,6 +148,8 @@ class PepxmlReader(object):
           'prob': attrib['min_prob'],
         })
     self.distribution.sort(key=lambda d:d['error'])
+    peptide_probability = error_to_probability(self.distribution, 0.01)
+    logger.info('Peptide probability cutoff for 0.01 fpe: %f' % peptide_probability) 
 
   def parse_scan(self, scan_elem):
     scan = parse.parse_attrib(scan_elem)
@@ -361,19 +363,25 @@ def load_pepxml_into_proteins(
     error_cutoff=None, 
     source_names=[],
     good_expect=1E-8,
-    cutoff_expect=1E-2):
+    cutoff_expect=1E-2,
+    poor_expect=1E-2):
 
-  logger.debug('Peptide error cutoff: {}'.format(error_cutoff))
+  logger.info('Peptide error cutoff: {}'.format(error_cutoff))
   protein_by_seqid = get_protein_by_seqid(proteins)
   n_source = len(proteins.values()[0]['sources'])
   pepxml_reader = PepxmlReader(pepxml_fname)
   source_name_indices = {}
   for scan in pepxml_reader:
     for pepxml_match in scan['matches']:
+
       if error_cutoff is not None and pepxml_match['fpe'] > error_cutoff:
+        logger.debug('Rejecting peptide with prob:%f, fpe:%f' % (pepxml_match['probability'], pepxml_match['fpe']))
         continue
+
       seqids = [pepxml_match['protein']] + pepxml_match['other_seqids']
+
       for seqid in seqids:
+
         if seqid not in protein_by_seqid:
           logger.warning('{} from scan {} not found in protxml'.format(seqid, scan['index']))
           continue
@@ -395,16 +403,27 @@ def load_pepxml_into_proteins(
 
         if scan_id not in scan_ids:
           match = make_match(pepxml_match, scan, scan['source'])
+
           for protxml_peptide in protein['protxml_peptides']:
             if protxml_peptide['charge'] == scan['assumed_charge'] and \
                 protxml_peptide['modified_sequence'] == pepxml_match['modified_sequence']:  
               match['attr']['probability_protxml'] = protxml_peptide['nsp_adjusted_probability']
               match['attr']['is_contributing_evidence'] = protxml_peptide['is_contributing_evidence']
-          if pepxml_match['expect'] > cutoff_expect:
+
+          assert match['attr']['probability'] == pepxml_match['probability']
+
+          if cutoff_expect is not None and pepxml_match['expect'] > cutoff_expect:
+            logger.debug('Rejecting peptide with prob:%f expect:%f fpe:%f' % \
+              (match['attr']['probability'], pepxml_match['expect'], pepxml_match['fpe']))
             continue
+
+          logger.debug('Accepting peptide with prob:%f expect:%f fpe:%f' % \
+               (match['attr']['probability'], pepxml_match['expect'], pepxml_match['fpe']))
+
           match['intensity'] = \
               parse_proteins.calc_minus_log_intensity(
-                  pepxml_match['expect'], good_expect, cutoff_expect)
+                  pepxml_match['expect'], good_expect, poor_expect)
+
           matches.append(match)
 
   source_names.extend(pepxml_reader.source_names)
