@@ -1,6 +1,11 @@
 
 
 
+function exists(val) {
+  return typeof val != "undefined";
+}
+
+
 function attr_empty(dict, key) {
   if (!(key in dict)) {
     return true;
@@ -28,17 +33,6 @@ function dict_html(dict) {
   for (var i=0; i<keys.length; i++) {
     var key = keys[i];
     var val = dict[key];
-    // if (key == 'modifications') {
-    //   val = '';
-    //   var modifications = dict[key];
-    //   for (var j=0; j<modifications.length; j++) {
-    //     if (j > 0) {
-    //       val += ' '
-    //     }
-    //     var res_num = modifications[j].i + 1;
-    //     val += res_num + ":" + modifications[j].mass;
-    //   }  
-    // }
     s += key + ": " + val + "<br>";
   }
   return s;
@@ -117,6 +111,8 @@ function set_left(div, left) {
   div.css('left', left);
 }
 
+/* fix page from scrolling */
+
 function block_bounce_except_for_touchscroll() {
   var shift_from_edge;
   $(document).on('touchmove', function(e) {
@@ -139,4 +135,23 @@ function block_bounce_except_for_touchscroll() {
     shift_from_edge(e);
   });
 }
+
+
+/* jsonp and async script loading */
+
+function load_script(src) {
+  var script = document.createElement('script');
+  script.src = src;
+  document.head.appendChild(script);
+}
+
+
+function load_jsonp(fname, callback_fn) {
+  callback_name = fname.replace('.jsonp', '');
+  window[callback_name] = callback_fn
+  load_script(fname);
+}
+
+
+
 

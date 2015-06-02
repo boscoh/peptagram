@@ -29,7 +29,7 @@ test_params = {
   'exclude_seqids': '',
   'include_seqids': '',
   'title': 'TPP Prophet Example Peptagram',
-  'out_dir': 'example_data/peptagram-prophet',
+  'out_dir': 'peptagram-prophet',
   'include_msms': 1,
   'match_filter': 3,
 }

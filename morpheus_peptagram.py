@@ -24,7 +24,7 @@ test_params = {
   'exclude_seqids': '',
   'include_seqids': '',
   'title': 'Morpheus Example Peptagram',
-  'out_dir': 'example_data/peptagram-morpheus',
+  'out_dir': 'peptagram-morpheus',
   'include_msms': 1,
   'match_filter': 3,
   'n_peak': 50,
@@ -151,7 +151,6 @@ class PeptagramForm(tkform.Form):
 
 if __name__ == "__main__":
   if 'test' in sys.argv:
-    logging.basicConfig(level=logging.DEBUG)
     convert_morpheus_to_peptagram(test_params)
   else:
     form = PeptagramForm(800, -50)

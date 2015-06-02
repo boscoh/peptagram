@@ -11,7 +11,7 @@
   <script type="text/javascript" src="js/proteinlist.js"></script>
   <script type="text/javascript" src="js/canvaswidget.js"></script>
   <script type="text/javascript" src="js/spectrumwidget.js"></script>
-  <script type="text/javascript" src="main.js"></script>
+  <script type="text/javascript" src="js/peptagram.js"></script>
   <style>
     body,
     html {
@@ -85,7 +85,7 @@
       margin-bottom: 10px;
       overflow: scroll;
     }
-    #peptograph {
+    #peptagram {
       position: absolute;
       height: 290px;
     }
@@ -168,7 +168,7 @@
   <div id="watermark">
     <a href="http://boscoh.github.com/peptagram/vizhelp.html" target="is_blank">PEPTAGRAM&#183;HELP</a>
   </div>
-  <div id="header">Peptograph analysis of Sample</div>
+  <div id="header">Downloading Peptagram Data</div>
   <div id="column1">
     <div class="title">PROTEINS - PRESS [A][W]</div>
     <div id="protein_control"></div>
@@ -177,7 +177,7 @@
   <div id="column2">
     <div class="title">PROTEIN INFO - PRESS [S][E]</div>
     <div id="protein_info"></div>
-    <div id="peptograph"></div>
+    <div id="peptagram"></div>
     <div id="sequence" class="touchscroll"></div>
   </div>
   <div id="column3">

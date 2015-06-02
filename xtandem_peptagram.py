@@ -24,7 +24,7 @@ test_params = {
   'exclude_seqids': '',
   'include_seqids': '',
   'title': 'X!Tandem Example Peptagram',
-  'out_dir': 'example_data/peptagram-xtandem',
+  'out_dir': 'peptagram-xtandem',
   'fasta': '',
   'great_expect': 1E-8,
   'okay_expect': 1E-4,

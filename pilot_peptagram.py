@@ -28,7 +28,7 @@ test_params = {
   'exclude_seqids': '',
   'include_seqids': '',
   'title': 'Protein Pilot Example Petagram',
-  'out_dir': 'example_data/peptagram-pilot',
+  'out_dir': 'peptagram-pilot',
   'include_msms': 0,
   'match_filter': 3,
 }

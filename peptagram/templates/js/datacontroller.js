@@ -6,15 +6,7 @@ function DataController(data) {
   this.data = data;
   
   this.init = function() {
-    if (this.data.mask_labels.length > 0) {
-      this.data.mask = parseFloat(this.data.mask_labels[0]);
-    } else {
-      this.data.mask = 0.0;
-    }
     var _data = this.data
-    this.data.match_filter = function(match) {
-      return match.mask >= _data.mask;
-    }
     this.data.canvas_font = "10px 'Andale Mono'";
     this.data.select_bg_color = '#CFC';
     this.data.bg_color = '#F9F9F9';

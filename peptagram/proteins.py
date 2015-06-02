@@ -308,6 +308,14 @@ def save_data_js(data, js_fname):
   f.close()
 
 
+def save_data_jsonp(data, js_fname, fn_name):
+  f = open(js_fname, 'w')
+  f.write(fn_name + '(\n')
+  f.write(json.dumps(data, indent=None))
+  f.write('\n);\n')
+  f.close()
+
+
 def transfer_files(in_dir, out_dir):
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
@@ -415,7 +423,7 @@ def make_graphical_comparison_visualisation(data, out_dir=None):
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 
-  save_data_js(data, os.path.join(out_dir, 'data.js'))
+  save_data_jsonp(data, os.path.join(out_dir, 'data.jsonp'), 'load_data')
   transfer_files(os.path.join(this_dir, 'templates/comparison'), out_dir)
   transfer_files(os.path.join(this_dir, 'templates/js'), os.path.join(out_dir, 'js'))
   index_html = os.path.abspath(os.path.join(out_dir, 'index.html'))

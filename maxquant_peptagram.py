@@ -14,10 +14,6 @@ import peptagram.maxquant
 from peptagram import parse
 
 
-
-
-
-
 test_params = {
   'files_and_labels': [('example_data/maxquant/txt', 'txt')],
   'fasta': 'example_data/maxquant/yeast_orf_trans_all_05-Jan-2010.fasta',
@@ -26,11 +22,10 @@ test_params = {
   'great_expect': '1E-8',
   'cutoff_expect': '1E-2',
   'title': 'Maxquant Example Peptagram',
-  'out_dir': 'example_data/peptagram-maxquant',
+  'out_dir': 'peptagram-maxquant',
   'include_msms': 1,
   'match_filter': 3,
 }
-
 
 
 def convert_maxquant_to_peptagram(params, print_fn=sys.stdout.write):

@@ -31,11 +31,9 @@ function ProteinBarWidget(canvas, data, seqid) {
       var matches = this.protein.sources[j].matches;
       for (var i=0; i<matches.length; i++) {
         var match = matches[i];
-        if (this.data.match_filter(match)) {
-          var x = this.x_from_i(match.i);
-          var w = this.x_from_i(match.j) - x;
-          this.canvas.solid_box(x, this.y, w, this.height, this.color);
-        }
+        var x = this.x_from_i(match.i);
+        var w = this.x_from_i(match.j) - x;
+        this.canvas.solid_box(x, this.y, w, this.height, this.color);
       }
     }
   }
@@ -51,7 +49,7 @@ function ProteinBarWidget(canvas, data, seqid) {
 }
 
 
-function count_matches(protein, match_filter) {
+function count_matches(protein) {
   protein.attr.n_match = 0;
   protein.attr.n_match_unique = 0;
   protein.attr.n_slice_populated = 0;
@@ -61,13 +59,11 @@ function count_matches(protein, match_filter) {
     var n_match_in_slice = 0;
     for (var i=0; i<matches.length; i++) {
       var match = matches[i];
-      if (match_filter(match)) {
-        if (matches[i].attr.is_unique) {
-          protein.attr.n_match_unique += 1;
-        }
-        protein.attr.n_match += 1;
-        n_match_in_slice += 1;
+      if (matches[i].attr.is_unique) {
+        protein.attr.n_match_unique += 1;
       }
+      protein.attr.n_match += 1;
+      n_match_in_slice += 1;
     }
     if (n_match_in_slice > 0) {
       protein.attr.n_slice_populated += 1;
@@ -167,6 +163,7 @@ function ProteinList(control_div, column1_div, data) {
     this.protein_divs[this.i_protein].css({'color':'#333'});
     this.protein_canvases[this.i_protein].draw();
     this.i_old_protein = this.i_protein;
+    this.redraw_bars();
   }
 
   this.build_list = function() {
@@ -185,7 +182,7 @@ function ProteinList(control_div, column1_div, data) {
 
     for (var seqid in this.data.proteins) {
       var protein = this.data.proteins[seqid];
-      count_matches(protein, this.data.match_filter);
+      count_matches(protein);
     }
 
     this.data.controller.calc_sorted_seqids(

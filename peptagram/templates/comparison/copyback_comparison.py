@@ -13,8 +13,8 @@ import peptagram
 
 fname_pairs = """
 copyback_comparison.py templates/comparison/
-main.js  templates/comparison/
 index.html  templates/comparison/
+js/peptagram.js  templates/js/
 js/canvaswidget.js  templates/js/
 js/datacontroller.js  templates/js/
 js/mass.js  templates/js/
@@ -40,8 +40,8 @@ def copy_peptagram_files(in_dir, out_dir):
   for i, o in pairs:
     format_str = '%% %ds -> %%s' % max_len
     print str(i).ljust(max_len) + ' -> ' + o
-    assert os.path.isfile(i)
-    assert os.path.isfile(o)
+    # assert os.path.isfile(i)
+    # assert os.path.isfile(o)
     shutil.copy(i, o)
 
 

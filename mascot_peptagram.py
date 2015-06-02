@@ -21,7 +21,7 @@ test_params = {
   'great_ionscore': 80,
   'cutoff_ionscore': 0,
   'title': 'Mascot Peptagram Example',
-  'out_dir': 'example_data/peptagram-mascot',
+  'out_dir': 'peptagram-mascot',
   'fasta': 'example_data/mascot/HUMAN.fasta',
   'include_msms': 1,
   'match_filter': 3,
