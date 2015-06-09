@@ -1,8 +1,8 @@
 
 
 
-// ProteinBarWidget draws a simple distribution of matches in a
-// protein using data.mask to mask certain matches
+// ProteinBarWidget draws a simple distribution of matches
+// in a protein
 function ProteinBarWidget(canvas, data, seqid) {
   this.canvas = canvas;
   this.seqid = seqid;
@@ -144,28 +144,6 @@ function ProteinList(control_div, column1_div, data) {
     set_outer_width(this.sorting_msg_div, width);
   }
 
-  this.update = function() {
-    this.i_protein = this.data.controller.get_i_protein();
-    if (this.i_old_protein == this.i_protein) {
-      return;
-    }
-    this.data.selected_seqid = this.data.sorted_seqids[this.i_protein];
-    if (this.i_old_protein != null) {
-      if (this.i_old_protein >= this.protein_divs.length) {
-        return;
-      }
-      this.protein_divs[this.i_old_protein].css('color', '#666');
-      this.protein_canvases[this.i_old_protein].draw();
-    }
-      if (this.i_protein >= this.protein_divs.length) {
-        return;
-      }
-    this.protein_divs[this.i_protein].css({'color':'#333'});
-    this.protein_canvases[this.i_protein].draw();
-    this.i_old_protein = this.i_protein;
-    this.redraw_bars();
-  }
-
   this.build_list = function() {
     this.main_div.empty();
     while (this.protein_canvases.length > 0) {
@@ -219,6 +197,7 @@ function ProteinList(control_div, column1_div, data) {
         _this.main_div.append(protein_div);
 
         var canvas_div = $("<div>");
+        canvas_div.addClass("protein_bar");
         canvas_div.css('width', _this.main_div.width() - 10);
         canvas_div.css('height', 12);
         canvas_div.css('margin', '5px 0');
@@ -252,12 +231,30 @@ function ProteinList(control_div, column1_div, data) {
     }
   }
 
-  this.redraw_mask = function() {
-    var val = $("input[name=mask]:checked").attr('value');
-    console.log('draw');
-    this.data.mask = parseFloat(val);
-    this.build_list();
-    this.data.observer();
+  this.highlight_selected = function() {
+    this.i_protein = this.data.controller.get_i_protein();
+    if (this.i_old_protein == this.i_protein) {
+      return;
+    }
+    this.data.selected_seqid = this.data.sorted_seqids[this.i_protein];
+    if (this.i_old_protein != null) {
+      if (this.i_old_protein >= this.protein_divs.length) {
+        return;
+      }
+      this.protein_divs[this.i_old_protein].css('color', '#666');
+      this.protein_canvases[this.i_old_protein].draw();
+    }
+      if (this.i_protein >= this.protein_divs.length) {
+        return;
+      }
+    this.protein_divs[this.i_protein].css({'color':'#333'});
+    this.protein_canvases[this.i_protein].draw();
+    this.i_old_protein = this.i_protein;
+  }
+
+  this.update = function() {
+    this.redraw_bars();
+    this.highlight_selected();
   }
 
   this.register_callbacks = function() {
@@ -266,8 +263,6 @@ function ProteinList(control_div, column1_div, data) {
         function() { _this.build_list(); });
     $("input[name=direction]").change(
         function() { _this.build_list(); });
-    $("input[name=mask]").change(
-        function() { _this.redraw_mask(); });
   }
 
   this.build_controls();

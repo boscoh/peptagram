@@ -281,19 +281,20 @@ def merge_two_proteins(proteins1, proteins2):
     return proteins2
   seqid = proteins1.keys()[0]
   n_source1 = len(proteins1[seqid]['sources'])
-  seqid = proteins2.keys()[0]
-  n_source2 = len(proteins2[seqid]['sources'])
-  for seqid in proteins2:
-    protein2 = proteins2[seqid]
-    sources2 = protein2['sources']
-    if seqid in proteins1:
-      protein1 = proteins1[seqid]
-      protein1['sources'].extend(sources2)
-    else:
-      sources1 = [{'matches': []} for i in range(n_source1)]
-      combined_sources = sources1 + sources2
-      proteins1[seqid] = protein2
-      proteins1[seqid]['sources'] = combined_sources
+  if len(proteins2) > 0:
+    seqid = proteins2.keys()[0]
+    n_source2 = len(proteins2[seqid]['sources'])
+    for seqid in proteins2:
+      protein2 = proteins2[seqid]
+      sources2 = protein2['sources']
+      if seqid in proteins1:
+        protein1 = proteins1[seqid]
+        protein1['sources'].extend(sources2)
+      else:
+        sources1 = [{'matches': []} for i in range(n_source1)]
+        combined_sources = sources1 + sources2
+        proteins1[seqid] = protein2
+        proteins1[seqid]['sources'] = combined_sources
   for seqid in proteins1:
     matches = proteins1[seqid]['sources']
     if len(matches) == n_source1:

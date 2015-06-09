@@ -15,14 +15,16 @@ import tkFileDialog
 import tkform
 
 
-
-def load_data_js(peptagram_dir):
-    data_js = os.path.join(peptagram_dir, 'data.js')
-    with open(data_js) as f:
+def load_data_jsonp(data_jsonp):
+    with open(data_jsonp) as f:
       txt = f.read()
-    txt = txt.replace('var data = ', '')
-    result = json.loads(txt)
-    return result
+    i_bracket = txt.find('(')
+    if i_bracket > 0:
+        txt = txt[i_bracket+1:]
+    i_bracket = txt.rfind(')')
+    if i_bracket > 0:
+        txt = txt[:i_bracket]
+    return json.loads(txt)
 
 
 class ResortPeptagramForm(tkform.Form):
@@ -78,7 +80,7 @@ class ResortPeptagramForm(tkform.Form):
       pep_dir = tkFileDialog.askdirectory(title=load_dir_text)
       try:
         self.print_output('Loading peptagram in ' + pep_dir + '...')
-        data = load_data_js(pep_dir)
+        data = load_data_jsonp(os.path.join(pep_dir, 'data.jsonp'))
       except:
         self.print_exception()
 

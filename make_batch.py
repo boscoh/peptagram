@@ -19,7 +19,7 @@ fi
 """
 
 [os.remove(s) for s in glob.glob('*_peptagram')]
-[os.remove(s) for s in glob.glob('*_peptagram.cmd')]
+[os.remove(s) for s in glob.glob('*_peptagram.command')]
 
 for py_script in glob.glob('*_peptagram.py'):
     batch = py_script.replace('.py', '.bat')

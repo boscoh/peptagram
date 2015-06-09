@@ -8,6 +8,7 @@ import math
 import xml.etree.ElementTree as etree
 
 import logging
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('xtandem')
 
 import parse

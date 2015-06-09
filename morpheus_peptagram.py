@@ -5,7 +5,6 @@ from __future__ import print_function
 import glob
 import os
 import sys
-import logging
 import webbrowser
 
 import tkform
@@ -44,7 +43,8 @@ def convert_morpheus_to_peptagram(params, print_fn=sys.stdout.write):
   modifications = params['modifications']
   proteins = {}
   labels = []
-  for fname, label in params['files_and_labels']:
+  for entry in params['files_and_labels']:
+    fname = entry[0]
     size = parse.size_str(fname)
     print_fn("Processing %s (%s)...\n" % (fname, size))
     protein_group = fname.replace('PSMs', 'protein_groups')
@@ -54,7 +54,7 @@ def convert_morpheus_to_peptagram(params, print_fn=sys.stdout.write):
             protein_group, fname, modifications, q_good, q_cutoff)
     proteins = peptagram.proteins.merge_two_proteins(
         proteins, these_proteins)
-    labels.append(label)
+    labels.extend(map(parse.basename, these_sources))
 
   n_peak = int(params['n_peak'])
   for i_source, (mzml, label) in enumerate(params['mzmls_and_labels']):
@@ -95,7 +95,7 @@ class PeptagramForm(tkform.Form):
     self.push_text("Morpheus .PSMs.tsv files; drag arrow to reorder; edit labels for peptagram")
 
     self.push_file_list_param(
-        'files_and_labels', '+ .PSMs.tsv files')
+        'files_and_labels', '+ .PSMs.tsv files', is_label=False)
     self.push_labeled_param(
         'title', 'Peptagram Title', 'Morpheus Peptagram')
     self.push_labeled_param(

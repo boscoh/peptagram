@@ -31,6 +31,9 @@ test_params = {
 def convert_mascot_to_peptagram(params, print_fn=sys.stdout.write):
   if len(params['files_and_labels']) == 0:
     raise ValueError('No files were selected.')
+
+  parse.check_fnames(params['fasta'])
+
   great_ionscore = float(params['great_ionscore'])
   cutoff_ionscore = float(params['cutoff_ionscore'])
   proteins = {}
@@ -50,7 +53,6 @@ def convert_mascot_to_peptagram(params, print_fn=sys.stdout.write):
       'proteins': proteins,
       'source_labels': labels,
       'color_names': [great_ionscore, cutoff_ionscore],
-      'mask_labels': [],
       'out_dir': params['out_dir'],
   })
   html = os.path.join(params['out_dir'], 'index.html')

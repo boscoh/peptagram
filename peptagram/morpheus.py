@@ -8,6 +8,7 @@ import json
 import csv
 
 import logging
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('morpheus')
 
 import parse
@@ -118,7 +119,7 @@ def make_match(psm, modification_table):
         psm['peptide sequence'], modification_table)
     peptide_sequence = psm['base peptide sequence']
     if extracted_peptide_sequence != peptide_sequence:
-      logger.warning("Peptide sequences don't match: " + psm['peptide sequence'] + " " + extracted_peptide_sequence + " " + peptide_sequence)
+      logger.debug("Peptide sequences don't match: " + psm['peptide sequence'] + " " + extracted_peptide_sequence + " " + peptide_sequence)
 
     q_value = float(psm['q-value (%)'])
 
@@ -235,7 +236,7 @@ def get_proteins_and_sources(
           protein = test_protein
           break
     else:
-      logger.warning("Couldn't find protein for %s" % (peptide_sequence))
+      logger.debug("Couldn't find protein for %s" % (peptide_sequence))
       continue
     match['i'] = sequence.find(peptide_sequence)
 
