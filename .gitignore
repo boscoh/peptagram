@@ -4,3 +4,6 @@ dist
 examples*
 *html
 *pyc
+peptagram-*/
+example*data
+peptagram/*pyc
