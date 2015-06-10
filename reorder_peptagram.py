@@ -40,8 +40,8 @@ class ResortPeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("LOAD PEPTAGRAMS", 20)
-    self.push_text("drag arrow to reorder; edit labels for peptagram")
+    self.push_text("REQUIRED INPUT DATA", 16)
+    self.push_text("Load existing peptagram directories; drag arrow to reorder; edit labels for peptagram")
 
     self.push_peptagram_loader(
         'in_peptagram', load_dir_text='+ peptagram directory')
@@ -50,7 +50,7 @@ class ResortPeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("PARAMETERS", 20)
+    self.push_text("REORDERED-COMBINED PEPTAGRAM PARAMETERS", 16)
     self.push_labeled_param(
         'title', 'peptagram title', 'Reordered Peptagram')
     self.push_labeled_param(
@@ -60,7 +60,7 @@ class ResortPeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OUTPUT", 20)
+    self.push_text("RESULTS", 16)
     self.push_submit()
     self.push_output()
 

@@ -89,16 +89,22 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("REQUIRED PARAMETERS", 20)
+    self.push_text("REQUIRED INPUT DATA", 16)
+    self.push_labeled_param(
+        'fasta', 'Protein sequences in fasta', 'sequences.fasta', load_file_text='select .fasta')
     self.push_labeled_param(
         'prot_xml', 'ProteinProphet .prot.xml', 'job.prot.xml', load_file_text='select .prot.xml')
     self.push_text("PeptideProphet .pep.xml files; drag arrow to reorder; edit labels for peptagram")
     self.push_file_list_param(
         'files_and_labels', '+ .pep.xml files', is_label=False)
+
+    self.push_spacer()
+    self.push_line()
+    self.push_spacer()
+
+    self.push_text("PEPTAGRAM PARAMETERS", 16)
     self.push_labeled_param(
-        'fasta', 'Protein sequences in fasta', 'sequences.fasta', load_file_text='select .fasta')
-    self.push_labeled_param(
-        'title', 'Peptagram title', 'Prophet Peptagram')
+        'title', 'Title', 'Prophet Peptagram')
     self.push_labeled_param(
         'out_dir', 'Output directory', 'peptagram-prophet', load_dir_text='select directory')
 
@@ -106,7 +112,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OPTIONAL PARAMETERS", 20)
+    self.push_text("OPTIONAL PARAMETERS", 16)
 
     self.push_labeled_param('peptide_error', 'PeptideProphet false-positive-error cutoff', '0.05')
     self.push_labeled_param('protein_error', 'ProteinProphet false-positive-error cutoff', '0.01')
@@ -125,7 +131,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OUTPUT", 20)
+    self.push_text("RESULTS", 16)
     self.push_submit()
     self.push_output()
 

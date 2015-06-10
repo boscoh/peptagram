@@ -18,10 +18,6 @@ from peptagram import parse
 import tkform
 
 
-
-
-
-
 test_params = {
   'files_and_labels': [('example_data/pilot/DPrep1_pilot4.txt', 'summary')],
   'fasta': 'example_data/pilot/HUMAN.fasta',
@@ -32,7 +28,6 @@ test_params = {
   'include_msms': 0,
   'match_filter': 3,
 }
-
 
 
 def convert_pilot_to_peptagram(params, print_fn=sys.stdout.write):
@@ -67,8 +62,6 @@ def convert_pilot_to_peptagram(params, print_fn=sys.stdout.write):
   return os.path.abspath(html)
 
 
-
-
 class PeptagramForm(tkform.Form):
   """
   Application window for Tkinter.
@@ -81,15 +74,18 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("REQUIRED PARAMATERS", 20)
+    self.push_text("REQUIRED INPUT DATA", 16)
+    self.push_labeled_param(
+        'fasta', 'Load sequences for proteins', 'fasta', load_file_text='select .fasta')
     self.push_text("Load ProteinPilot peptide summaries; drag arrow to reorder; edit labels for peptagram")
-
     self.push_file_list_param(
         'files_and_labels', '+ peptide summary .csv/.txt file')
     
-    self.push_labeled_param(
-        'fasta', 'Load sequences for proteins', 'fasta', load_file_text='select .fasta')
+    self.push_spacer()
+    self.push_line()
+    self.push_spacer()
 
+    self.push_text("PEPTAGRAM PARAMETERS", 16)
     self.push_labeled_param(
         'title', 'Peptagram Title', 'Protein Pilot peptagram')
     self.push_labeled_param(
@@ -99,7 +95,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OPTIONAL FILTERS", 20)
+    self.push_text("OPTIONAL FILTERS", 16)
 
     self.push_labeled_param(
         'exclude_seqids', 'Filename of seqids to exclude',
@@ -120,7 +116,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OUTPUT", 20)
+    self.push_text("RESULTS", 16)
     self.push_submit()
     self.push_output()
 
@@ -129,7 +125,6 @@ class PeptagramForm(tkform.Form):
     index = convert_pilot_to_peptagram(params, self.print_output)
     callback = lambda: webbrowser.open('file://' + index)
     self.print_output(index, callback)
-
 
 
 if __name__ == "__main__":

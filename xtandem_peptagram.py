@@ -14,11 +14,6 @@ import peptagram.proteins
 from peptagram import parse
 
 
-
-
-
-
-
 test_params = {
   'files_and_labels': [('example_data/xtandem/Seq23282_E1O1.tandem', 'Seq23282')],
   'exclude_seqids': '',
@@ -33,7 +28,6 @@ test_params = {
   'match_filter': 3,
   'n_peak': 50,
 }
-
 
 
 def convert_xtandem_to_peptagram(params, print_fn=sys.stdout.write):
@@ -87,12 +81,18 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("REQUIRED PARAMETERS", 20)
+    self.push_text("REQUIRED INPUT DATA", 16)
     self.push_text("Load X!Tandem files; drag arrow to reorder; edit labels")
     self.push_file_list_param(
         'files_and_labels', '+ .tandem files')
+
+    self.push_spacer()
+    self.push_line()
+    self.push_spacer()
+
+    self.push_text("PEPTAGRAM PARAMETERS", 16)
     self.push_labeled_param(
-        'title', 'Peptagram title', 'X!Tandem Peptagram')
+        'title', 'Title', 'X!Tandem Peptagram')
     self.push_labeled_param(
         'out_dir', 'Output directory', 'peptagram-xtandem', load_dir_text='select directory')
 
@@ -100,7 +100,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OPTIONAL FILTERS", 20)
+    self.push_text("OPTIONAL FILTERS", 16)
 
     self.push_labeled_param(
         'exclude_seqids', 'Text file of excluded seqids',
@@ -127,7 +127,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OUTPUT", 20)
+    self.push_text("RESULTS", 16)
     self.push_submit()
     self.push_output()
 

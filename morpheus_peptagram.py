@@ -90,14 +90,19 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("REQUIRED PARAMETERS", 20)
-
+    self.push_text("REQUIRED INPUT DATA", 16)
     self.push_text("Morpheus .PSMs.tsv files; drag arrow to reorder; edit labels for peptagram")
-
     self.push_file_list_param(
         'files_and_labels', '+ .PSMs.tsv files', is_label=False)
+
+
+    self.push_spacer()
+    self.push_line()
+    self.push_spacer()
+
+    self.push_text("PEPTAGRAM PARAMETERS", 16)
     self.push_labeled_param(
-        'title', 'Peptagram Title', 'Morpheus Peptagram')
+        'title', 'Title', 'Morpheus Peptagram')
     self.push_labeled_param(
         'out_dir', 'Output directory', 'peptagram-morpheus', load_dir_text='select directory')
 
@@ -105,7 +110,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OPTIONAL PARAMETERS TO DISPLAY SPECTRA", 20)
+    self.push_text("OPTIONAL PARAMETERS TO DISPLAY SPECTRA", 16)
     self.push_text("The .mzML file that produced the search")
     self.push_file_list_param('mzmls_and_labels', '+ .mzML')
     self.push_labeled_param(
@@ -117,7 +122,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OPTIONAL FILTERS", 20)
+    self.push_text("OPTIONAL FILTERS", 16)
     self.push_labeled_param(
         'exclude_seqids', 'Text file of excluded seqids',
          load_file_text='select')
@@ -138,7 +143,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OUTPUT", 20)
+    self.push_text("RESULTS", 16)
     self.push_submit()
     self.push_output()
 

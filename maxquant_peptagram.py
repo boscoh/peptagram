@@ -68,8 +68,6 @@ def convert_maxquant_to_peptagram(params, print_fn=sys.stdout.write):
   return os.path.abspath(html)
 
 
-
-
 class PeptagramForm(tkform.Form):
   """
   Application window for Tkinter.
@@ -82,15 +80,20 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("REQUIRED PARAMTERS", 20)
-    self.push_text("Maxquant summary txt directory; drag arrow to reorder; edit labels for peptagram")
-
-    self.push_dir_list_param(
-        'files_and_labels', '+ txt directory', is_label=False)
+    self.push_text("REQUIRED INPUT DATA", 16)
     self.push_labeled_param(
         'fasta', 'Protein sequences', 'fasta', load_file_text='select .fasta')
+    self.push_text("Maxquant summary directories; drag arrow to reorder; edit labels for peptagram")
+    self.push_dir_list_param(
+        'files_and_labels', '+ summary/txt directory', is_label=False)
+
+    self.push_spacer()
+    self.push_line()
+    self.push_spacer()
+
+    self.push_text("PEPTAGRAM PARAMETERS", 16)
     self.push_labeled_param(
-        'title', 'Peptagram title', 'Maxquant peptagram')
+        'title', 'Title', 'Maxquant peptagram')
     self.push_labeled_param(
         'out_dir', 'Output directory', 'peptagram-maxquant', load_dir_text='select directory')
 
@@ -98,7 +101,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OPTIONAL FILTERS", 20)
+    self.push_text("OPTIONAL FILTERS", 16)
 
     self.push_labeled_param(
         'exclude_seqids', 'Text file of excluded seqids',
@@ -121,7 +124,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OUTPUT", 20)
+    self.push_text("RESULTS", 16)
     self.push_submit()
     self.push_output()
 
@@ -130,7 +133,6 @@ class PeptagramForm(tkform.Form):
     index = convert_maxquant_to_peptagram(params, self.print_output)
     callback = lambda: webbrowser.open('file://' + index)
     self.print_output(index, callback)
-
 
 
 if __name__ == "__main__":

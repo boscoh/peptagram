@@ -72,13 +72,19 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("REQUIRED PARAMETERS", 20)
-    self.push_text("Mascot .dat files; drag arrow to reorder; edit labels for peptagram")
-    self.push_file_list_param('files_and_labels', '+ .dat files')
+    self.push_text("REQUIRED INPUT DATA", 16)
     self.push_labeled_param(
         'fasta', 'Protein sequences', 'sequences.fasta', load_file_text='select .fasta')
+    self.push_text("Mascot .dat files; drag arrow to reorder; edit labels for peptagram")
+    self.push_file_list_param('files_and_labels', '+ .dat files')
+
+    self.push_spacer()
+    self.push_line()
+    self.push_spacer()
+
+    self.push_text("PEPTAGRAM PARAMETERS", 16)
     self.push_labeled_param(
-        'title', 'Peptagram title', 'Mascot Peptagram')
+        'title', 'Title', 'Mascot Peptagram')
     self.push_labeled_param(
         'out_dir', 'Output directory', 'peptagram-mascot', load_dir_text='select directory')
 
@@ -86,7 +92,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OPTIONAL FILTERS", 20)
+    self.push_text("OPTIONAL FILTERS", 16)
 
     self.push_labeled_param(
         'exclude_seqids', 'Text file of excluded seqids',
@@ -111,7 +117,7 @@ class PeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
-    self.push_text("OUTPUT", 20)
+    self.push_text("RESULTS", 16)
     self.push_submit()
     self.push_output()
 
