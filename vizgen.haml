@@ -13,11 +13,11 @@
             %span.icon-bar
             %span.icon-bar
             %span.icon-bar
-          %a.navbar-brand{href:'../'} peptagram
+          %a.navbar-brand{href:'./'} peptagram
         .navbar-collapse.collapse
           %ul.nav.navbar-nav
             %li
-              %a{href:'../'} home
+              %a{href:'./'} home
             %li
               %a{href:'vizhelp.html'} viz help
             %li.active
@@ -112,7 +112,7 @@
               - `xtandem_peptagram` - processes X!Tandem search results. Shows the spectra for each PSM. 
               - `pilot_peptagram` - processes Protein Pilot .txt/.csv result files. Requires the original .fasta file to get the full length protein sequences
 
-              Some of the search engine results carry out protein group analysis
+              As some peptagrams can get really big easily, there are a number of options to filter out low-quality matches, from using quality scores like pep and ionscore. As well, you can always load text-files of contaminants to exclude, and/or seqids of interest. As well, there are a number of peptide filtering options.
 
     #tintedtext
       .container
