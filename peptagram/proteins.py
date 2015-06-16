@@ -54,7 +54,6 @@ def new_match(peptide_sequence):
     'sequence': peptide_sequence,
     'intensity': 1.0,
     'modifications': [],
-    'mask': 0.0,
     'attr': {}
   }
 
@@ -93,8 +92,6 @@ def check_missing_fields(proteins):
       match['modifications'] = []
     if 'intensity' not in match:
       match['intensity'] = 1
-    if 'mask' not in match:
-      match['mask'] = 0.0
 
 
 def count_matches(proteins):
@@ -414,8 +411,6 @@ def make_graphical_comparison_visualisation(data, out_dir=None):
     data['source_labels'] = []
   if 'color_names' not in data:
     data['color_names'] = ['', '', '']
-  if 'mask_labels' not in data:
-    data['mask_labels'] = []
 
   if out_dir is None and 'out_dir' in data:
     out_dir = data['out_dir']
@@ -447,8 +442,6 @@ def make_sequence_overview_visualisation(data, out_dir=None):
     data['source_labels'] = []
   if 'color_names' not in data:
     data['color_names'] = ['', '', '']
-  if 'mask_labels' not in data:
-    data['mask_labels'] = []
 
   if out_dir is None and 'out_dir' in data:
     out_dir = data['out_dir']
