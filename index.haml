@@ -29,19 +29,12 @@
         .row
           .col-lg-12
             %h1 PEPTAGRAM
-            %h4 hassle-free visualisation of proteomics data
+            %h4 visual comparison of proteomics experiments
     #screenshot
       .container
         .row
           .col-lg-5.col-md-6
-            %a{href:'examples/single/index.html'}
-              %h4 Ex. 1: Single-experiment mode
-              %img{style:'width:100%',src:'single.png'}
-            %br
-            %br
-          .col-lg-5.col-md-6
             %a{href:'examples/multiple/index.html'}
-              %h4 Ex. 2: Experiment-comparison mode
               %img{style:'width:100%',src:'multiple.png'}
             %br
             %br
@@ -67,11 +60,29 @@
             :markdown
               ## Installation
 
-              To install, you need to have installed Python and the preferably, pip - the Python installer. Then, on the command-line:
+              `peptagram` consists of a set of python scripts that converts proteomics data into an HTML5 visualisation. 
 
-                  pip install peptagram
+              First, download and unzip the package from <https://github.com/boscoh/peptagram/archive/master.zip>.
 
-              This should install `peptagram` and its dependencies: `pymzml` and `uniprot`.
+              `peptagram` requries python 2.7. If your system does not have it, you should download [python](https://www.python.org/downloads/) and the python package installer [pip](https://pip.pypa.io/en/latest/installing.html). 
+
+              `peptagram` has two python dependencies: 
+
+                1. [pymzml](https://github.com/pymzml/pymzML) to read `.mzML` files
+                2. [uniprot](https://github.com/boscoh/uniprot) to get protein sequences from <http://uniprot.org>. 
+
+              To install them:
+
+                  > pip install pymzml uniprot
+
+              If you want to use `peptagram` as a python module, then you could:
+
+                  > pip install peptagram
+
+              Or download the package and run:
+
+                  > python setup.py install
+
 
     #footer
       .container

@@ -40,7 +40,7 @@
         <div class='row'>
           <div class='col-lg-12'>
             <h1>PEPTAGRAM</h1>
-            <h4>hassle-free visualisation of proteomics data</h4>
+            <h4>visual comparison of proteomics experiments</h4>
           </div>
         </div>
       </div>
@@ -49,16 +49,7 @@
       <div class='container'>
         <div class='row'>
           <div class='col-lg-5 col-md-6'>
-            <a href='examples/single/index.html'>
-              <h4>Ex. 1: Single-experiment mode</h4>
-              <img src='single.png' style='width:100%' />
-            </a>
-            <br />
-            <br />
-          </div>
-          <div class='col-lg-5 col-md-6'>
             <a href='examples/multiple/index.html'>
-              <h4>Ex. 2: Experiment-comparison mode</h4>
               <img src='multiple.png' style='width:100%' />
             </a>
             <br />
@@ -88,10 +79,23 @@
         <div class='row'>
           <div class='col-lg-8'>
 <h2>Installation</h2>
-<p>To install, you need to have installed Python and the preferably, pip - the Python installer. Then, on the command-line:</p>
-<pre><code>pip install peptagram
+<p><code>peptagram</code> consists of a set of python scripts that converts proteomics data into an HTML5 visualisation.</p>
+<p>First, download and unzip the package from <a href="https://github.com/boscoh/peptagram/archive/master.zip">https://github.com/boscoh/peptagram/archive/master.zip</a>.</p>
+<p><code>peptagram</code> requries python 2.7. If your system does not have it, you should download <a href="https://www.python.org/downloads/">python</a> and the python package installer <a href="https://pip.pypa.io/en/latest/installing.html">pip</a>.</p>
+<p><code>peptagram</code> has two python dependencies:</p>
+<ol>
+<li><a href="https://github.com/pymzml/pymzML">pymzml</a> to read <code>.mzML</code> files</li>
+<li><a href="https://github.com/boscoh/uniprot">uniprot</a> to get protein sequences from <a href="http://uniprot.org">http://uniprot.org</a>.</li>
+</ol>
+<p>To install them:</p>
+<pre><code>&gt; pip install pymzml uniprot
 </code></pre>
-<p>This should install <code>peptagram</code> and its dependencies: <code>pymzml</code> and <code>uniprot</code>.</p>          </div>
+<p>If you want to use <code>peptagram</code> as a python module, then you could:</p>
+<pre><code>&gt; pip install peptagram
+</code></pre>
+<p>Or download the package and run:</p>
+<pre><code>&gt; python setup.py install
+</code></pre>          </div>
         </div>
       </div>
     </div>

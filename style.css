@@ -1,62 +1,84 @@
+h1, h2, h3, h4, h5, h6, h7 {
+  font-family: "Helvetica Neue", Helvetica, Sans-serif;
+  font-weight: 200;
+  letter-spacing: 0.1em;
+}
+
 h1 {
-  font-size: 50px; }
+  font-size: 45px;
+  font-weight: 100;
+}
 
+h2 {
+  font-size: 30px;
+}
+
+h3 {
+  margin-top: 40px;
+  border-bottom: 1px solid #BBB;
+}
+
+.navbar-static-top {
+  margin-bottom: 0;
+}
+
+#banner {
+  background-color: #66A;
+  padding-top: 100px;
+  padding-bottom: 40px;
+}
+
+#banner h4 {
+  color: #AAA;
+}
+
+#banner h1 {
+  font-size: 70px;
+  color: white;
+}
+
+#screenshot {
+  background-color: #336;
+}
+
+#screenshot, #screenshot a {
+  color: #CCC;
+}
+
+#plaintext {
+  background-color: #F9F9FF;
+}
+
+#footer {
+  background-color: #336;
+  color: #999;
+}
+
+#screenshot, #plaintext, #tintedtext, #footer {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  line-height: 1.5em;
+}
+#screenshot p, #plaintext p, #tintedtext p, #footer p {
+  margin-bottom: 1.2em;
+}
+
+@media screen and (max-width: 768px) {
+  #banner h1 {
+    font-size: 50px;
+  }
+  h1 {
+    font-size: 35px;
+  }
   h2 {
-    font-size: 45px; }
-
-    h3 {
-      margin-top: 60px;
-      border-bottom: 1px solid #BBB; }
-
-      h1, h2, h3, h4, h5, h6, h7 {
-        font-weight: 100;
-        letter-spacing: 0.1em; }
-
-        .navbar-static-top {
-          margin-bottom: 0; }
-
-          #banner {
-            background-color: #66A;
-            padding-top: 100px;
-            padding-bottom: 40px; }
-
-            #banner h4 {
-              color: #AAA; }
-
-              #banner h1 {
-                font-size: 70px;
-                color: white; }
-
-                #screenshot {
-                  background-color: #336; }
-
-                  #screenshot, #screenshot a {
-                    color: #CCC; }
-
-                    #plaintext {
-                      background-color: #F9F9FF; }
-
-                      #footer {
-                        background-color: #336;
-                        color: #999; }
-
-                        #screenshot, #plaintext, #tintedtext, #footer {
-                          padding-top: 40px;
-                          padding-bottom: 40px;
-                          font-size: 16px;
-                          letter-spacing: 0.1em;
-                          line-height: 2em; }
-
-                          @media screen and (max-width: 768px) {
-                            #banner h1 {
-                              font-size: 50px;   }
-                              h1 {
-                                font-size: 35px;   }
-                                h2 {
-                                  font-size: 30px;   }
-                                  #screenshot, #plaintext, #tintedtext, #footer {
-                                    padding: 30px 0px;
-                                    font-size: 16px;
-                                    letter-spacing: 0.1em;
-                                    line-height: 1.5em;   }
+    font-size: 30px;
+  }
+  #screenshot, #plaintext, #tintedtext, #footer {
+    padding: 30px 0px;
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    line-height: 1.5em;
+  }
 }
