@@ -54,7 +54,7 @@
           .col-lg-8
             :markdown
 
-              ### Example: making Peptagrams from Morpheus search results 
+              ### Example: Making Morpheus Peptagrams 
 
               Morpheus is a fast search engine designed for high-quality data. As Morpheus does not come with a bundled viewer, `peptagram` provides a unique tool to view Morpheus search results. 
 
@@ -114,7 +114,7 @@
 
               As some peptagrams can get really big easily, there are a number of options to filter out low-quality matches, from using quality scores like pep and ionscore. As well, you can always load text-files of contaminants to exclude, and/or seqids of interest. As well, there are a number of peptide filtering options.
 
-    #tintedtext
+    #plaintext
       .container
         .row
           .col-lg-8
@@ -122,13 +122,11 @@
 
               ### Reordering and Combining Multiple Peptagrams
 
-              After you're created the peptagrams using the scripts described above, you can now recombine and edit them using:
+              After you're created the peptagrams using the scripts described above, you can now recombine and edit them using `reorder_peptgram`.
 
-              - `reorder_peptgram`
+              With `reorder_peptgram`, you can load existing peptagrams, stacking all the individual rows of the peptagrams against each other.
 
-              With `reorder_peptgram.py`, you can load existing peptagrams, stacking all the individual rows of the peptagrams against each other.
-
-              Then you reorder and relabel each row to your hearts content, before saving it to a new peptagram.
+              Then you reorder and relabel each row  before saving it to a new peptagram.
 
               The only catch is that the sequence IDs of your proteins have to match exactly. You must ensure that the sequence ID used in the corresponding FASTA databases are the same.
 
