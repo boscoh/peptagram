@@ -1,9 +1,8 @@
 build/
 dist
 *egg-info/
-examples*
+example_data
 *html
 *pyc
 peptagram-*/
-example*data
 peptagram/*pyc
