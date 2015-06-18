@@ -1,1 +1,1 @@
-start python mascot_peptagram.py -i
+start python create_mascot_peptagram.py -i

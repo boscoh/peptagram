@@ -1,1 +1,1 @@
-start python pilot_peptagram.py -i
+start python create_pilot_peptagram.py -i

@@ -1,7 +1,7 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd $DIR
 
-python xtandem_peptagram.py $*
+python create_xtandem_peptagram.py $*
 
 if [ "$(uname)" == "Darwin" ]; then
   echo -n -e "]0;mac_xtandem_peptagram.command.shell"

@@ -23,11 +23,13 @@ fi
 [os.remove(s) for s in glob.glob('*.bat')]
 
 for py_script in glob.glob('*_peptagram.py'):
-    batch = 'win_' + py_script.replace('.py', '.bat')
+    name = py_script.replace('.py', '').replace('create_', '')
+
+    batch = 'win_' + name + '.bat'
     open(batch, 'w').write(batch_template % py_script)
     print batch
 
-    shell = 'mac_' + py_script.replace('.py', '.command')
+    shell = 'mac_' + name + '.command'
     sub = { 'py_script': py_script, 'window_name': shell+'.shell' }
     open(shell, 'w').write(shell_template % sub)
     os.system('chmod +x ' + shell)
