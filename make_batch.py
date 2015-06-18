@@ -19,15 +19,16 @@ fi
 """
 
 [os.remove(s) for s in glob.glob('*_peptagram')]
-[os.remove(s) for s in glob.glob('*_peptagram.command')]
+[os.remove(s) for s in glob.glob('*.command')]
+[os.remove(s) for s in glob.glob('*.bat')]
 
 for py_script in glob.glob('*_peptagram.py'):
-    batch = py_script.replace('.py', '.bat')
+    batch = 'win_' + py_script.replace('.py', '.bat')
     open(batch, 'w').write(batch_template % py_script)
     os.system('chmod -x ' + batch)
     print batch
 
-    shell = py_script.replace('.py', '.command')
+    shell = 'mac_' + py_script.replace('.py', '.command')
     sub = { 'py_script': py_script, 'window_name': shell+'.shell' }
     open(shell, 'w').write(shell_template % sub)
     os.system('chmod +x ' + shell)
