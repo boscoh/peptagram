@@ -1,1 +1,1 @@
-start python create_xtandem_peptagram.py -i
+start python do_xtandem_peptagram.py -i

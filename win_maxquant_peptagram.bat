@@ -1,1 +1,1 @@
-start python create_maxquant_peptagram.py -i
+start python do_maxquant_peptagram.py -i

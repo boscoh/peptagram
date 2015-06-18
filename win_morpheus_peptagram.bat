@@ -1,1 +1,1 @@
-start python create_morpheus_peptagram.py -i
+start python do_morpheus_peptagram.py -i

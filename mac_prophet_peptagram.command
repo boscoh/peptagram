@@ -1,7 +1,7 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd $DIR
 
-python create_prophet_peptagram.py $*
+python do_prophet_peptagram.py $*
 
 if [ "$(uname)" == "Darwin" ]; then
   echo -n -e "]0;mac_prophet_peptagram.command.shell"

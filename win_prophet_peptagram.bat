@@ -1,1 +1,1 @@
-start python create_prophet_peptagram.py -i
+start python do_prophet_peptagram.py -i
