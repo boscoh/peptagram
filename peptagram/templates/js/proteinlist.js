@@ -115,23 +115,6 @@ function ProteinList(control_div, column1_div, data) {
     }
     this.control_div.append('<br>');
 
-    // radio buttons for masking
-    if (this.data.mask_labels.length > 0) {
-      this.control_div.append('quality: ');
-      for (var i=0; i<this.data.mask_labels.length; i++) {
-        var button = $("<input>");
-        button.attr('name', 'mask');
-        button.attr('type', 'radio');
-        button.attr('value', this.data.mask_labels[i]);
-        if (i == 0) {
-          button.attr('checked', true);
-        }
-        this.control_div.append(button);
-        this.control_div.append(this.data.mask_labels[i] + ' ');
-      }
-      this.control_div.append('<br>');
-    }
-    this.control_div.append('<br>');
   }
 
   this.build_sorting_msg = function() {
