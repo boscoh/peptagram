@@ -158,7 +158,7 @@ if __name__ == "__main__":
   if 'test' in sys.argv:
     convert_morpheus_to_peptagram(test_params)
   else:
-    form = PeptagramForm(800, -50)
+    form = PeptagramForm(800, -150)
     form.mainloop()
 
 

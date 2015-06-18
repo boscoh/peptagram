@@ -151,7 +151,7 @@ class ResortPeptagramForm(tkform.Form):
     self.print_output(html, cmd_fn)
 
 
-ResortPeptagramForm(800, -50).mainloop()
+ResortPeptagramForm(800, -150).mainloop()
 
 
 

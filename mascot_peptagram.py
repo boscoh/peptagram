@@ -132,7 +132,7 @@ if __name__ == "__main__":
     convert_mascot_to_peptagram(test_params)
     sys.exit(1)
   else:
-    form = PeptagramForm(800, -50)
+    form = PeptagramForm(800, -150)
     form.mainloop()
 
 
