@@ -25,7 +25,6 @@ fi
 for py_script in glob.glob('*_peptagram.py'):
     batch = 'win_' + py_script.replace('.py', '.bat')
     open(batch, 'w').write(batch_template % py_script)
-    os.system('chmod -x ' + batch)
     print batch
 
     shell = 'mac_' + py_script.replace('.py', '.command')
