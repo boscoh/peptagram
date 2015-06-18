@@ -17,17 +17,17 @@ from peptagram import parse
 
 
 test_params = {
-  'files_and_labels': [('example_data/morpheus/OK20130822_MPProtomap_KO1.PSMs.tsv', 'KO1')],
-  'mzmls_and_labels': [('example_data/morpheus/OK20130822_MPProtomap_KO1.mzML', '')],
-  'modifications': 'example_data/morpheus/modifications.tsv',
+  'files_and_labels': [('example_data/morpheus/PSMs.tsv', 'KO1')],
+  'mzmls_and_labels': [],
+  'modifications': '',
   'exclude_seqids': '',
   'include_seqids': '',
   'title': 'Morpheus Example Peptagram',
   'out_dir': 'peptagram-morpheus',
-  'include_msms': 1,
-  'match_filter': 3,
+  'include_msms': 0,
+  'match_filter': 0,
   'n_peak': 50,
-  'q_cutoff': 10,
+  'q_cutoff': 3,
   'q_good': 0,
 }
 

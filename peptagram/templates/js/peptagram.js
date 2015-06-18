@@ -101,7 +101,7 @@ function ColorBarWidget(canvas, names, font) {
 }
 
 
-function PeptagramgraphWidget(canvas, data, color_bar) {
+function PeptagramWidget(canvas, data, color_bar) {
   this.canvas = canvas;
   this.seqid = null;
   this.data = data;
@@ -165,14 +165,14 @@ function PeptagramgraphWidget(canvas, data, color_bar) {
 
     var padding = 4;
     var freq_width = 50;
-    var slice_height = this.get_diff_height(1, 0);
-    var freq_height = slice_height/2;
 
     // fit around the color_bar which is implicitly to the left
     this.x = this.color_bar.x + this.color_bar.width + 10 + padding;
     this.y = padding;
     this.draw_width = this.canvas.canvas_dom.width - this.x - name_width - freq_width;
     this.draw_height = this.canvas.canvas_dom.height - this.y - padding;
+    var slice_height = this.get_diff_height(1, 0);
+    var freq_height = slice_height/2;
 
     // draw background area
     this.canvas.solid_box(
@@ -467,7 +467,7 @@ function Peptagram(data) {
         this.peptagram_canvas, this.data['color_names'], this.data.canvas_font);
     this.color_bar.x = 0;
     this.color_bar.y = 5;
-    var peptagram_widget = new PeptagramgraphWidget(
+    var peptagram_widget = new PeptagramWidget(
         this.peptagram_canvas, this.data, this.color_bar);
     peptagram_widget.x = 30;
     this.peptagram_canvas.push(this.color_bar);
