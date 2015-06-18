@@ -64,17 +64,19 @@
         <div class='row'>
           <div class='col-lg-8'>
 
-<h3>Example: Making Morpheus Peptagrams</h3>
+<h2>Example: Making Morpheus Peptagrams</h2>
 <p>Morpheus is a fast search engine designed for high-quality data. As Morpheus does not come with a bundled viewer, <code>peptagram</code> provides a unique tool to view Morpheus search results.</p>
-<p>The scripts that process Morpheus all start with <code>morpheus_peptagram</code>. They are:</p>
+<p>The scripts that process Morpheus have <code>morpheus_peptagram</code> in their name:</p>
 <ul>
-<li><code>morpheus_peptagram.command</code> - which can be clicked in Finder on Mac OSX</li>
-<li><code>morpheus_peptagram.bat</code> - which can be clicked in WIndows Filer Explorer</li>
-<li><code>morpheus_peptagram.py</code> - which is run on the command-line as <code>python morpheus_peptagram.py -i</code></li>
+<li><code>mac_morpheus_peptagram.command</code> - which can be clicked in Finder on Mac OSX</li>
+<li><code>win_morpheus_peptagram.bat</code> - which can be clicked in WIndows Filer Explorer</li>
+<li><code>create_morpheus_peptagram.py</code> - which is run on the command-line as <code>python create_morpheus_peptagram.py -i</code></li>
 </ul>
-<p>If you've downloaded the example data, you can run a default test:</p>
-<pre><code>python morpheus_peptagram.py test
+<h3>Test</h3>
+<p>To run an automated test, unzip <code>example_data.zip</code>. It should create an <code>example_data</code> directory containing sub-directories such as <code>morpheus</code>, <code>mascot</code> etc. Then to run the test:</p>
+<pre><code>python create_morpheus_peptagram.py test
 </code></pre>
+<h3>Create a Peptagram with the GUI</h3>
 <p>To use <code>morpheus_peptagram</code>, first start the program, then you should get a window that looks something like this:</p>
 <p><img alt="" src="morpheus.png" /></p>
 <p>To load the Morpheus files, click <code>+ PSMs.tsv</code> files and select all the .PSMs.tsv files that you want to compare. <code>morpheus_peptagram</code> will figure out the corresponding .protein_group.tsv files from these filenames.</p>
@@ -97,7 +99,7 @@
         <div class='row'>
           <div class='col-lg-8'>
 
-<h3>Available Peptagram builders</h3>
+<h2>Available Peptagram builders</h2>
 <ul>
 <li><code>morpheus_peptagram</code> - processes Morpheus search engine results. Requires the modifications.tsv file for modified peptides, and optionally the .mzML file if you want to display spectra</li>
 <li><code>mascot_peptagram</code> - processes Mascot .dat. Shows the spectra for each PSM. Requires the original .fasta file to get the full length protein sequences</li>
@@ -115,7 +117,7 @@
         <div class='row'>
           <div class='col-lg-8'>
 
-<h3>Reordering and Combining Multiple Peptagrams</h3>
+<h2>Reordering and Combining Multiple Peptagrams</h2>
 <p>After you're created the peptagrams using the scripts described above, you can now recombine and edit them using <code>reorder_peptgram</code>.</p>
 <p>With <code>reorder_peptgram</code>, you can load existing peptagrams, stacking all the individual rows of the peptagrams against each other.</p>
 <p>Then you reorder and relabel each row  before saving it to a new peptagram.</p>

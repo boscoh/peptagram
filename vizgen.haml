@@ -54,19 +54,23 @@
           .col-lg-8
             :markdown
 
-              ### Example: Making Morpheus Peptagrams 
+              ## Example: Making Morpheus Peptagrams 
 
               Morpheus is a fast search engine designed for high-quality data. As Morpheus does not come with a bundled viewer, `peptagram` provides a unique tool to view Morpheus search results. 
 
-              The scripts that process Morpheus all start with `morpheus_peptagram`. They are:
+              The scripts that process Morpheus have `morpheus_peptagram` in their name:
 
-               - `morpheus_peptagram.command` - which can be clicked in Finder on Mac OSX
-               - `morpheus_peptagram.bat` - which can be clicked in WIndows Filer Explorer
-               - `morpheus_peptagram.py` - which is run on the command-line as `python morpheus_peptagram.py -i`
+               - `mac_morpheus_peptagram.command` - which can be clicked in Finder on Mac OSX
+               - `win_morpheus_peptagram.bat` - which can be clicked in WIndows Filer Explorer
+               - `create_morpheus_peptagram.py` - which is run on the command-line as `python create_morpheus_peptagram.py -i`
 
-              If you've downloaded the example data, you can run a default test:
+              ### Test
 
-                  python morpheus_peptagram.py test
+              To run an automated test, unzip `example_data.zip`. It should create an `example_data` directory containing sub-directories such as `morpheus`, `mascot` etc. Then to run the test:
+
+                  python create_morpheus_peptagram.py test
+
+              ### Create a Peptagram with the GUI
 
               To use `morpheus_peptagram`, first start the program, then you should get a window that looks something like this:
 
@@ -103,7 +107,7 @@
           .col-lg-8
             :markdown
 
-              ### Available Peptagram builders
+              ## Available Peptagram builders
 
               - `morpheus_peptagram` - processes Morpheus search engine results. Requires the modifications.tsv file for modified peptides, and optionally the .mzML file if you want to display spectra
               - `mascot_peptagram` - processes Mascot .dat. Shows the spectra for each PSM. Requires the original .fasta file to get the full length protein sequences
@@ -120,7 +124,7 @@
           .col-lg-8
             :markdown
 
-              ### Reordering and Combining Multiple Peptagrams
+              ## Reordering and Combining Multiple Peptagrams
 
               After you're created the peptagrams using the scripts described above, you can now recombine and edit them using `reorder_peptgram`.
 

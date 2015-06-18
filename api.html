@@ -52,7 +52,7 @@
           <div class='col-lg-8'>
 
 <h1>Python Programming API</h1>
-<h3>Basic Data Structure: proteins</h3>
+<h2>Basic Data Structure: proteins</h2>
 <p>The main focus of the Python scripts is turn all the different proteomics data format into one consistent data-structure, which is a JSON-compatible dictionary called <code>proteins</code>. In YAML format, <code>proteins</code> is laid out something like this:</p>
 <pre><code>'example-seqid':
   sequence: 'ACDEFGHKLMNP'
@@ -87,7 +87,7 @@
 <pre><code>source = proteins['example-seqid']['sources'][0]
 peptides = source['peptides']
 </code></pre>
-<h3>Peptide-spectrum match list</h3>
+<h2>Peptide-spectrum match list</h2>
 <p>Each peptide entry in the <code>peptides</code> list represents a distinct peptide-spectrum match.</p>
 <pre><code>sequence: 'CDE'
 i: 1
@@ -111,7 +111,7 @@ spectrum:
 <p><code>intensity</code> gives a value from -1.0 to 1.0, which is used to generate colors in the experiment-comparison mode. The coloring goes from a high color associated with 1.0 to a neutral color associated with 0.0, and down to a color associated with -1.0</p>
 <p><code>spectrum</code> gives a list peaks that will be used in the spectrum viewer. The first number corresponds to the m/z value and the second, to the intensity. In general, only the top 50 are read in, but of course you can add more, which will probably bloat the javascript file.</p>
 <p><code>modifications</code> is an optional field that describes any amino acid modifications in the peptide. It is a list of dictionaries. In each dictionary, the <code>i</code> gives the position, and <code>mass</code> gives the mass of the modified amino acid. To allow for N-terminal modifications, <code>i</code> can take the value -1. For C-terminal modifiactions, <code>i</code> can take the value n where n is the length of the sequence.</p>
-<h3>Sequence identifiers</h3>
+<h2>Sequence identifiers</h2>
 <p>As discussed in the Examples, handling sequence identifiers (seqids) correctly is a recurring problem in bioinformatics. If seqids are not formatted correctly, it becomes impossible to match data from different sources. So it useful if we can format or transform all seqids into a consistent format. This idea of passing in seqid transforming functions is available in all parts of <code>peptagram</code>. This way you can organize the seqids as you read them in.</p>
 <p>In <code>peptagram.proteins</code>, there is a useful convenience function <code>change_seqids_in_proteins</code> that transforms the seqids found in a <code>proteins</code> datastructure, including the alternate seqids found in <code>other_seqids</code>. It takes a any string function <code>clean_seqid</code> and transforms all seqids found in <code>proteins</code> to this function, including the protein seqid keys at the top level.</p>
 <pre><code>import peptogram.proteins
@@ -121,7 +121,7 @@ def change_seqid(seqid):
 
 peptagram.proteins.change_seqids_in_proteins(proteins, clean_seqid)
 </code></pre>
-<h3>Multiple data sources</h3>
+<h2>Multiple data sources</h2>
 <p>As the structure of each protein in <code>proteins</code> contains potentially several sources, it's important to track the name of the different experiments. Most of the parsing methods returns a <code>source_names</code> list that contains the name of the different source files. Once cleaned up, these can serve as labels for the different experiment, especially in the view of the experiment-comparison mode. Often the source name is a long directory name, where the unique part is in the basename. A quick way to clean this up is:</p>
 <pre><code>import os
 source_labels = [os.path.basename(name) for name in source_names]
@@ -133,7 +133,7 @@ source_labels = [os.path.basename(name) for name in source_names]
 proteins = peptagram.proteins.merge_two_proteins(proteins1, proteins2)
 </code></pre>
 <p>Internally, <code>proteins</code> is actually <code>proteins1</code> that has been modified by the contents of <code>proteins2</code>.</p>
-<h3>Protein sequences</h3>
+<h2>Protein sequences</h2>
 <p>Loading protein sequences in the <code>proteins</code> is a necessary step in <code>peptogram</code> as it is required to generate the visualizations. As well, it is necessary to view the protein. Several of the proteomics data formats do not provide this information and so we need to read in the fasta sequences from another source.</p>
 <p>The most common source is a <code>.fasta</code> file, preferably one that was used for the peptide search. To load the protein sequenceinto the proteins structure:</p>
 <pre><code>import peptogram.proteins
@@ -144,7 +144,7 @@ def change_seqid(seqid):
 peptagram.proteins.load_fasta_db_into_proteins(
     proteins, 'mascot/HUMAN.fasta', clean_seqid)
 </code></pre>
-<h3>Filters</h3>
+<h2>Filters</h2>
 <p>A couple of common filtering options are provided by the <code>filter_proteins</code> function. It takes a <code>params</code> that is:</p>
 <pre><code>params = {
   'exclude_seqids': 'exclude_seqids.txt',
@@ -162,13 +162,13 @@ peptagram.proteins.load_fasta_db_into_proteins(
 <p>This is then used to filter a <code>proteins</code> data-structure:</p>
 <pre><code>peptagram.proteins.filter_proteins(proteins, params)
 </code></pre>
-<h3>Finangling MS/MS spectra</h3>
+<h2>Finangling MS/MS spectra</h2>
 <p>Being able to easily view spectra is one of the most useful aspects of <code>peptagram</code>. It was important that we could reconcile the scan identifiers in the different data formats so that we could load the spectra directly if the <code>.mzML</code> files available. Being able to do this has expanded the flexibility of the system. By the time each parser has generated a <code>proteins</code> structure, the peptide-spectrum matches should contain a valid <code>.mzML</code> scan identifier. This is the <code>scan_id</code> field in the <code>attr</code> dictionary of each peptide entry.</p>
 <p>Given this, we can run:</p>
 <pre><code>peptagram.mzml.load_mzml(
     proteins, 0, 'example/morpheus/OK20130822_MPProtomap_KO1.mzML')
 </code></pre>
-<h3>Loading data into the webapp</h3>
+<h2>Loading data into the webapp</h2>
 <p>Once the <code>proteins</code> data is appropriately filled in, we can pipe it through to the web-app generating method.</p>
 <p>The function that generates the peptagram requires a  dictionary as a parameter:</p>
 <pre><code>import peptagram.proteins
