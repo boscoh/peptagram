@@ -1,1 +1,1 @@
-python maxquant_peptagram.py %1 %2 %3
+start python maxquant_peptagram.py -i

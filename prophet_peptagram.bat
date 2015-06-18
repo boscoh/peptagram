@@ -1,1 +1,1 @@
-python prophet_peptagram.py %1 %2 %3
+start python prophet_peptagram.py -i

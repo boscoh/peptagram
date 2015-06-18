@@ -1,1 +1,1 @@
-python mascot_peptagram.py %1 %2 %3
+start python mascot_peptagram.py -i

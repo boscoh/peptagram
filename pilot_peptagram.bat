@@ -1,1 +1,1 @@
-python pilot_peptagram.py %1 %2 %3
+start python pilot_peptagram.py -i

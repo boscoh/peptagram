@@ -3,7 +3,7 @@ import os
 import shutil
 
 batch_template = """\
-python %s %%1 %%2 %%3
+start python %s -i
 """
 
 shell_template = """\
@@ -28,7 +28,7 @@ for py_script in glob.glob('*_peptagram.py'):
     print batch
 
     shell = py_script.replace('.py', '.command')
-    sub = { 'py_script': py_script, 'window_name': shell }
+    sub = { 'py_script': py_script, 'window_name': shell+'.shell' }
     open(shell, 'w').write(shell_template % sub)
     os.system('chmod +x ' + shell)
     print shell
