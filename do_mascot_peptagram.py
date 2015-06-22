@@ -56,7 +56,7 @@ def convert_mascot_to_peptagram(params, print_fn=sys.stdout.write):
       'out_dir': params['out_dir'],
   })
   html = os.path.join(params['out_dir'], 'index.html')
-  size = parse.size_str(html)
+  size = parse.size_str(params['out_dir'])
   print_fn('Successfully built peptagram (%s): %s\n' % (size, html))
   return os.path.abspath(html)
 

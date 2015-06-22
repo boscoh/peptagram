@@ -70,7 +70,7 @@ def convert_prophet_peptagram(params, print_fn=sys.stdout.write):
   })
 
   html = os.path.join(params['out_dir'], 'index.html')
-  size = parse.size_str(html)
+  size = parse.size_str(params['out_dir'])
   print_fn('Successfully built peptagram (%s): %s\n' % (size, html))
   return os.path.abspath(html)
 

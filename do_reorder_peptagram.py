@@ -144,7 +144,7 @@ class ResortPeptagramForm(tkform.Form):
         data, out_dir)
     self.print_output(
         'Successfully built peptagram webpage (%s):\n' % \
-            parse.size_str(os.path.join(out_dir, 'data.js')))
+            parse.size_str(out_dir))
 
     html = os.path.join(out_dir, 'index.html')
     cmd_fn = lambda: webbrowser.open('file://' + html)
