@@ -6,20 +6,14 @@ function DataController(data) {
   this.data = data;
   
   this.init = function() {
-    if (this.data.mask_labels.length > 0) {
-      this.data.mask = parseFloat(this.data.mask_labels[0]);
-    } else {
-      this.data.mask = 1.0;
-    }
-    console.log('this.data.mask ' + this.data.mask);
+    var _data = this.data
     this.data.canvas_font = "10px 'Andale Mono'";
     this.data.select_bg_color = '#CFC';
     this.data.bg_color = '#F9F9F9';
     this.data.text_color = "#999";
     this.data.selected_seqid = null;
     this.data.delta_mz = 0.5
-    this.data.start = true;
-    this.data.mass_units = ['mz(Da)', 'error(ppm)'];
+    this.data.mass_units = ['m/z(Da)', 'error(ppm)'];
     this.data.mass_unit = this.data.mass_units[0];
     this.data.ion_types = {
        "b(3+)": false,
@@ -31,33 +25,6 @@ function DataController(data) {
     };
   }
 
-  this.count_peptides = function() {
-    for (var seqid in this.data.proteins) {
-      var protein = this.data.proteins[seqid];
-      protein.attr.n_peptide = 0;
-      protein.attr.n_unique_peptide = 0;
-      protein.attr.n_slice_populated = 0;
-      var sources = protein.sources;
-      for (var j=0; j<sources.length; j++) {
-        var peptides = sources[j].peptides;
-        var n_peptide_in_slice = 0;
-        for (var i=0; i<peptides.length; i++) {
-          var peptide = peptides[i];
-          if (this.data.mask >= peptide.mask) {
-            if (peptides[i].attr.is_unique) {
-              protein.attr.n_unique_peptide += 1;
-            }
-            protein.attr.n_peptide += 1;
-            n_peptide_in_slice += 1;
-          }
-        }
-        if (n_peptide_in_slice > 0) {
-          protein.attr.n_slice_populated += 1;
-        }
-      }
-    }    
-  }
-
   this.check_data = function() {
     for (var seqid in this.data.proteins) {
       if (this.data.selected_seqid == null) {
@@ -66,31 +33,62 @@ function DataController(data) {
       var protein = this.data.proteins[seqid];
       protein.length = protein.sequence.length;
       protein.i_res_view = 0;
-      protein.i_source_view = 0;
-      protein.i_peptide_selected = 0;
+      protein.i_match_selected = 0;
       protein.i_source_selected = 0;
       for (var i=0; i<protein.sources.length; i++) {
-        var peptides = protein.sources[i].peptides;
-        for (var j=0; j<peptides.length; j++) {
-          var peptide = peptides[j];
-          if (('modifications' in peptide.attr) && (peptide.attr.modifications.length == 0)) {
-            delete peptide.attr.modifications;
+        var matches = protein.sources[i].matches;
+        for (var j=0; j<matches.length; j++) {
+          var match = matches[j];
+          if (('modifications' in match) && (match.modifications.length == 0)) {
+            delete match.modifications;
           }
-          if (!('j' in peptide)) {
-            peptide.j = peptide.i + peptide.sequence.length;
+          if (!('j' in match)) {
+            match.j = match.i + match.sequence.length;
           }
         }
       }
       for (var i=0; i<protein.sources.length; i++) {
-        var peptides = protein.sources[i].peptides;
-        if (peptides.length > 0) {
-          protein.i_source_view = i;
+        var matches = protein.sources[i].matches;
+        if (matches.length > 0) {
           protein.i_source_selected = i;
-          protein.i_res_view = peptides[0]['i'];
+          protein.i_res_view = matches[0]['i'];
           break;
         }     
       }
     }
+  }
+
+  this.check_location_hash = function() {
+    this.data.start = true;
+    var hash = window.location.hash.substr(1);
+    var params = hash.split('&');
+
+    var pieces = params[0].split('=');
+    if (pieces.length < 2) {
+      return;
+    }
+    var seqid = pieces[1];
+    if (!(seqid in this.data.proteins)) {
+      return;
+    }
+
+    this.data.start = false;
+    this.data.selected_seqid = seqid;
+    var protein = this.data.proteins[seqid];
+
+    var i_source = params[1].split('=')[1];
+    var sources = protein.sources;
+    if (i_source >= sources.length) {
+      i_source = sources.length-1;
+    }
+    protein.i_source_selected = i_source;
+
+    var i_match = params[2].split('=')[1];
+    matches = sources[i_source];
+    if (i_match >= matches.length) {
+      i_match = matches.length - 1;
+    }
+    protein.i_match_selected = i_match;
   }
 
   this.get_current_protein = function() {
@@ -104,30 +102,42 @@ function DataController(data) {
     return this.data.proteins[seqid];
   }
 
-  this.get_selected_peptide = function() {
+  this.get_selected_match = function() {
     var protein = this.get_current_protein();
     var i_source = protein.i_source_selected;
-    var peptides = protein.sources[i_source].peptides;
-    if (peptides.length == 0) {
+    var matches = protein.sources[i_source].matches;
+    var i_match = protein.i_match_selected;
+    if ((i_match < 0) || (matches.length == 0)) {
       return null;
     }
-    var i_peptide = protein.i_peptide_selected;
-    return peptides[i_peptide];
+    return matches[i_match];
+  }
+
+  this.set_location_hash = function() {
+    var hash = '#';
+    var protein = this.get_current_protein()
+    hash += 'protein=' + this.data.selected_seqid;
+    hash += '&source=' + protein.i_source_selected;
+    hash += '&match=' + protein.i_match_selected;
+    window.location.hash = hash;
   }
 
   this.pick_source_view = function(protein, i_source) {
-    protein.i_source_view = i_source;
-  }
-
-  this.pick_peptide = function(protein, i_source, i_peptide) {
     protein.i_source_selected = i_source;
-    protein.i_peptide_selected = i_peptide;
+    protein.i_match_selected = -1;
+    this.set_location_hash();
   }
 
-  this.pick_peptide_callback = function(protein, i_source, i_peptide) {
+  this.pick_match = function(protein, i_source, i_match) {
+    protein.i_source_selected = i_source;
+    protein.i_match_selected = i_match;
+    this.set_location_hash();
+  }
+
+  this.pick_match_callback = function(protein, i_source, i_match) {
     var _this = this;
     return function () {
-      _this.pick_peptide(protein, i_source, i_peptide);
+      _this.pick_match(protein, i_source, i_match);
       _this.data.observer();
       return false;
     }
@@ -135,6 +145,7 @@ function DataController(data) {
 
   this.pick_protein = function(seqid) {
     this.data.selected_seqid = seqid;
+    this.set_location_hash();
   }
 
   this.pick_protein_callback = function(seqid) {
@@ -147,24 +158,29 @@ function DataController(data) {
 
   this.pick_slice = function(i_source) {
     var protein = this.get_current_protein();
-    var peptides = protein.sources[i_source].peptides;
-    protein.i_source_view = i_source;
-    if (peptides.length > 0) {
-      var i_source_old = protein.i_source_selected;
-      var i_peptide_old = protein.i_peptide_selected;
-      var i_res_old = protein.sources[i_source_old].peptides[i_peptide_old].i;
-      var best_i_peptide = 0;
-      var best_i_res_diff = Math.abs(peptides[best_i_peptide].i - i_res_old)
-      for (var i_peptide=0; i_peptide<peptides.length; i_peptide++) {
-        var i_res_diff = Math.abs(peptides[i_peptide].i - i_res_old);
+    var i_source_old = protein.i_source_selected;
+    var i_match_old = protein.i_match_selected;
+    var new_matches = protein.sources[i_source].matches;
+    var old_matches = protein.sources[i_source_old].matches;
+    if ((old_matches.length == 0) ||
+        (new_matches.length == 0) ||
+        (protein.i_match_selected == -1)) {
+      protein.i_match_selected = -1;
+    } else {
+      var i_res_old = old_matches[i_match_old].i;
+      var best_i_match = 0;
+      var best_i_res_diff = Math.abs(new_matches[best_i_match].i - i_res_old)
+      for (var i_match=0; i_match<new_matches.length; i_match++) {
+        var i_res_diff = Math.abs(new_matches[i_match].i - i_res_old);
         if (i_res_diff < best_i_res_diff) {
-          best_i_peptide = i_peptide;
+          best_i_match = i_match;
           best_i_res_diff = i_res_diff;
         }
       }
-      protein.i_peptide_selected = best_i_peptide;
-      protein.i_source_selected = i_source;
+      protein.i_match_selected = best_i_match;
     }
+    protein.i_source_selected = i_source;
+    this.set_location_hash();
   }
 
   this.toggle_zoom = function() {
@@ -192,8 +208,8 @@ function DataController(data) {
   this.toggle_ion = function(ion_type) {
     this.data.ion_types[ion_type] = !this.data.ion_types[ion_type];
     this.data.zoom = false;
-    var peptide = this.get_selected_peptide();
-    delete peptide.labeled_peaks;
+    var match = this.get_selected_match();
+    delete match.labeled_peaks;
   }
 
   this.toggle_ion_callback = function(ion_type) {
@@ -206,28 +222,27 @@ function DataController(data) {
   }
 
   this.get_labeled_spectrum = function() {
-    var peptide = this.get_selected_peptide();
-    if (!('labeled_peaks' in peptide)) {
-      console.log('label time');
-      peptide.labeled_peaks = peptide.spectrum.slice(0);
+    var match = this.get_selected_match();
+    if (!('labeled_peaks' in match)) {
+      match.labeled_peaks = match.spectrum.slice(0);
       for (ion_type in this.data.ion_types) {
         if (this.data.ion_types[ion_type]) {
           var modifications = [];
-          if ('modifications' in peptide.attr) {
-             modifications = peptide.attr.modifications;
+          if ('modifications' in match) {
+             modifications = match.modifications;
           }
           var matched = map_matched_ions(
             ion_type,
-            peptide.sequence, 
-            peptide.labeled_peaks, 
+            match.sequence, 
+            match.labeled_peaks, 
             this.data.delta_mz, 
             modifications, 
             aa_monoisotopic_mass);
-          peptide.labeled_peaks = peptide.labeled_peaks.concat(matched);
+          match.labeled_peaks = match.labeled_peaks.concat(matched);
         }
       }
     }
-    return peptide.labeled_peaks;
+    return match.labeled_peaks;
   }
 
   this.calc_sorted_seqids = function(sort_key, direction) {
@@ -268,46 +283,46 @@ function DataController(data) {
   }
 
   this.onkeydown = function(c) {
-    if (c == 'N') {
+    if (c == 'A') {
       var i = this.get_i_protein() + 1;
       if (i < this.data.sorted_seqids.length) {
         var seqid = this.data.sorted_seqids[i];
         this.pick_protein_callback(seqid)();
         return false;
       }
-    } else if (c == 'P') {
+    } else if (c == 'W') {
       var i = this.get_i_protein() - 1;
       if (i >= 0) {
         var seqid = this.data.sorted_seqids[i];
         this.pick_protein_callback(seqid)();
         return false;
       }
-    } else if (c == 'J') {
-      var protein = this.get_current_protein();
-      var i_source = protein.i_source_selected;
-      var i_peptide = protein.i_peptide_selected + 1;
-      var peptides = protein.sources[i_source].peptides;
-      if (i_peptide < peptides.length) {
-        this.pick_peptide_callback(protein, i_source, i_peptide)();
-      }
-    } else if (c == 'K') {
-      var protein = this.get_current_protein();
-      var i_source = protein.i_source_selected;
-      var i_peptide = protein.i_peptide_selected - 1;
-      if (i_peptide >= 0) {
-        this.pick_peptide_callback(protein, i_source, i_peptide)();
-      }
     } else if (c == 'D') {
       var protein = this.get_current_protein();
-      var i_source = protein.i_source_view;
+      var i_source = protein.i_source_selected;
+      var i_match = protein.i_match_selected + 1;
+      var matches = protein.sources[i_source].matches;
+      if (i_match < matches.length) {
+        this.pick_match_callback(protein, i_source, i_match)();
+      }
+    } else if (c == 'R') {
+      var protein = this.get_current_protein();
+      var i_source = protein.i_source_selected;
+      var i_match = protein.i_match_selected - 1;
+      if (i_match >= 0) {
+        this.pick_match_callback(protein, i_source, i_match)();
+      }
+    } else if (c == 'S') {
+      var protein = this.get_current_protein();
+      var i_source = protein.i_source_selected;
       if (i_source < protein.sources.length-1) {
         this.pick_slice(i_source+1);
         this.data.observer();
         return false;
       }
-    } else if (c == 'U') {
+    } else if (c == 'E') {
       var protein = this.get_current_protein();
-      var i_source = protein.i_source_view;
+      var i_source = protein.i_source_selected;
       if (i_source > 0) {
         this.pick_slice(i_source-1);
         this.data.observer();
@@ -318,7 +333,7 @@ function DataController(data) {
   }
 
   this.init();
-  this.count_peptides();
   this.check_data();
+  this.check_location_hash();
 }
 

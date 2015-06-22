@@ -1,6 +1,6 @@
 
 //
-// Pepto.js a javascript app for displaying multiple 
+// peptagram.js a javascript app for displaying multiple 
 // Label-Free protein identification using MS/MS analysis
 // (c) 2013 Bosco Ho
 
@@ -8,7 +8,7 @@
 
 function build_protein_info_panel(data, div) {
   div.empty();
-  var protein = this.data.controller.get_current_protein();
+  var protein = data.controller.get_current_protein();
   div.append(protein['description']);
   div.append("<br>----<br>");
   div.append(dict_html(protein['attr']));
@@ -101,7 +101,7 @@ function ColorBarWidget(canvas, names, font) {
 }
 
 
-function PeptographWidget(canvas, data, color_bar) {
+function PeptagramWidget(canvas, data, color_bar) {
   this.canvas = canvas;
   this.seqid = null;
   this.data = data;
@@ -165,14 +165,14 @@ function PeptographWidget(canvas, data, color_bar) {
 
     var padding = 4;
     var freq_width = 50;
-    var slice_height = this.get_diff_height(1, 0);
-    var freq_height = slice_height/2;
 
     // fit around the color_bar which is implicitly to the left
     this.x = this.color_bar.x + this.color_bar.width + 10 + padding;
     this.y = padding;
     this.draw_width = this.canvas.canvas_dom.width - this.x - name_width - freq_width;
     this.draw_height = this.canvas.canvas_dom.height - this.y - padding;
+    var slice_height = this.get_diff_height(1, 0);
+    var freq_height = slice_height/2;
 
     // draw background area
     this.canvas.solid_box(
@@ -234,19 +234,17 @@ function PeptographWidget(canvas, data, color_bar) {
       var matches = sources[j].matches;
       for (var i=0; i<matches.length; i++) {
         var match = matches[i];
-        if (this.data.match_filter(match)) {
-          if (match.intensity === "") {
-            var color = "lightyellow";
-          } else {
-            var color = this.color_bar.palette.str(match.intensity);
-          }
-          this.canvas.solid_box(
-              this.x_from_i(match.i), 
-              this.y_from_j(j), 
-              this.get_diff_width(match.i, match.j), 
-              slice_height, 
-              color);
+        if (match.intensity === "") {
+          var color = "lightyellow";
+        } else {
+          var color = this.color_bar.palette.str(match.intensity);
         }
+        this.canvas.solid_box(
+            this.x_from_i(match.i), 
+            this.y_from_j(j), 
+            this.get_diff_width(match.i, match.j), 
+            slice_height, 
+            color);
       }
     }
 
@@ -297,11 +295,9 @@ function PeptographWidget(canvas, data, color_bar) {
     var source = this.protein.sources[i_source];
     for (var i=0; i<source.matches.length; i++) {
       var match = source.matches[i];
-      if (this.data.match_filter(match)) {
-        if ((match.i<=i_res) && (i_res<match.j)) {
-          this.data.controller.pick_match(this.protein, i_source, i);
-          break;
-        }
+      if ((match.i<=i_res) && (i_res<match.j)) {
+        this.data.controller.pick_match(this.protein, i_source, i);
+        break;
       }
     }
 
@@ -370,9 +366,6 @@ var SequenceView = function(div, data) {
     i_res = 0;
     for (var i_match=0; i_match<matches.length; i_match++) {
       match = matches[i_match];
-      if (!this.data.match_filter(match)) {
-        continue;
-      }
       if (i_res < match.i) {
         pre.append(sequence.slice(i_res, match.i));
         i_res = match.i;
@@ -436,20 +429,16 @@ function build_match_info(data, div) {
 }
 
 
-function Pepto(data) {
-  this.init_data = function(data) {
-    this.data = data;
-    this.data.controller = new DataController(this.data);
-  }
+function Peptagram(data) {
 
-  this.init_widgets = function() {
+  this.init_divs = function() {
     this.header_div = $('#header');
     this.column1_div = $('#column1');
     this.protein_control_div = $("#protein_control");
     this.protein_list_div = $("#protein_list");
     this.column2_div = $('#column2');
     this.protein_info_div = $('#protein_info')
-    this.peptograph_div = $("#peptograph")
+    this.peptagram_div = $("#peptagram")
     this.sequence_div = $("#sequence");
     this.column3_div = $("#column3");
     this.peptide_list_div = $("#peptide_list");
@@ -457,7 +446,13 @@ function Pepto(data) {
     this.ion_table_div = $('#ion_table')
     this.spectrum_div = $("#spectrum");
     this.peptide_match_info_div = $("#peptide_match_info");
+    block_bounce_except_for_touchscroll();
+    var _this = this;
+    $(window).resize(function() { _this.update(); });
+    this.update();
+  }
 
+  this.init_widgets = function() {
     this.header_div.text(this.data.title);
     document.title = this.data.title;
 
@@ -465,18 +460,18 @@ function Pepto(data) {
     this.protein_list = new ProteinList(
         this.protein_control_div, this.protein_list_div, this.data);
 
-    this.peptograph_div.css('width', '100%');
-    this.peptograph_canvas = new CanvasWidget(this.peptograph_div, this.data.bg_color, true);
-    var width = this.peptograph_canvas.div.width();
+    this.peptagram_div.css('width', '100%');
+    this.peptagram_canvas = new CanvasWidget(this.peptagram_div, this.data.bg_color, true);
+    var width = this.peptagram_canvas.div.width();
     this.color_bar = new ColorBarWidget(
-        this.peptograph_canvas, this.data['color_names'], this.data.canvas_font);
+        this.peptagram_canvas, this.data['color_names'], this.data.canvas_font);
     this.color_bar.x = 0;
     this.color_bar.y = 5;
-    var peptograph_widget = new PeptographWidget(
-        this.peptograph_canvas, this.data, this.color_bar);
-    peptograph_widget.x = 30;
-    this.peptograph_canvas.push(this.color_bar);
-    this.peptograph_canvas.push(peptograph_widget);
+    var peptagram_widget = new PeptagramWidget(
+        this.peptagram_canvas, this.data, this.color_bar);
+    peptagram_widget.x = 30;
+    this.peptagram_canvas.push(this.color_bar);
+    this.peptagram_canvas.push(peptagram_widget);
 
     this.sequence_view = new SequenceView(this.sequence_div, this.data);
     this.spectrum_canvas = new CanvasWidget(this.spectrum_div, this.data.bg_color, true);
@@ -484,7 +479,6 @@ function Pepto(data) {
     this.spectrum_widget = new SpectrumWidget(this.spectrum_canvas, this.data);
     this.spectrum_canvas.push(this.spectrum_widget);
     this.ion_table = new IonTable(this.ion_table_div, this.data);
-
   }
 
   this.resize_display = function() {
@@ -514,7 +508,6 @@ function Pepto(data) {
     if (column1_width != default_width) {
       column1_width = default_width;
       set_outer_width(this.column1_div, column1_width);
-      this.protein_list.redraw_bars();
     }
 
     // move the central column to its right place
@@ -523,18 +516,16 @@ function Pepto(data) {
     // set heights and tops of central protein view
     set_outer_height(this.column2_div, main_height);
     var top = get_bottom(this.protein_info_div);
-    set_top(this.peptograph_div, top);
-    var peptograph_height = get_content_height(this.column2_div) - 1;
-    peptograph_height += - top - get_outer_height(this.sequence_div)
-    var n_source = this.data.controller.get_current_protein().sources.length;
-    if (n_source < 5) {
-      var fixed_height = this.color_bar.height*n_source + 10;
-      if (fixed_height < peptograph_height) {
-        peptograph_height = fixed_height;
-      }
+    set_top(this.peptagram_div, top);
+
+    // set the actual peptagram height
+    var peptagram_height = get_content_height(this.column2_div) - 1;
+    peptagram_height += - top - get_outer_height(this.sequence_div)
+    if (this.short_peptagram_height < peptagram_height) {
+      peptagram_height = this.short_peptagram_height;
     }
-    set_outer_height(this.peptograph_div, peptograph_height);
-    top = get_bottom(this.peptograph_div);
+    set_outer_height(this.peptagram_div, peptagram_height);
+    top = get_bottom(this.peptagram_div);
     set_top(this.sequence_div, top);
 
     // check column3 variable width
@@ -554,7 +545,7 @@ function Pepto(data) {
     set_outer_width(this.column2_div, width);
     width = get_content_width(this.column2_div);
     set_outer_width(this.sequence_div, width);
-    set_outer_width(this.peptograph_div, width);
+    set_outer_width(this.peptagram_div, width);
 
     // move and resize the width right column 
     set_left(this.column3_div, window_width - column3_width);
@@ -571,15 +562,26 @@ function Pepto(data) {
   }
 
   this.update = function() {
+    if (this.data != null) {
+      var n_source = this.data.controller.get_current_protein().sources.length;
+      this.short_peptagram_height = 3000;
+      if (n_source < 5) {
+        this.short_peptagram_height = this.color_bar.height*n_source + 10;
+      }
+    }    
+
     this.resize_display();
-    this.protein_list.update();
-    this.peptograph_canvas.draw();
-    this.spectrum_widget.update();
-    this.sequence_view.update_panel();
-    build_protein_info_panel(this.data, this.protein_info_div);  
-    build_matches_panel(this.data, this.peptide_list_div);
-    build_match_info(this.data, this.peptide_info_div);
-    this.ion_table.update();
+
+    if (this.data != null) {
+      this.protein_list.update();
+      this.peptagram_canvas.draw();
+      this.spectrum_widget.update();
+      this.sequence_view.update_panel();
+      build_protein_info_panel(this.data, this.protein_info_div);  
+      build_matches_panel(this.data, this.peptide_list_div);
+      build_match_info(this.data, this.peptide_info_div);
+      this.ion_table.update();
+    }
   }
 
   this.register_callbacks = function() {
@@ -589,19 +591,26 @@ function Pepto(data) {
       _this.data.controller.onkeydown(c); 
     }
     this.data.observer = function() { _this.update(); };
-    $(window).resize(_this.data.observer);
     this.data.observer();
   }
 
-  this.init_data(data);
-  this.init_widgets();
-  this.register_callbacks();
-  block_bounce_except_for_touchscroll();
+  this.init_data = function(data) {
+    this.data = data;
+    this.data.controller = new DataController(data);
+    this.init_widgets();
+    this.register_callbacks();
+  }
 
+  this.data = null;
+  this.init_divs();
 }
 
 
-$(function () { var app = new Pepto(data) });
+$(function () { 
+  window.app = new Peptagram();
+  window.load_data = function(data) { app.init_data(data); }
+  load_script('data.jsonp');
+});
 
 
 

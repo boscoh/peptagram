@@ -26,7 +26,7 @@ function is_canvas_suppported() {
 // The widget thus gets a simple IO with the user
 // mainly through the this.drag function.
 
-var CanvasWidget = function(div, bg_color) {
+var CanvasWidget = function(div, bg_color, is_touch) {
 
   this.pos_dom = function() {
     var curr_dom = this.canvas_dom;
@@ -47,15 +47,12 @@ var CanvasWidget = function(div, bg_color) {
     return [curr_left, curr_top];
   }
 
-  this.set_width = function(w) { 
-    this.canvas_dom.width = w;
-    this.div.width(w);
-  }
-
-  this.set_height = function(h) {
-    this.canvas_dom.height = h; 
-    this.div.height(h);
-  }
+  this.update_size = function() {
+    this.width = this.div.width();
+    this.height = this.div.height();
+    this.canvas_dom.width =  this.width;
+    this.canvas_dom.height = this.height;
+  } 
 
   this.x = function() { return this.pos_dom(this.canvas_dom)[0]; }
 
@@ -75,8 +72,8 @@ var CanvasWidget = function(div, bg_color) {
     this.x_mouse = event.clientX - this.x();
     this.y_mouse = event.clientY - this.y();
     if (event.touches) {
-      this.x_mouse = event.touches[0].clientX - x;
-      this.y_mouse = event.touches[0].clientY - y;
+      this.x_mouse = event.touches[0].clientX - this.x();
+      this.y_mouse = event.touches[0].clientY - this.y();
     }
   }
   
@@ -214,6 +211,7 @@ var CanvasWidget = function(div, bg_color) {
   }
 
   this.draw = function() {
+    this.update_size();
     this.draw_background();
     for (var i=0; i<this.widgets.length; i++) {
       this.widgets[i].draw();
@@ -311,8 +309,8 @@ var CanvasWidget = function(div, bg_color) {
   this.div.append(this.canvas);
   this.canvas_dom = this.canvas[0];
   this.draw_context = this.canvas_dom.getContext('2d');
-  this.set_width(this.div.width());
-  this.set_height(this.div.height());
+  this.canvas_dom.width = this.div.width();
+  this.canvas_dom.height = this.div.height();
   this.set_scale();
 
   var _this = this;
@@ -328,6 +326,45 @@ var CanvasWidget = function(div, bg_color) {
     'mousemove',
     function(e) { _this.mousemove(e); }, 
     false);
+
+  // handle touch interface
+  this.is_touch = is_touch;
+  if (this.is_touch) {
+    this.canvas_dom.onselectstart = function(e) {};
+    this.canvas_dom.unselectable = 'on';
+
+    this.canvas_dom.addEventListener(
+      'touchstart', 
+      function(e) { 
+        e.preventDefault();
+        _this.touch = true;
+        _this.mousedown(e); 
+      }, 
+      false);
+    this.canvas_dom.addEventListener(
+      'touchmove',
+      function(e) { 
+        e.preventDefault();
+        _this.mousemove(e); 
+      }, 
+      false);
+    this.canvas_dom.addEventListener(
+      'touchend', 
+      function(e) { 
+        e.preventDefault();
+        _this.touch = false;
+        _this.mouseup(e); 
+      }, 
+      false);
+    this.canvas_dom.addEventListener(
+      'touchcancel', 
+      function(e) { 
+        e.preventDefault();
+        _this.mouseup(e); 
+        _this.touch = false;
+      }, 
+      false);
+  }
 }
 
 

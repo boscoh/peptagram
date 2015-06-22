@@ -72,14 +72,16 @@ function SpectrumWidget(canvas, data) {
   }
 
   this.update = function() {
-    this.width = this.canvas.canvas_dom.width;
-    this.height = this.canvas.canvas_dom.height;
+    this.canvas.update_size();
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
+
     this.draw_width = this.width - 2*this.offset;
     this.draw_height = this.height - 2*this.offset;
     var label_color = '#BCB';
 
-    var peptide = this.data.controller.get_selected_peptide();
-    if (attr_empty(peptide, 'spectrum')) {
+    var match = this.data.controller.get_selected_match();
+    if ((match == null) || (attr_empty(match, 'spectrum'))) {
       this.canvas.div.css('display', 'none');
       return;
     } 
@@ -218,8 +220,8 @@ function SpectrumWidget(canvas, data) {
   }
 
   this.drag = function(x, y) {
-    var peptide = this.data.controller.get_selected_peptide();
-    if (attr_empty(peptide, 'spectrum')) {
+    var match = this.data.controller.get_selected_match();
+    if (attr_empty(match, 'spectrum')) {
       this.canvas.div.css('display', 'none');
       return;
     }
@@ -294,9 +296,8 @@ function IonTable(div, data) {
     this.div.empty();
     this.div.append('<br>')
 
-
-    var peptide = this.data.controller.get_selected_peptide();
-    if (attr_empty(peptide, 'spectrum')) {
+    var match = this.data.controller.get_selected_match();
+    if ((match == null) || (attr_empty(match, 'spectrum'))) {
       return;
     }
 
@@ -337,7 +338,7 @@ function IonTable(div, data) {
 
     // build ion table
     this.spectrum = this.data.controller.get_labeled_spectrum();
-    for (var i=0; i<peptide.sequence.length; i++) {
+    for (var i=0; i<match.sequence.length; i++) {
       var tr = $("<tr>");
       var num = i + 1;
       tr.append(this.mass_td(num, 3, "b"));
@@ -347,12 +348,12 @@ function IonTable(div, data) {
       if (pre.length == 1) {
         pre = '.' + pre;
       }
-      post = '' + (peptide.sequence.length - i);
+      post = '' + (match.sequence.length - i);
       if (post.length == 1) {
         post = post + '.';
       }
-      tr.append(this.make_td(pre + '.' + peptide.sequence[i] + '.' + post));
-      var num = peptide.sequence.length - i;
+      tr.append(this.make_td(pre + '.' + match.sequence[i] + '.' + post));
+      var num = match.sequence.length - i;
       tr.append(this.mass_td(num, 1, "y"));
       tr.append(this.mass_td(num, 2, "y"));
       tr.append(this.mass_td(num, 3, "y"));
