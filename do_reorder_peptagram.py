@@ -60,6 +60,25 @@ class ResortPeptagramForm(tkform.Form):
     self.push_line()
     self.push_spacer()
 
+    self.push_text("OPTIONAL FILTERS", 16)
+    self.push_labeled_param(
+        'exclude_seqids', 'Text file of excluded seqids',
+         load_file_text='select')
+    self.push_labeled_param(
+        'include_seqids', 'Text file of included seqids',
+         load_file_text='select')
+    self.push_text("Include matches:")
+    self.push_radio_param(
+        'match_filter',
+        ['All peptides', 
+         'Tryptic peptides', 
+         'Semi-tryptic peptides', 
+         'Modified peptides'])
+
+    self.push_spacer()
+    self.push_line()
+    self.push_spacer()
+
     self.push_text("RESULTS", 16)
     self.push_submit()
     self.push_output()
@@ -130,6 +149,8 @@ class ResortPeptagramForm(tkform.Form):
           protein['sources'].append(old_source)
         else:
           protein['sources'].append({'matches':[]})
+
+    peptagram.proteins.filter_proteins(proteins, params)
 
     data = {
       'title': params['title'],

@@ -365,13 +365,13 @@ def filter_proteins(proteins, params):
   """
   if 'include_seqids' in params and params['include_seqids']:
     seqids = parse.read_word_file(params['include_seqids'])
-    for seqid in proteins:
+    for seqid in proteins.keys():
       if seqid not in seqids:
         del proteins[seqid]
 
   if 'exculde_seqids' in params and params['exclude_seqids']:
     for seqid in parse.read_word_file(params['exclude_seqids']):
-      if seqid in proteins:
+      if seqid in proteins.keys():
         del proteins[seqid]
 
   if 'fasta' in params and params['fasta']:
