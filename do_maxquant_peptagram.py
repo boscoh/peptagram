@@ -32,7 +32,8 @@ def convert_maxquant_to_peptagram(params, print_fn=sys.stdout.write):
   if len(params['files_and_labels']) == 0:
     raise ValueError('No files were selected.')
 
-  parse.check_fnames(params['fasta'])
+  size = parse.size_str(params['fasta'])
+  print_fn("Using sequences from %s (%s)...\n" % (params['fasta'], size))
 
   great_expect = float(params['great_expect'])
   cutoff_expect = float(params['cutoff_expect'])

@@ -32,13 +32,14 @@ def convert_mascot_to_peptagram(params, print_fn=sys.stdout.write):
   if len(params['files_and_labels']) == 0:
     raise ValueError('No files were selected.')
 
-  parse.check_fnames(params['fasta'])
+  size = parse.size_str(params['fasta'])
+  print_fn("Using sequences from %s (%s)...\n" % (params['fasta'], size))
 
   great_ionscore = float(params['great_ionscore'])
   cutoff_ionscore = float(params['cutoff_ionscore'])
   proteins = {}
   labels = []
-  size = parse.size_str(params['fasta'])
+
   for fname, label in params['files_and_labels']:
     labels.append(label)
     size = parse.size_str(fname)
@@ -47,7 +48,9 @@ def convert_mascot_to_peptagram(params, print_fn=sys.stdout.write):
         fname, great_ionscore, cutoff_ionscore)
     proteins = peptagram.proteins.merge_two_proteins(
         proteins, these_proteins)
+
   peptagram.proteins.filter_proteins(proteins, params)
+
   peptagram.proteins.make_graphical_comparison_visualisation({
       'title': params['title'],
       'proteins': proteins,
@@ -55,9 +58,11 @@ def convert_mascot_to_peptagram(params, print_fn=sys.stdout.write):
       'color_names': [great_ionscore, cutoff_ionscore],
       'out_dir': params['out_dir'],
   })
+
   html = os.path.join(params['out_dir'], 'index.html')
   size = parse.size_str(params['out_dir'])
   print_fn('Successfully built peptagram (%s): %s\n' % (size, html))
+
   return os.path.abspath(html)
 
 

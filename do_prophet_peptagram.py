@@ -39,7 +39,12 @@ test_params = {
 def convert_prophet_peptagram(params, print_fn=sys.stdout.write):
   if len(params['files_and_labels']) == 0:
     raise ValueError('No files were selected.')
-  parse.check_fnames(params['prot_xml'], params['fasta'])
+
+  size = parse.size_str(params['fasta'])
+  print_fn("Using sequences from %s (%s)...\n" % (params['fasta'], size))
+
+  size = parse.size_str(params['prot_xml'])
+  print_fn('Processing %s (%s)...\n' % (params['prot_xml'], size))
 
   proteins = {}
   prot_xml = params['prot_xml'] 

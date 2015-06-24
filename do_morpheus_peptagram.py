@@ -45,10 +45,14 @@ def convert_morpheus_to_peptagram(params, print_fn=sys.stdout.write):
   labels = []
   for entry in params['files_and_labels']:
     fname = entry[0]
+
     size = parse.size_str(fname)
     print_fn("Processing %s (%s)...\n" % (fname, size))
+
     protein_group = fname.replace('PSMs', 'protein_groups')
-    print_fn("Inferring protein group: %s\n" % protein_group)
+    size = parse.size_str(protein_group)
+    print_fn("Inferring protein group: %s (%s)\n" % (protein_group, ))
+
     these_proteins, these_sources = \
         peptagram.morpheus.get_proteins_and_sources(
             protein_group, fname, modifications, q_good, q_cutoff)
@@ -58,6 +62,7 @@ def convert_morpheus_to_peptagram(params, print_fn=sys.stdout.write):
 
   n_peak = int(params['n_peak'])
   for i_source, (mzml, label) in enumerate(params['mzmls_and_labels']):
+    print_fn("Extracting spectra from %s (%s)...\n" % (mzml, parse.size_str(mzml)))
     peptagram.mzml.load_mzml(
         proteins, i_source, mzml, n_peak)
 
