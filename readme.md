@@ -2,9 +2,9 @@
 
 # PEPTAGRAM
 
-`peptagram` generates a single-page HTML5 web-app to visualize proteomics analyses for a graphical comparison between multiple proteomics experiment ([example][example2]).
+`peptagram` generates a single-page HTML5 web-app to visualize proteomics analyses for a graphical comparison between multiple proteomics experiment ([example][example]).
 
-[example2]:http://boscoh.github.io/peptagram/examples/comparison/index.html
+[example]:http://boscoh.github.io/peptagram/examples/multiple/index.html
 
 The resulting HTML5 web-app is:
 
@@ -20,26 +20,27 @@ More information at <http://boscoh.github.io/peptagram>.
 
 `peptagram` consists of a set of python scripts that converts proteomics data into an HTML5 visualisation. 
 
-First, download and unzip the package from <https://github.com/boscoh/peptagram/archive/master.zip>.
-
 `peptagram` requries python 2.7. If your system does not have it, you should download [python](https://www.python.org/downloads/) and the python package installer [pip](https://pip.pypa.io/en/latest/installing.html). 
 
-`peptagram` has two python dependencies: 
+Download and unzip the package from <https://github.com/boscoh/peptagram/archive/master.zip>.
 
-  1. [pymzml](https://github.com/pymzml/pymzML) to read `.mzML` files
-  2. [uniprot](https://github.com/boscoh/uniprot) to get protein sequences from <http://uniprot.org>. 
-
-To install them:
-
-    > pip install pymzml uniprot
-
-If you want to use `peptagram` as a module then you could `peptagram` like this:
+**For Developers**. To use `peptagram` as a module, you should:
 
     > pip install peptagram
 
 Or download the package and run:
 
     > python setup.py install
+
+`peptagram` has two python dependencies: 
+
+  1. [pymzml](https://github.com/pymzml/pymzML) to read `.mzML` files
+  2. [tkform](https://github.com/boscoh/tkform) to generate the GUI
+
+To install them:
+
+    > pip install pymzml tkform
+
 
 
 ## Usage
