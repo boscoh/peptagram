@@ -51,7 +51,7 @@ def convert_morpheus_to_peptagram(params, print_fn=sys.stdout.write):
 
     protein_group = fname.replace('PSMs', 'protein_groups')
     size = parse.size_str(protein_group)
-    print_fn("Inferring protein group: %s (%s)\n" % (protein_group, ))
+    print_fn("Inferring protein group: %s (%s)\n" % (protein_group, size))
 
     these_proteins, these_sources = \
         peptagram.morpheus.get_proteins_and_sources(
