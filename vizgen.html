@@ -40,7 +40,7 @@
         <div class='row'>
           <div class='col-lg-12'>
             <h1>PEPTAGRAM</h1>
-            <h4>hassle-free visualisation of proteomics data</h4>
+            <h4>visual comparison of proteomics experiments</h4>
 
           </div>
         </div>
@@ -52,10 +52,10 @@
           <div class='col-lg-8'>
 
 <h1>Generating Visualizations</h1>
-<p>The purpose of <code>peptagram</code> is to visually compare peptide hits in proteins between experiments.</p>
-<p><code>Peptagram</code> can read peptide-spectrum match results from Morpheus, Mascot, Maxqaunt, ProtXML/PepXML, X!Tandem and ProteinPilot.</p>
-<p>For each type of search results, we provide a script that can be run on the command-line, or in a GUI. For a set of example test data, please download <a href="http://monash.edu/proteomics/peptagram/example_data.zip">http://monash.edu/proteomics/peptagram/example_data.zip</a> into your <code>peptagram</code> directory, and unzip into sub-directory called <code>example_data</code>.</p>
-<p>Let's look at generating a peptagram from the Morpheus search results.</p>          </div>
+<p>The purpose of <code>peptagram</code> is to visually compare peptide hits in proteins across different experiments.</p>
+<p><code>Peptagram</code> generates visualizations of peptdie hits of peptide-spectrum matches from Morpheus, Mascot, Maxqaunt, ProteinProphet/PeptideProphet, X!Tandem and ProteinPilot.</p>
+<p>Some test data is provided in <code>example_data.zip</code>. If you unzip this in the <code>peptagram</code> directory, you should get a sub-directory <code>example_data</code>, which contains a list of sub-directories <code>mascot</code>, <code>morpheus</code> etc.</p>
+<p>For each search engine, there is a separate program to generate a peptagram. Let's look at one in detail in the next section.</p>          </div>
         </div>
       </div>
     </div>
@@ -70,7 +70,7 @@
 <ul>
 <li><code>mac_morpheus_peptagram.command</code> - which can be clicked in Finder on Mac OSX</li>
 <li><code>win_morpheus_peptagram.bat</code> - which can be clicked in WIndows Filer Explorer</li>
-<li><code>create_morpheus_peptagram.py</code> - which is run on the command-line as <code>python create_morpheus_peptagram.py -i</code></li>
+<li><code>do_morpheus_peptagram.py</code> - which is run on the command-line as <code>python do_morpheus_peptagram.py -i</code></li>
 </ul>
 <h3>Test</h3>
 <p>To run an automated test, unzip <code>example_data.zip</code>. It should create an <code>example_data</code> directory containing sub-directories such as <code>morpheus</code>, <code>mascot</code> etc. Then to run the test:</p>
@@ -107,8 +107,7 @@
 <li><code>prophet_peptagram</code> - processes the TPP's prot.xml and pep.xml files. Requires the original .fasta file to get the full length protein sequences</li>
 <li><code>xtandem_peptagram</code> - processes X!Tandem search results. Shows the spectra for each PSM.</li>
 <li><code>pilot_peptagram</code> - processes Protein Pilot .txt/.csv result files. Requires the original .fasta file to get the full length protein sequences</li>
-</ul>
-<p>As some peptagrams can get really big easily, there are a number of options to filter out low-quality matches, from using quality scores like pep and ionscore. As well, you can always load text-files of contaminants to exclude, and/or seqids of interest. As well, there are a number of peptide filtering options.</p>          </div>
+</ul>          </div>
         </div>
       </div>
     </div>
@@ -117,7 +116,19 @@
         <div class='row'>
           <div class='col-lg-8'>
 
-<h2>Reordering and Combining Multiple Peptagrams</h2>
+<h2>Managing the size of the peptagrams</h2>
+<p>As some peptagrams can get really big easily, there are a number of options to filter out low-quality matches, from using quality scores like pep and ionscore.</p>
+<p>Some of the programs group similar proteins together (Morpheus, Maxquant, Protein Prophet). This effectively reduces the number of proteins, and therefore the size of the resultant peptagram. For the other search engines, you can load a text-file of seqids of contaminants to exclude. Or you can load another text-file of seqids that will be shown.</p>
+<p>As well, you can limit the display to tryptic, semi-tryptic or modified peptides.</p>          </div>
+        </div>
+      </div>
+    </div>
+    <div id='tintedtext'>
+      <div class='container'>
+        <div class='row'>
+          <div class='col-lg-8'>
+
+<h2>Combining Different Peptagrams</h2>
 <p>After you're created the peptagrams using the scripts described above, you can now recombine and edit them using <code>reorder_peptgram</code>.</p>
 <p>With <code>reorder_peptgram</code>, you can load existing peptagrams, stacking all the individual rows of the peptagrams against each other.</p>
 <p>Then you reorder and relabel each row  before saving it to a new peptagram.</p>

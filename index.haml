@@ -44,14 +44,18 @@
           .col-lg-8
             :markdown
 
-              `peptagram` converts protoemics data into an HTML5 visualization, which is instantly:
+              `peptagram` visualizes the comparison of peptide coverage across proteomics experiments. 
+
+              It even lets you compare the peptides across different search engines.
+
+              The visualization is generated as an HTML5 visualization, which is:
 
               - executable: *runs on any modern webbrowser*
               - cross-platform: *everyone has a webbrowser*
               - self-contained: *just zip directory and send by email*
               - publishable: *installable on any server, even on Dropbox*
 
-              `peptagram` is not meant to replace heavy-duty tools such as [peptide-shaker](https://code.google.com/p/peptide-shaker/) or the [TPP PepXMLViewer](http://tools.proteomecenter.org/wiki/index.php?title=TPP_Tutorial). Instead, it provides a useful overview of proteomics experiments in a convenient format for end-users.
+              If you would rather examine spectra in detail, try [peptide-shaker](https://code.google.com/p/peptide-shaker/) or [PepXMLViewer](http://tools.proteomecenter.org/wiki/index.php?title=TPP_Tutorial).
 
     #tintedtext
       .container
@@ -62,20 +66,13 @@
 
               `peptagram` consists of a set of python scripts that converts proteomics data into an HTML5 visualisation. 
 
-              First, download and unzip the package from <https://github.com/boscoh/peptagram/archive/master.zip>.
+              `peptagram` requries python 2.7, and a modern webbrowser (Chrome, Safari, Firefox). If your system does not have it, you should download [python](https://www.python.org/downloads/).
 
-              `peptagram` requries python 2.7. If your system does not have it, you should download [python](https://www.python.org/downloads/) and the python package installer [pip](https://pip.pypa.io/en/latest/installing.html). 
+              Then download and unzip the package from <https://github.com/boscoh/peptagram/archive/master.zip>.
 
-              `peptagram` has two python dependencies: 
+              ---
 
-                1. [pymzml](https://github.com/pymzml/pymzML) to read `.mzML` files
-                2. [uniprot](https://github.com/boscoh/uniprot) to get protein sequences from <http://uniprot.org>. 
-
-              To install them:
-
-                  > pip install pymzml uniprot
-
-              If you want to use `peptagram` as a python module, then you could:
+              **For developers:** to use `peptagram` as a python module, you should:
 
                   > pip install peptagram
 
@@ -83,17 +80,30 @@
 
                   > python setup.py install
 
+              `peptagram` has two python dependencies: 
+
+                1. [pymzml](https://github.com/pymzml/pymzML) to read `.mzML` files
+                2. [uniprot](https://github.com/boscoh/uniprot) to get protein sequences from <http://uniprot.org>. 
+
+              To install them with the python package installer [pip](https://pip.pypa.io/en/latest/installing.html):
+
+                  > pip install pymzml uniprot
+
     #plaintext
       .container
         .row
           .col-lg-8
             :markdown
 
-              ## Make & Use Peptagrams
+              ## Make  Peptagrams
 
               [Visualization Generation](vizgen.html) - describes how to generate peptagrams.
 
+              ## Use Peptagrams
+
               [Visualization Help](vizhelp.html) - describes all the features of a peptagram.
+
+              ## Extend New Peptagrams
 
               [Programming API](api.html) - describes how to automate the generation of peptagrams and how to develop your own parsers for it.
     #footer

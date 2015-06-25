@@ -29,7 +29,7 @@
         .row
           .col-lg-12
             %h1 PEPTAGRAM
-            %h4 hassle-free visualisation of proteomics data
+            %h4 visual comparison of proteomics experiments
 
     #tintedtext
       .container
@@ -39,13 +39,13 @@
 
               # Generating Visualizations
 
-              The purpose of `peptagram` is to visually compare peptide hits in proteins between experiments.
+              The purpose of `peptagram` is to visually compare peptide hits in proteins across different experiments.
 
-              `Peptagram` can read peptide-spectrum match results from Morpheus, Mascot, Maxqaunt, ProtXML/PepXML, X!Tandem and ProteinPilot.
+              `Peptagram` generates visualizations of peptdie hits of peptide-spectrum matches from Morpheus, Mascot, Maxqaunt, ProteinProphet/PeptideProphet, X!Tandem and ProteinPilot.
 
-              For each type of search results, we provide a script that can be run on the command-line, or in a GUI. For a set of example test data, please download <http://monash.edu/proteomics/peptagram/example_data.zip> into your `peptagram` directory, and unzip into sub-directory called `example_data`.
-
-              Let's look at generating a peptagram from the Morpheus search results.
+              Some test data is provided in `example_data.zip`. If you unzip this in the `peptagram` directory, you should get a sub-directory `example_data`, which contains a list of sub-directories `mascot`, `morpheus` etc.
+              
+              For each search engine, there is a separate program to generate a peptagram. Let's look at one in detail in the next section.
 
 
     #plaintext
@@ -62,7 +62,7 @@
 
                - `mac_morpheus_peptagram.command` - which can be clicked in Finder on Mac OSX
                - `win_morpheus_peptagram.bat` - which can be clicked in WIndows Filer Explorer
-               - `create_morpheus_peptagram.py` - which is run on the command-line as `python create_morpheus_peptagram.py -i`
+               - `do_morpheus_peptagram.py` - which is run on the command-line as `python do_morpheus_peptagram.py -i`
 
               ### Test
 
@@ -116,15 +116,27 @@
               - `xtandem_peptagram` - processes X!Tandem search results. Shows the spectra for each PSM. 
               - `pilot_peptagram` - processes Protein Pilot .txt/.csv result files. Requires the original .fasta file to get the full length protein sequences
 
-              As some peptagrams can get really big easily, there are a number of options to filter out low-quality matches, from using quality scores like pep and ionscore. As well, you can always load text-files of contaminants to exclude, and/or seqids of interest. As well, there are a number of peptide filtering options.
-
     #plaintext
       .container
         .row
           .col-lg-8
             :markdown
 
-              ## Reordering and Combining Multiple Peptagrams
+              ## Managing the size of the peptagrams
+
+              As some peptagrams can get really big easily, there are a number of options to filter out low-quality matches, from using quality scores like pep and ionscore. 
+
+              Some of the programs group similar proteins together (Morpheus, Maxquant, Protein Prophet). This effectively reduces the number of proteins, and therefore the size of the resultant peptagram. For the other search engines, you can load a text-file of seqids of contaminants to exclude. Or you can load another text-file of seqids that will be shown.
+
+              As well, you can limit the display to tryptic, semi-tryptic or modified peptides.
+
+    #tintedtext
+      .container
+        .row
+          .col-lg-8
+            :markdown
+
+              ## Combining Different Peptagrams
 
               After you're created the peptagrams using the scripts described above, you can now recombine and edit them using `reorder_peptgram`.
 
