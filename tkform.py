@@ -149,7 +149,7 @@ class ReorderableWidgetList(tk.Frame):
 
     """
     This is a table that contains rows of RowOfWidgets. The rows
-    - can be reordered by dragging on the arrow character on
+    - can be reordered by dragging on the trigram character on
     the left
     - deleted by clicking on the x on the right
     - dynamically added to through `add_row_of_widgets`

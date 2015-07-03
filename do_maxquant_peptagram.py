@@ -84,7 +84,7 @@ class PeptagramForm(tkform.Form):
     self.push_text("REQUIRED INPUT DATA", 16)
     self.push_labeled_param(
         'fasta', 'Protein sequences', 'fasta', load_file_text='select .fasta')
-    self.push_text("Maxquant summary directories; drag arrow to reorder; edit labels for peptagram")
+    self.push_text(u"Maxquant summary directories; drag \u2630 to reorder; edit labels for peptagram")
     self.push_dir_list_param(
         'files_and_labels', '+ summary/txt directory', is_label=False)
 

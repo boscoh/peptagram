@@ -99,7 +99,7 @@ class PeptagramForm(tkform.Form):
         'fasta', 'Protein sequences in fasta', 'sequences.fasta', load_file_text='select .fasta')
     self.push_labeled_param(
         'prot_xml', 'ProteinProphet .prot.xml', 'job.prot.xml', load_file_text='select .prot.xml')
-    self.push_text("PeptideProphet .pep.xml files; drag arrow to reorder; edit labels for peptagram")
+    self.push_text(u"PeptideProphet .pep.xml files; drag \u2630 to reorder; edit labels for peptagram")
     self.push_file_list_param(
         'files_and_labels', '+ .pep.xml files', is_label=False)
 

@@ -82,7 +82,7 @@ class PeptagramForm(tkform.Form):
     self.push_spacer()
 
     self.push_text("REQUIRED INPUT DATA", 16)
-    self.push_text("Load X!Tandem files; drag arrow to reorder; edit labels")
+    self.push_text(u"Load X!Tandem files; drag \u2630 to reorder; edit labels")
     self.push_file_list_param(
         'files_and_labels', '+ .tandem files')
 

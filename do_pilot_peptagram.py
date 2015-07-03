@@ -79,7 +79,7 @@ class PeptagramForm(tkform.Form):
     self.push_text("REQUIRED INPUT DATA", 16)
     self.push_labeled_param(
         'fasta', 'Load sequences for proteins', 'fasta', load_file_text='select .fasta')
-    self.push_text("Load ProteinPilot peptide summaries; drag arrow to reorder; edit labels for peptagram")
+    self.push_text(u"Load ProteinPilot peptide summaries; drag \u2630 to reorder; edit labels for peptagram")
     self.push_file_list_param(
         'files_and_labels', '+ peptide summary .csv/.txt file')
     

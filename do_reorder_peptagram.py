@@ -41,7 +41,7 @@ class ResortPeptagramForm(tkform.Form):
     self.push_spacer()
 
     self.push_text("REQUIRED INPUT DATA", 16)
-    self.push_text("Load existing peptagram directories; drag arrow to reorder; edit labels for peptagram")
+    self.push_text(u"Load existing peptagram directories; drag \u2630 to reorder; edit labels for peptagram")
 
     self.push_peptagram_loader(
         'in_peptagram', load_dir_text='+ peptagram directory')

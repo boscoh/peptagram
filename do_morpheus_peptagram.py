@@ -96,7 +96,7 @@ class PeptagramForm(tkform.Form):
     self.push_spacer()
 
     self.push_text("REQUIRED INPUT DATA", 16)
-    self.push_text("Morpheus .PSMs.tsv files; drag arrow to reorder; edit labels for peptagram")
+    self.push_text(u"Morpheus .PSMs.tsv files; drag \u2630 to reorder; edit labels for peptagram")
     self.push_file_list_param(
         'files_and_labels', '+ .PSMs.tsv files', is_label=False)
 
