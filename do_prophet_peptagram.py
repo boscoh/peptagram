@@ -6,6 +6,7 @@ import glob
 import os
 import sys
 import webbrowser
+import logging
 
 import tkform
 
@@ -148,6 +149,7 @@ class PeptagramForm(tkform.Form):
 
 
 if __name__ == "__main__":
+  logging.basicConfig(level=logging.WARNING)
   if 'test' in sys.argv:
     convert_prophet_peptagram(test_params)
   else:

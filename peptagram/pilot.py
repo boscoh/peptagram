@@ -6,6 +6,7 @@ from pprint import pprint
 import csv
 
 import logging
+
 logger = logging.getLogger('pilot')
 
 import proteins as parse_proteins
@@ -97,6 +98,7 @@ def get_proteins(fname):
     def set_attr(pilot_key, attr_key):
       if pilot_key in pilot_match:
         match['attr'][attr_key] = pilot_match[pilot_key]
+    set_attr('Theor z', 'charge')
     set_attr('Sc', 'score')
     set_attr('Score', 'score')
     set_attr('Acq Time', 'retention_time')

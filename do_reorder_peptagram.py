@@ -5,6 +5,7 @@
 import os
 import json
 import webbrowser
+import logging
 
 import peptagram.proteins
 from peptagram import parse
@@ -171,6 +172,8 @@ class ResortPeptagramForm(tkform.Form):
     cmd_fn = lambda: webbrowser.open('file://' + html)
     self.print_output(html, cmd_fn)
 
+
+logging.basicConfig(level=logging.WARNING)
 
 ResortPeptagramForm(800, -150).mainloop()
 

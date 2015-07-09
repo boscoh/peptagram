@@ -4,12 +4,18 @@ function count_matches_in_source(source) {
   source.attr.n_match_unique = 0;
   var matches = source.matches;
   var n_match_in_slice = 0;
+  var sequences = [];
   for (var i=0; i<matches.length; i++) {
     var match = matches[i];
     if (matches[i].attr.is_unique) {
       source.attr.n_match_unique += 1;
     }
     source.attr.n_match += 1;
+    var seq = match.sequence;
+    if (sequences.indexOf(seq) < 0) {
+      sequences.push(seq);
+    }
+    source.attr.n_peptide = sequences.length;
   }
 }
 
@@ -22,6 +28,7 @@ function build_matches_panel(data, div) {
   count_matches_in_source(source);
 
   div.append('n_match: ' + source.attr.n_match + '<br>');
+  div.append('n_peptide: ' + source.attr.n_peptide + '<br>');
   div.append('<br>');
 
   var matches = source.matches;

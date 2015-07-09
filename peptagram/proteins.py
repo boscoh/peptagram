@@ -12,6 +12,7 @@ import shutil
 from pprint import pprint
 
 import logging
+
 logger = logging.getLogger('proteins')
 
 import parse
@@ -100,16 +101,37 @@ def count_matches(proteins):
     n_match = 0
     n_slice_populated = 0
     n_unique_match = 0
+
+    seqs = set()
+
     for source in protein['sources']:
       matches = source['matches']
-      unique_matches = [p for p in matches if p['attr']['is_unique']]
-      n_unique_match += len(unique_matches)
       n_match += len(matches)
       if len(matches) > 0:
         n_slice_populated += 1
+
+      unique_matches = [m for m in matches if m['attr']['is_unique']]
+      n_unique_match += len(unique_matches)
+
+      for m in matches:
+        seq = m['sequence']
+        seqs.add(seq)
+
     protein['attr']['n_slice_populated'] = n_slice_populated
+    protein['attr']['n_peptide'] = len(seqs)
     protein['attr']['n_match_unique'] = n_unique_match
     protein['attr']['n_match'] = n_match
+
+    if 'sequence' in protein:
+      sequence = protein['sequence']
+      residues = set()
+      for source in protein['sources']:
+        matches = source['matches']
+      for m in matches:
+        for j in range(m['i'], m['i'] + len(seq)):
+          residues.add(j)
+      protein['attr']['coverage'] = \
+        "%.1f" % (100.0*len(residues)/float(len(sequence)))
 
 
 def delete_empty_proteins(proteins):

@@ -6,7 +6,7 @@ from pprint import pprint
 import os
 
 import logging
-logging.basicConfig(level=logging.WARNING)
+
 logger = logging.getLogger('maxquant')
 
 import parse
@@ -73,6 +73,7 @@ scan_parse_list = [
   ('scan number', int),
   ('m/z', float),
   ('labeling state', int),
+  ('charge', int),
   ('retention time', float),
   ('pep', float),
   ('missed cleavages', int),

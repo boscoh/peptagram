@@ -8,7 +8,7 @@ import json
 import csv
 
 import logging
-logging.basicConfig(level=logging.WARNING)
+
 logger = logging.getLogger('morpheus')
 
 import parse
@@ -142,6 +142,7 @@ def make_match(psm, modification_table):
         'scan_id': scan_id, 
         'retention_time': time,
         'morpheus_score': parse.round_decimal(psm['morpheus score'], 4),
+        'charge': int(psm['precursor charge']),
         'mass': parse.round_decimal(psm['precursor mass (da)'], 4),
         'mass_diff': parse.round_decimal(psm['precursor mass error (da)'], 4),
         'm/z': parse.round_decimal(psm['precursor m/z'], 4),

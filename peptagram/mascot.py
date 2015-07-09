@@ -8,7 +8,7 @@ import urllib
 import xml.etree.ElementTree as etree
 
 import logging
-logging.basicConfig(level=logging.WARNING)
+
 logger = logging.getLogger('mascot')
 
 from parse import parse_string, save_data_dict
